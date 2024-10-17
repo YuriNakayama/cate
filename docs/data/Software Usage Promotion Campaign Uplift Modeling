@@ -1,0 +1,3 @@
+cd /workspace/data
+kaggle datasets download -d hwwang98/software-usage-promotion-campaign-uplift-model
+unzip -d /workspace/data/software-usage-promotion-campaign-uplift-model /workspace/data/software-usage-promotion-campaign-uplift-model.zip

@@ -1,0 +1,2 @@
+kaggle datasets download -d arashnic/uplift-modeling
+unzip -d /workspace/data/uplift-modeling /workspace/data/uplift-modeling.zip
