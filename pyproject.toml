@@ -20,6 +20,7 @@ boto3 = "^1.35.19"
 lightgbm = "^4.5.0"
 causalml = {extras = ["torch"], version = "^0.15.2"}
 scipy = "1.13.1"
+scikit-uplift = "^0.5.1"
 
 
 [tool.poetry.group.dev.dependencies]

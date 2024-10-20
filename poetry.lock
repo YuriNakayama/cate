@@ -3220,6 +3220,28 @@ maintenance = ["conda-lock (==2.5.6)"]
 tests = ["black (>=24.3.0)", "matplotlib (>=3.3.4)", "mypy (>=1.9)", "numpydoc (>=1.2.0)", "pandas (>=1.1.5)", "polars (>=0.20.30)", "pooch (>=1.6.0)", "pyamg (>=4.0.0)", "pyarrow (>=12.0.0)", "pytest (>=7.1.2)", "pytest-cov (>=2.9.0)", "ruff (>=0.2.1)", "scikit-image (>=0.17.2)"]
 
 [[package]]
+name = "scikit-uplift"
+version = "0.5.1"
+description = "Classic approaches of Uplift modelling in scikit-learn style in python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "scikit-uplift-0.5.1.tar.gz", hash = "sha256:a182eb731fdbacce8997142d0f30bd539864db8e5236ec2e324ea1ac2bede13f"},
+    {file = "scikit_uplift-0.5.1-py3-none-any.whl", hash = "sha256:d25c673c33336407811cded3256b12a76797d21a2f49b163a5041103db6c1282"},
+]
+
+[package.dependencies]
+matplotlib = "*"
+numpy = ">=1.16"
+pandas = "*"
+requests = "*"
+scikit-learn = ">=0.21.0"
+tqdm = "*"
+
+[package.extras]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "scipy"
 version = "1.13.1"
 description = "Fundamental algorithms for scientific computing in Python"
@@ -3960,4 +3982,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "d4dbe60334f903c79a6c2cdefb228ef4175c3f79385f22e0161039196e62f624"
+content-hash = "64100e93e32bb979d70881e238f289d7b6a4823442ebf1d60d7ecedf3baa4559"
