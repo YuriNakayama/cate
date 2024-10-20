@@ -18,22 +18,22 @@ class AbstractFlow(ABC):
 
 @dataclass(frozen=True)
 class Lenta(AbstractFlow):
-    raw: Path = Path("/workspace/data/Raw/lenta.csv")
-    shaped: Path = Path("/workspace/data/Shaped/lenta.csv")
+    raw: Path = Path("/workspace/data/raw/lenta.csv")
+    shaped: Path = Path("/workspace/data/shaped/lenta.csv")
 
 
 @dataclass(frozen=True)
 class Criteo(AbstractFlow):
-    raw: Path = Path("/workspace/data/Raw/criteo.csv")
-    shaped: Path = Path("/workspace/data/Shaped/criteo.csv")
+    raw: Path = Path("/workspace/data/raw/criteo.csv")
+    shaped: Path = Path("/workspace/data/shaped/criteo.csv")
 
 
-@dataclass
+@dataclass(frozen=True)
 class DataPath:
     lenta: Lenta = Lenta()
     criteo: Criteo = Criteo()
 
 
-@dataclass
+@dataclass(frozen=True)
 class PathLinker:
     data: DataPath = DataPath()
