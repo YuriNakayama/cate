@@ -36,7 +36,7 @@ class Dataset:
             {
                 "x_columns": self.x_columns,
                 "y_columns": self.y_columns,
-                "z_columns": self.w_columns,
+                "w_columns": self.w_columns,
             },
             (path / "property.json").open("w"),
         )
