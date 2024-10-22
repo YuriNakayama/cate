@@ -20,15 +20,15 @@ class AbstractFlow(ABC):
 @dataclass(frozen=True)
 class Lenta(AbstractFlow):
     origin: Path = Path("/workspace/data/origin/lenta.csv")
-    base: Path = Path("/workspace/data/base/lenta.csv")
-    prediction: Path = Path("/workspace/data/prediction/lenta.csv")
+    base: Path = Path("/workspace/data/base/lenta")
+    prediction: Path = Path("/workspace/data/prediction/lenta")
 
 
 @dataclass(frozen=True)
 class Criteo(AbstractFlow):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
-    base: Path = Path("/workspace/data/base/criteo.csv")
-    prediction: Path = Path("/workspace/data/prediction/criteo.csv")
+    base: Path = Path("/workspace/data/base/criteo")
+    prediction: Path = Path("/workspace/data/prediction/criteo")
 
 
 @dataclass(frozen=True)
