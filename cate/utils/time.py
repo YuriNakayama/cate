@@ -34,8 +34,3 @@ class Timer:
             writer = csv.DictWriter(f, fieldnames=list(Event.keys()))
             writer.writerows([asdict(event) for event in self.events])
     
-    def __enter__(self) -> None:
-        self.start()
-
-    def __exit__(self, *args) -> None:
-        self.stop()
