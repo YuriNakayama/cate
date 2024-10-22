@@ -19,7 +19,7 @@ class Dataset:
 
     @property
     def X(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.x_columns]
+        return self.__df.loc[:, self.x_columns].copy()
 
     @property
     def y(self) -> pd.DataFrame:
