@@ -8,9 +8,9 @@ class Dataset:
     def __init__(
         self,
         df: pd.DataFrame,
-        x_columns: list[str | int],
-        y_columns: list[str | int],
-        w_columns: list[str | int],
+        x_columns: list[str],
+        y_columns: list[str],
+        w_columns: list[str],
     ) -> None:
         self.x_columns = x_columns
         self.y_columns = y_columns
@@ -51,6 +51,6 @@ class Dataset:
         df = pd.read_csv(data_path)
         property = json.load(property_path.open(mode="r"))
         return cls(df, **property)
-    
+
     def __len__(self) -> int:
         return len(self.__df)
