@@ -22,9 +22,9 @@ poetry shell
 ipython kernel install --user --name=cate
 
 #kaggle setup
-mkdir -p /root/.kaggle
-cp /workspace/env/tokens/kaggle.json /root/.kaggle/kaggle.json
-chmod 600 /root/.kaggle/kaggle.json
+mkdir -p /root/.config/kaggle
+cp /workspace/env/tokens/kaggle.json /root/.config/kaggle/kaggle.json
+chmod 600 /root/.config/kaggle/kaggle.json
 
 # aws.envファイルを読み込み、環境変数として設定
 mkdir -p /root/.aws

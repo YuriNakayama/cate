@@ -16,10 +16,10 @@ def merge_Xyt(
     return df
 
 
-X, y, t = fetch_lenta(return_X_y_t=True)
+X, y, t = fetch_lenta()
 df = merge_Xyt(X, y, t)
-df.to_csv(pathlinker.data.lenta.raw, index=False)
+df.to_csv(pathlinker.data.lenta.origin, index=False)
 
 X, y, t = fetch_criteo(return_X_y_t=True)
 df = merge_Xyt(X, y, t)
-df.to_csv(pathlinker.data.criteo.raw, index=False)
+df.to_csv(pathlinker.data.criteo.origin, index=False)

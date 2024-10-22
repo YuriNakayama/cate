@@ -5,8 +5,9 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class AbstractFlow(ABC):
-    raw: Path
-    shaped: Path
+    origin: Path
+    base: Path
+    prediction: Path
 
     def make(self) -> None:
         for _, path in asdict(self).items():
@@ -18,14 +19,16 @@ class AbstractFlow(ABC):
 
 @dataclass(frozen=True)
 class Lenta(AbstractFlow):
-    raw: Path = Path("/workspace/data/raw/lenta.csv")
-    shaped: Path = Path("/workspace/data/shaped/lenta.csv")
+    origin: Path = Path("/workspace/data/origin/lenta.csv")
+    base: Path = Path("/workspace/data/base/lenta.csv")
+    prediction: Path = Path("/workspace/data/prediction/lenta.csv")
 
 
 @dataclass(frozen=True)
 class Criteo(AbstractFlow):
-    raw: Path = Path("/workspace/data/raw/criteo.csv")
-    shaped: Path = Path("/workspace/data/shaped/criteo.csv")
+    origin: Path = Path("/workspace/data/origin/criteo.csv")
+    base: Path = Path("/workspace/data/base/criteo.csv")
+    prediction: Path = Path("/workspace/data/prediction/criteo.csv")
 
 
 @dataclass(frozen=True)
