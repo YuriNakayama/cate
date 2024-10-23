@@ -34,7 +34,7 @@ models = {
     "cevae": CEVAE(),
 }
 
-np.int = int
+np.int = int  # type: ignore
 
 pred_dfs = {}
 skf = StratifiedKFold(5, shuffle=True, random_state=42)

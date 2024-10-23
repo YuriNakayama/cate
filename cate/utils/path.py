@@ -9,13 +9,23 @@ class AbstractFlow(ABC):
     base: Path
     prediction: Path
 
-    #　TODO: pathがフォルダの場合、指定のフォルダの親フォルダまでしか作成されない
-    def make(self) -> None:
-        for _, path in asdict(self).items():
-            path.parent.mkdir(exist_ok=True, parents=True)
+    def _make_paths(self) -> None:
+        for attr, path in asdict(self).items():
+            if isinstance(path, Path):
+                try:
+                    if path.suffix:
+                        target_dir = path.parent
+                    else:
+                        target_dir = path
+                    target_dir.mkdir(exist_ok=True, parents=True)
+
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Error creating directories for {attr} ({path}): {e}"
+                    )
 
     def __post_init__(self) -> None:
-        self.make()
+        self._make_paths()
 
 
 @dataclass(frozen=True)
@@ -33,9 +43,17 @@ class Criteo(AbstractFlow):
 
 
 @dataclass(frozen=True)
+class Test(AbstractFlow):
+    origin: Path = Path("/workspace/data/origin/criteo.csv")
+    base: Path = Path("/workspace/data/base/test")
+    prediction: Path = Path("/workspace/data/prediction/test")
+
+
+@dataclass(frozen=True)
 class DataPath:
     lenta: Lenta = Lenta()
     criteo: Criteo = Criteo()
+    test: Test = Test()
 
 
 @dataclass(frozen=True)
