@@ -48,21 +48,25 @@ def make_test() -> None:
 
 
 @click.command()
-@click.option(
-    "--names",
-    "-n",
-    multiple=True,
-    default=["lenta", "criteo", "test"],
-    help="lenta",
+@click.argument(
+    "name",
+    required=True,
 )
-def main(names: list[str]) -> None:
-    if "lenta" in names:
+def main(name: str) -> None:
+    if "lenta" == name:
         click.echo("download lenta")
         make_lenta()
-    elif "criteo" in names:
+    elif "criteo" == name:
         click.echo("download criteo")
         make_criteo()
-    elif "test" in names:
+    elif "test" == name:
+        click.echo("download test")
+        make_test()
+    elif "all" == name:
+        click.echo("download lenta")
+        make_lenta()
+        click.echo("download criteo")
+        make_criteo()
         click.echo("download test")
         make_test()
 

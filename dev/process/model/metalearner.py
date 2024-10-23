@@ -22,11 +22,13 @@ logger = get_logger("causalml")
 
 
 ds = Dataset.load(pathlinker.base)
-base_classifier = lgb.LGBMClassifier(importance_type="gain")
-base_regressor = lgb.LGBMRegressor(importance_type="gain")
+base_classifier = lgb.LGBMClassifier(importance_type="gain", random_state=42, force_col_wise=True)
+base_regressor = lgb.LGBMRegressor(
+    importance_type="gain", random_state=42, force_col_wise=True
+)
 
 models = {
-    "drlearner": BaseDRLearner(base_classifier),
+    "drlearner": BaseDRLearner(base_regressor),
     "xlearner": BaseXClassifier(base_classifier, base_regressor),
     "rlearner": BaseRClassifier(base_classifier, base_regressor),
     "slearner": BaseSClassifier(base_classifier),
@@ -52,11 +54,16 @@ for name, model in models.items():
         valid_w = ds.w.iloc[valid_idx].to_numpy().reshape(-1)
 
         timer.start(name, "train", i)
-        model.fit(train_X, train_w, train_y)
+        model.fit(
+            train_X,
+            train_w,
+            train_y,
+            p=np.full(train_w.shape, train_w.mean()),
+        )
         timer.stop(name, "train", i)
 
         timer.start(name, "predict", i)
-        pred = model.predict(valid_X)
+        pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
         timer.stop(name, "predict", i)
 
         _pred_dfs.append(
