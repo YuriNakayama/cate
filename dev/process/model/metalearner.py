@@ -15,16 +15,18 @@ from tqdm import tqdm
 from cate.dataset import Dataset, to_rank
 from cate.utils import PathLinker, Timer, get_logger
 
-pathlinker = PathLinker().data.criteo
+pathlinker = PathLinker().data.lenta
 timer = Timer()
 
 logger = get_logger("causalml")
 
 
 ds = Dataset.load(pathlinker.base)
-base_classifier = lgb.LGBMClassifier(importance_type="gain", random_state=42, force_col_wise=True)
+base_classifier = lgb.LGBMClassifier(
+    importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
+)
 base_regressor = lgb.LGBMRegressor(
-    importance_type="gain", random_state=42, force_col_wise=True
+    importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
 )
 
 models = {
@@ -33,7 +35,7 @@ models = {
     "rlearner": BaseRClassifier(base_classifier, base_regressor),
     "slearner": BaseSClassifier(base_classifier),
     "tlearner": BaseTClassifier(base_classifier),
-    "cevae": CEVAE(),
+    # "cevae": CEVAE(),
 }
 
 np.int = int  # type: ignore
@@ -42,7 +44,7 @@ pred_dfs = {}
 skf = StratifiedKFold(5, shuffle=True, random_state=42)
 for name, model in models.items():
     _pred_dfs = []
-    logger.info(f"start {model}")
+    logger.info(f"start {name}")
     for i, (train_idx, valid_idx) in tqdm(
         enumerate(skf.split(np.zeros(len(ds)), ds.y))
     ):
@@ -96,5 +98,5 @@ for name in models.keys():
     cvs[name] = cv_list
 
 cv_df = pd.DataFrame(cvs)
-cv_df.to_csv("/workspace/outputs/meta_learner.csv", index=False)
+cv_df.to_csv(pathlinker.output / "meta_learner.csv", index=False)
 timer.to_csv(pathlinker.prediction / "metalearner_duration.csv")

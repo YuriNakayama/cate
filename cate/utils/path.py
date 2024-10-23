@@ -8,6 +8,7 @@ class AbstractFlow(ABC):
     origin: Path
     base: Path
     prediction: Path
+    output: Path
 
     def _make_paths(self) -> None:
         for attr, path in asdict(self).items():
@@ -33,6 +34,7 @@ class Lenta(AbstractFlow):
     origin: Path = Path("/workspace/data/origin/lenta.csv")
     base: Path = Path("/workspace/data/base/lenta")
     prediction: Path = Path("/workspace/data/prediction/lenta")
+    output: Path = Path("/workspace/data/output/lenta")
 
 
 @dataclass(frozen=True)
@@ -40,6 +42,7 @@ class Criteo(AbstractFlow):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
     base: Path = Path("/workspace/data/base/criteo")
     prediction: Path = Path("/workspace/data/prediction/criteo")
+    output: Path = Path("/workspace/data/output/criteo")
 
 
 @dataclass(frozen=True)
@@ -47,6 +50,7 @@ class Test(AbstractFlow):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
     base: Path = Path("/workspace/data/base/test")
     prediction: Path = Path("/workspace/data/prediction/test")
+    output: Path = Path("/workspace/data/output/test")
 
 
 @dataclass(frozen=True)

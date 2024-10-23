@@ -77,7 +77,7 @@ line-ending = "auto"
 case-sensitive = true
 
 [mypy]
-exclude = []
+exclude = [".venv", ".github", "data", "docs", "env"]
 
 [tool.mypy]
 python_version = "3.11"

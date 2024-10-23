@@ -28,6 +28,26 @@ class Dataset:
         self.y_columns = y_columns
         self.w_columns = w_columns
         self.__df = df.copy()
+        self._validate(
+            self.__df.columns.to_list(), self.x_columns, self.y_columns, self.w_columns
+        )
+
+    def _validate(
+        self,
+        columns: list[str],
+        x_columns: list[str],
+        y_columns: list[str],
+        w_columns: list[str],
+    ) -> None:
+        x_diff_columns = set(x_columns) - set(columns)
+        y_diff_columns = set(y_columns) - set(columns)
+        w_diff_columns = set(w_columns) - set(columns)
+        if x_diff_columns:
+            raise ValueError(f"x columns {x_diff_columns} do not exist in df.")
+        elif y_diff_columns:
+            raise ValueError(f"x columns {y_diff_columns} do not exist in df.")
+        elif w_diff_columns:
+            raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
 
     @property
     def X(self) -> pd.DataFrame:

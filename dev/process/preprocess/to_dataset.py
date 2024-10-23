@@ -9,19 +9,17 @@ pathlinker = PathLinker()
 
 def make_lenta() -> None:
     df = pd.read_csv(pathlinker.data.lenta.origin)
-    y_columns = ["response_att"]
-    w_column = "group"
-    x_columns = [
-        column for column in df.columns if column not in y_columns + [w_column]
-    ]
     df = pd.merge(
         df.drop("gender", axis=1),
         pd.get_dummies(df["gender"], prefix="gender", dtype=int),
         left_index=True,
         right_index=True,
     )
-    df[w_column] = df[w_column].apply(lambda x: {"test": 1, "control": 0}.get(x))
-    ds = Dataset(df, x_columns, y_columns, [w_column])
+    df["group"] = df["group"].apply(lambda x: {"test": 1, "control": 0}.get(x))
+    y_columns = ["response_att"]
+    w_columns = ["group"]
+    x_columns = [column for column in df.columns if column not in y_columns + w_columns]
+    ds = Dataset(df, x_columns, y_columns, w_columns)
     ds.save(pathlinker.data.lenta.base)
 
 
