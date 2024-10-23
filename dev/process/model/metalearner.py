@@ -82,21 +82,6 @@ for name, pred_df_list in pred_dfs.items():
     )
     pred_df = pred_df.rename(columns={"pred": f"{name}_pred", "rank": f"{name}_rank"})
     output_df = pd.merge(output_df, pred_df, left_index=True, right_index=True)
+
 output_df.to_csv(pathlinker.prediction / "metaleaner.csv")
-
-cvs = {}
-for name in models.keys():
-    cv_list = []
-    for rank in range(100):
-        rank_flg = output_df[f"{name}_rank"] <= rank
-        tg_flg = output_df["treatment"] == 1
-        cv = (
-            output_df.loc[rank_flg & tg_flg, "conversion"].mean()
-            - output_df.loc[rank_flg & ~tg_flg, "conversion"].mean()
-        )
-        cv_list.append(cv)
-    cvs[name] = cv_list
-
-cv_df = pd.DataFrame(cvs)
-cv_df.to_csv(pathlinker.output / "meta_learner.csv", index=False)
 timer.to_csv(pathlinker.prediction / "metalearner_duration.csv")
