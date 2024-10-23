@@ -9,6 +9,7 @@ class AbstractFlow(ABC):
     base: Path
     prediction: Path
 
+    #　TODO: pathがフォルダの場合、指定のフォルダの親フォルダまでしか作成されない
     def make(self) -> None:
         for _, path in asdict(self).items():
             path.parent.mkdir(exist_ok=True, parents=True)

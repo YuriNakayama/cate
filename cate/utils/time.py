@@ -18,7 +18,7 @@ class Event:
     def keys(cls) -> dict_keys:
         return cls.__dataclass_fields__.keys()
 
-
+# TODO: 実行ファイルがwith句などでstart, stopできるように
 class Timer:
     def __init__(self) -> None:
         self.events: list[Event] = []
