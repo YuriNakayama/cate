@@ -1,7 +1,19 @@
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+
+
+def to_rank(
+    primary_key: pd.Series, score: pd.Series, ascending: bool = True
+) -> pd.Series:
+    df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
+        primary_key.name, drop=True
+    )
+    df = df.sort_values(by=score.name, ascending=ascending)  # type: ignore
+    df["rank"] = np.ceil(np.arange(len(df)) / len(df) * 100).astype(int)
+    return df["rank"]
 
 
 class Dataset:

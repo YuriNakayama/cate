@@ -1,61 +1,46 @@
-import pandas as pd
 import lightgbm as lgb
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
-from tqdm import tqdm
+import pandas as pd
 from causalml.inference.meta import (
     BaseDRLearner,
     BaseRClassifier,
-    BaseXClassifier,
-    BaseTClassifier,
     BaseSClassifier,
-    
+    BaseTClassifier,
+    BaseXClassifier,
 )
 from causalml.inference.torch import CEVAE
+from sklearn.model_selection import StratifiedKFold
+from tqdm import tqdm
 
-from cate.dataset import Dataset
-from cate.utils import PathLinker, Timer
+from cate.dataset import Dataset, to_rank
+from cate.utils import PathLinker, Timer, get_logger
 
 pathlinker = PathLinker().data.criteo
 timer = Timer()
 
-def to_rank(
-    primary_key: pd.Series, score: pd.Series, ascending: bool = True
-) -> pd.Series:
-    df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
-        primary_key.name, drop=True
-    )
-    df = df.sort_values(by=score.name, ascending=ascending)  # type: ignore
-    df["rank"] = np.ceil(np.arange(len(df)) / len(df) * 100).astype(int)
-    return df["rank"]
+logger = get_logger("causalml")
+
 
 ds = Dataset.load(pathlinker.base)
 base_classifier = lgb.LGBMClassifier(importance_type="gain")
 base_regressor = lgb.LGBMRegressor(importance_type="gain")
-names = [
-    "drlearner",
-    "xlearner",
-    "rlearner",
-    "slearner",
-    "tlearner",
-    # "cevae",
-]
 
-models = [
-    BaseDRLearner(base_classifier),
-    BaseXClassifier(base_classifier, base_regressor),
-    BaseRClassifier(base_classifier, base_regressor),
-    BaseSClassifier(base_classifier),
-    BaseTClassifier(base_classifier),
-    # CEVAE(),
-]
+models = {
+    "drlearner": BaseDRLearner(base_classifier),
+    "xlearner": BaseXClassifier(base_classifier, base_regressor),
+    "rlearner": BaseRClassifier(base_classifier, base_regressor),
+    "slearner": BaseSClassifier(base_classifier),
+    "tlearner": BaseTClassifier(base_classifier),
+    "cevae": CEVAE(),
+}
 
 np.int = int
 
 pred_dfs = {}
 skf = StratifiedKFold(5, shuffle=True, random_state=42)
-for name, model in zip(names, models):
+for name, model in models.items():
     _pred_dfs = []
+    logger.info(f"start {model}")
     for i, (train_idx, valid_idx) in tqdm(
         enumerate(skf.split(np.zeros(len(ds)), ds.y))
     ):
@@ -66,19 +51,19 @@ for name, model in zip(names, models):
         valid_y = ds.y.iloc[valid_idx].to_numpy().reshape(-1)
         valid_w = ds.w.iloc[valid_idx].to_numpy().reshape(-1)
 
-        timer.start(f"fit_{name}_{i}")
+        timer.start(name, "train", i)
         model.fit(train_X, train_w, train_y)
-        timer.stop(f"fit_{name}_{i}")
+        timer.stop(name, "train", i)
 
-        timer.start(f"predict_{name}_{i}")
+        timer.start(name, "predict", i)
         pred = model.predict(valid_X)
-        timer.stop(f"predict_{name}_{i}")
+        timer.stop(name, "predict", i)
 
         _pred_dfs.append(
             pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})
         )  # type: ignore
     pred_dfs[name] = _pred_dfs
-    
+
 output_df = pd.merge(ds.y.copy(), ds.w.copy(), left_index=True, right_index=True)
 for name, pred_df_list in pred_dfs.items():
     pred_df = pd.concat(pred_df_list, axis=0)
@@ -91,7 +76,7 @@ for name, pred_df_list in pred_dfs.items():
 output_df.to_csv(pathlinker.prediction / "metaleaner.csv")
 
 cvs = {}
-for name in names:
+for name in models.keys():
     cv_list = []
     for rank in range(100):
         rank_flg = output_df[f"{name}_rank"] <= rank

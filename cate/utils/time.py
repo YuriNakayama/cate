@@ -12,23 +12,28 @@ class Event:
     model: str
     phase: str
     category: Literal["start", "stop"]
-    description: str = ""
+    description: str | int = ""
 
     @classmethod
     def keys(cls) -> dict_keys:
         return cls.__dataclass_fields__.keys()
+
 
 # TODO: 実行ファイルがwith句などでstart, stopできるように
 class Timer:
     def __init__(self) -> None:
         self.events: list[Event] = []
 
-    def start(self, model: str, phase: str, description: str | None = None) -> None:
+    def start(
+        self, model: str, phase: str, description: str | int | None = None
+    ) -> None:
         description = "" if description is None else description
         event = Event(datetime.now(), model, phase, "start", description)
         self.events.append(event)
 
-    def stop(self, model: str, phase: str, description: str | None = None) -> None:
+    def stop(
+        self, model: str, phase: str, description: str | int | None = None
+    ) -> None:
         description = "" if description is None else description
         event = Event(datetime.now(), model, phase, "stop", description)
         self.events.append(event)

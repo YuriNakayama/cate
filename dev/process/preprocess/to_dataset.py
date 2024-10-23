@@ -22,7 +22,17 @@ ds = Dataset(df, x_columns, y_columns, [w_column])
 ds.save(pathlinker.data.lenta.base)
 
 # criteo
-df = pd.read_csv(pathlinker.data.criteo.origin).sample(frac=0.01, random_state=42)
+df = pd.read_csv(pathlinker.data.criteo.origin)
+ds = Dataset(
+    df,
+    ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11"],
+    ["conversion"],
+    ["treatment"],
+)
+ds.save(pathlinker.data.criteo.base)
+
+# test data
+df = pd.read_csv(pathlinker.data.criteo.origin).sample(n=100_000, random_state=42)
 ds = Dataset(
     df,
     ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11"],
