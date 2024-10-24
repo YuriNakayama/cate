@@ -16,7 +16,7 @@ pip install poetry
 poetry config virtualenvs.path --unset
 poetry config virtualenvs.in-project true
 ## activate poetry and install library
-poetry env use 3.11
+poetry env use 3.10
 poetry install
 poetry shell
 ipython kernel install --user --name=cate
