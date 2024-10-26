@@ -92,3 +92,6 @@ class Dataset:
     def sample(self, n: int, frac: float, random_state: int) -> Dataset:
         df = self.__df.sample(n=n, frac=frac, random_state=random_state)
         return Dataset(df, self.x_columns, self.y_columns, self.w_columns)
+
+    def to_pandas(self) -> pd.DataFrame:
+        return self.__df.copy()
