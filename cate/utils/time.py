@@ -1,9 +1,8 @@
 import csv
-from _collections_abc import dict_keys
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import KeysView, Literal
 
 
 @dataclass
@@ -15,7 +14,7 @@ class Event:
     description: str | int = ""
 
     @classmethod
-    def keys(cls) -> dict_keys:
+    def keys(cls) -> KeysView[str]:
         return cls.__dataclass_fields__.keys()
 
 

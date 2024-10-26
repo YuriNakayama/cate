@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 
@@ -11,7 +13,7 @@ def to_rank(
     df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
         primary_key.name, drop=True
     )
-    df = df.sort_values(by=score.name, ascending=ascending)  # type: ignore
+    df = df.sort_values(by=str(score.name), ascending=ascending)
     df["rank"] = np.ceil(np.arange(len(df)) / len(df) * 100).astype(int)
     return df["rank"]
 
@@ -74,7 +76,7 @@ class Dataset:
         )
 
     @classmethod
-    def load(cls, path: Path) -> "Dataset":
+    def load(cls, path: Path) -> Dataset:
         data_path = path / "data.csv"
         property_path = path / "property.json"
         if (not data_path.exists()) or (not property_path.exists()):
@@ -86,3 +88,7 @@ class Dataset:
 
     def __len__(self) -> int:
         return len(self.__df)
+
+    def sample(self, n: int, frac: float, random_state: int) -> Dataset:
+        df = self.__df.sample(n=n, frac=frac, random_state=random_state)
+        return Dataset(df, self.x_columns, self.y_columns, self.w_columns)
