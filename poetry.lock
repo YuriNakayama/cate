@@ -2765,6 +2765,17 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "pynvml"
+version = "11.5.3"
+description = "Python utilities for the NVIDIA Management Library"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pynvml-11.5.3-py3-none-any.whl", hash = "sha256:a5fba3ab14febda50d19dbda012ef62ae0aed45b7ccc07af0bc5be79223e450c"},
+    {file = "pynvml-11.5.3.tar.gz", hash = "sha256:183d223ae487e5f00402d8da06c68c978ef8a9295793ee75559839c6ade7b229"},
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.2.0"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -3982,4 +3993,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "f32ddb39bd72ea5af98a1764f45895f2e528b1061f410dc43e033900c2613272"
+content-hash = "e8ec1bc4546254490b52995b923ae0ae9b56609efc1c8c7f43664f00458fe618"

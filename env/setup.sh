@@ -39,6 +39,4 @@ huggingface-cli login --token $HUGGINGFACE_TOKEN --add-to-git-credential
 # export WANDB_TOKEN=$(cat /workspace/env/tokens/wandb.env)
 # wandb login $WANDB_TOKEN
 
-
-
 source ~/.bashrc
