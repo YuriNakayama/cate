@@ -70,7 +70,7 @@ for name, model in models.items():
 
         _pred_dfs.append(
             pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})
-        )  # type: ignore
+        )
     pred_dfs[name] = _pred_dfs
 
 output_df = pd.merge(ds.y.copy(), ds.w.copy(), left_index=True, right_index=True)
