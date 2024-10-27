@@ -23,6 +23,7 @@ scipy = "1.13.1"
 scikit-uplift = "^0.5.1"
 click = "^8.1.7"
 pynvml = "^11.5.3"
+pytest = "^8.3.3"
 
 
 [tool.poetry.group.dev.dependencies]
