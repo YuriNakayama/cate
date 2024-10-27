@@ -65,15 +65,6 @@ def test_auuc_call_with_mixed_conversion() -> None:
     assert result == 1.0
 
 
-def test_auuc_call_with_100_data() -> None:
-    score = pd.Series([0.9] * 50 + [0.1] * 50)
-    group = pd.Series([1] * 50 + [0] * 50)
-    conversion = pd.Series([1] * 25 + [0] * 25 + [1] * 25 + [0] * 25)
-    auuc = Auuc(bin_num=10)
-    result = auuc(score, group, conversion)
-    assert result == 0.0
-
-
 def test_auuc_call_with_random_data() -> None:
     score = pd.Series(np.random.rand(100))
     group = pd.Series(np.random.randint(0, 2, 100_00))

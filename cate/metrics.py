@@ -1,5 +1,7 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 
 
 class UpliftByPercentile:
@@ -78,7 +80,9 @@ class Auuc:
             - data.loc[~tg_flg, "conversion"].mean()
         )
         auuc = 0.0
-        for _, rank_flg in data.groupby("rank").groups.items():
+        ranks = set(data["rank"].unique())
+        for rank in ranks:
+            rank_flg = data["rank"] <= rank
             top_k_data = data.loc[rank_flg]
             if tg_flg.loc[rank_flg].sum() != 0 and (~tg_flg[rank_flg]).sum() != 0:
                 tg_conversion = top_k_data.loc[tg_flg, "conversion"].mean()
@@ -103,4 +107,52 @@ class QiniCurve:
 
 
 class UpliftCurve:
-    pass
+    def __init__(self, bin_num: int = 10_000) -> None:
+        self.bin_num = bin_num
+
+    def __call__(
+        self, score: pd.Series, group: pd.Series, conversion: pd.Series
+    ) -> Figure:
+        data = pd.concat(
+            [score, group, conversion], keys=["score", "group", "conversion"], axis=1
+        ).sort_values(by="score", ascending=False)
+
+        data["rank"] = np.ceil(
+            np.arange(1, len(data) + 1) / len(data) * self.bin_num
+        ).astype(int)
+
+        tg_flg = data["group"] == 1
+        average_uplift = (
+            data.loc[tg_flg, "conversion"].mean()
+            - data.loc[~tg_flg, "conversion"].mean()
+        )
+        uplifts = []
+        ranks = set(data["rank"].unique())
+        for rank in ranks:
+            rank_flg = data["rank"] <= rank
+            top_k_data = data.loc[rank_flg]
+            if tg_flg.loc[rank_flg].sum() != 0 and (~tg_flg[rank_flg]).sum() != 0:
+                tg_conversion = top_k_data.loc[tg_flg, "conversion"].mean()
+                cg_conversion = top_k_data.loc[~tg_flg, "conversion"].mean()
+                uplift = tg_conversion - cg_conversion
+                uplifts.append(uplift)
+
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111)
+
+        ax.tick_params(labelsize=14)
+        ax.set_xlabel("percentile", fontsize=18)
+        ax.set_ylabel("uplift", fontsize=18)
+        ax.tick_params(length=10, width=1)
+
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+        ax.plot(np.arange(0, 1, 1 / len(uplifts)), uplifts, label="uplift")
+        ax.plot(
+            np.arange(0, 1, 1 / len(uplifts)),
+            np.arange(0, average_uplift, average_uplift / len(uplifts)),
+            label="random",
+        )
+        ax.legend(fontsize=18, framealpha=0)
+        return fig
