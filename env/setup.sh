@@ -32,8 +32,8 @@ cat /workspace/env/tokens/aws.env > /root/.aws/credentials
 chmod 600 /root/.aws/credentials
 
 # hugging face setup
-export HUGGINGFACE_TOKEN=$(cat /workspace/env/tokens/huggingface.env)
-huggingface-cli login --token $HUGGINGFACE_TOKEN --add-to-git-credential
+# export HUGGINGFACE_TOKEN=$(cat /workspace/env/tokens/huggingface.env)
+# huggingface-cli login --token $HUGGINGFACE_TOKEN --add-to-git-credential
 
 # wandb
 # export WANDB_TOKEN=$(cat /workspace/env/tokens/wandb.env)
