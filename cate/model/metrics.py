@@ -3,8 +3,10 @@ import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 
+from cate.base.metrics import AbstraceArtifats, AbstractMetrics
 
-class UpliftByPercentile:
+
+class UpliftByPercentile(AbstractMetrics):
     """
     https://note.com/dd_techblog/n/nb1ae45e79148
     スコア上位k%までのユーザーに対するUplift(tgのcv率-cgのcv率)を計算する
@@ -13,7 +15,7 @@ class UpliftByPercentile:
     def __init__(self, k: float) -> None:
         self.k = k
 
-    def __call__(
+    def _calculate(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series
     ) -> float:
         data = pd.concat(
@@ -28,7 +30,7 @@ class UpliftByPercentile:
         return float(tg_conversion_rate - cg_conversion_rate)
 
 
-class QiniByPercentile:
+class QiniByPercentile(AbstractMetrics):
     """
     https://note.com/dd_techblog/n/nb1ae45e79148
     スコア上位k%までのユーザーに対するQini値を計算する
@@ -37,7 +39,7 @@ class QiniByPercentile:
     def __init__(self, k: float) -> None:
         self.k = k
 
-    def __call__(
+    def _calculate(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series
     ) -> float:
         data = pd.concat(
@@ -54,7 +56,7 @@ class QiniByPercentile:
         return float(tg_conversion - cg_conversion * (tg_num / cg_num))
 
 
-class Auuc:
+class Auuc(AbstractMetrics):
     r"""
     UpliftCurveとbaselineに囲まれた部分の面積を計算する.
     AUUC = \sum_{k=1}^n AUUC_{\pi}(k)
@@ -64,7 +66,7 @@ class Auuc:
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
 
-    def __call__(
+    def _calculate(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series
     ) -> float:
         data = pd.concat(
@@ -106,11 +108,11 @@ class QiniCurve:
     pass
 
 
-class UpliftCurve:
+class UpliftCurve(AbstraceArtifats):
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
 
-    def __call__(
+    def _calculate(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series
     ) -> Figure:
         data = pd.concat(
