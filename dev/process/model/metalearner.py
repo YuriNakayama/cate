@@ -12,9 +12,10 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 from cate.dataset import Dataset, to_rank
-from cate.utils import PathLinker, Timer, get_logger
+from cate.mlflow import MlflowClient
+from cate.utils import path_linker, Timer, get_logger
 
-pathlinker = PathLinker().data.lenta
+pathlinker = path_linker("criteo")
 timer = Timer()
 
 logger = get_logger("causalml")
