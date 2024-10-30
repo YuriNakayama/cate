@@ -79,7 +79,7 @@ line-ending = "auto"
 case-sensitive = true
 
 [mypy]
-exclude = [".venv", ".github", "data", "docs", "env"]
+exclude = [".venv", ".github", "data", "docs", "env", "outputs"]
 
 [tool.mypy]
 python_version = "3.11"
