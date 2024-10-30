@@ -21,15 +21,20 @@ poetry install
 poetry shell
 ipython kernel install --user --name=cate
 
-#kaggle setup
+# kaggle setup
 mkdir -p /root/.config/kaggle
 cp /workspace/env/tokens/kaggle.json /root/.config/kaggle/kaggle.json
 chmod 600 /root/.config/kaggle/kaggle.json
 
 # aws.envファイルを読み込み、環境変数として設定
 mkdir -p /root/.aws
-cat /workspace/env/tokens/aws.env > /root/.aws/credentials
+cp /workspace/env/tokens/aws.env /root/.aws/credentials
 chmod 600 /root/.aws/credentials
+
+# mlflow
+mkdir -p /root/.mlflow/credentials
+cp /workspace/env/tokens/mlflow.env /root/.mlflow/credentials
+chmod 600 /root/.mlflow/credentials
 
 # hugging face setup
 # export HUGGINGFACE_TOKEN=$(cat /workspace/env/tokens/huggingface.env)
