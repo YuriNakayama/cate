@@ -32,7 +32,7 @@ cp /workspace/env/tokens/aws.env /root/.aws/credentials
 chmod 600 /root/.aws/credentials
 
 # mlflow
-mkdir -p /root/.mlflow/credentials
+mkdir -p /root/.mlflow
 cp /workspace/env/tokens/mlflow.env /root/.mlflow/credentials
 chmod 600 /root/.mlflow/credentials
 

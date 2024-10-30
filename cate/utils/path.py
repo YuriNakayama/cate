@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 @dataclass(frozen=True)
-class AbstractFlow(ABC):
+class AbstractLink(ABC):
     origin: Path
     base: Path
     prediction: Path
@@ -30,7 +30,7 @@ class AbstractFlow(ABC):
 
 
 @dataclass(frozen=True)
-class Lenta(AbstractFlow):
+class Lenta(AbstractLink):
     origin: Path = Path("/workspace/data/origin/lenta.csv")
     base: Path = Path("/workspace/data/base/lenta")
     prediction: Path = Path("/workspace/data/prediction/lenta")
@@ -38,7 +38,7 @@ class Lenta(AbstractFlow):
 
 
 @dataclass(frozen=True)
-class Criteo(AbstractFlow):
+class Criteo(AbstractLink):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
     base: Path = Path("/workspace/data/base/criteo")
     prediction: Path = Path("/workspace/data/prediction/criteo")
@@ -46,20 +46,19 @@ class Criteo(AbstractFlow):
 
 
 @dataclass(frozen=True)
-class Test(AbstractFlow):
+class Test(AbstractLink):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
     base: Path = Path("/workspace/data/base/test")
     prediction: Path = Path("/workspace/data/prediction/test")
     output: Path = Path("/workspace/data/output/test")
 
 
-@dataclass(frozen=True)
-class DataPath:
-    lenta: Lenta = Lenta()
-    criteo: Criteo = Criteo()
-    test: Test = Test()
-
-
-@dataclass(frozen=True)
-class PathLinker:
-    data: DataPath = DataPath()
+def path_linker(link_name: str) -> AbstractLink:
+    if link_name == "lenta":
+        return Lenta()
+    elif link_name == "criteo":
+        return Criteo()
+    elif link_name == "test":
+        return Test()
+    else:
+        raise ValueError(f"Unknown link name: {link_name}")
