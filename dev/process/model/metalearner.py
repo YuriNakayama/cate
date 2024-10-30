@@ -13,13 +13,15 @@ from tqdm import tqdm
 
 from cate.dataset import Dataset, to_rank
 from cate.mlflow import MlflowClient
-from cate.utils import path_linker, Timer, get_logger
+from cate.utils import Timer, get_logger, path_linker
 
+dataset_name = "criteo"
 pathlinker = path_linker("criteo")
+client = MlflowClient("criteo")
 timer = Timer()
-
 logger = get_logger("causalml")
 
+client.start_run(tag={"models": "metalearner"})
 
 ds = Dataset.load(pathlinker.base)
 base_classifier = lgb.LGBMClassifier(
@@ -85,3 +87,5 @@ for name, pred_df_list in pred_dfs.items():
 
 output_df.to_csv(pathlinker.prediction / "metaleaner.csv")
 timer.to_csv(pathlinker.prediction / "metalearner_duration.csv")
+
+client.end_run()
