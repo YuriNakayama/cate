@@ -4,7 +4,7 @@ import mlflow
 import mlflow.system_metrics
 from mlflow.entities.experiment import Experiment
 
-from cate.base.metrics import Artifats, Metrics
+from cate.base.metrics import Artifacts, Metrics
 
 
 def initialize(experiment_name: str) -> Experiment:
@@ -23,6 +23,7 @@ class MlflowClient:
 
     def log_metrics(self, metrics: Metrics) -> None:
         mlflow.log_metrics(metrics.to_dict())
-        
-    def log_artifacts(self, artifact_path: Artifats) -> None:
-        mlflow.log_artifacts(artifact_path.to_dict())
+
+    def log_artifacts(self, artifact_path: Artifacts) -> None:
+        for name, local_path in artifact_path.to_dict().items():
+            mlflow.log_artifact(local_path, name)

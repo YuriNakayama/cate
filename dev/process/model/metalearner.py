@@ -8,7 +8,6 @@ from causalml.inference.meta import (
     BaseTClassifier,
     BaseXClassifier,
 )
-from causalml.inference.torch import CEVAE
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 

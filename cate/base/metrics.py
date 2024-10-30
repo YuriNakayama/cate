@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pandas as pd
 from matplotlib.figure import Figure
@@ -38,7 +37,7 @@ class AbstraceImageArtifat(ABC):
 
     def __call__(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series, path: Path
-    ) -> tuple(str, Path):
+    ) -> tuple[str, Path]:
         figure = self._calculate(score, group, conversion)
         figure.savefig(path / self.name)
         return self.name, path / self.name
@@ -58,7 +57,7 @@ class AbstractChartArtifat(ABC):
 
     def __call__(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series, path: Path
-    ) -> tuple(str, Path):
+    ) -> tuple[str, Path]:
         df = self._calculate(score, group, conversion)
         df.to_csv(path / self.name)
         return self.name, path / self.name
@@ -105,5 +104,5 @@ class Artifacts:
             artifact(score, group, conversion, path) for artifact in self.artifacts
         )
 
-    def to_dict(self) -> dict[str, Path]:
-        return {k, str(v) for k, v in self.results.items()}
+    def to_dict(self) -> dict[str, str]:
+        return {k: str(v) for k, v in self.results.items()}
