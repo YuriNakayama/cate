@@ -9,17 +9,17 @@ class Metrics:
     def __init__(
         self,
         metrics: list[AbstractMetric],
+    ) -> None:
+        self.metrics = metrics
+        self.results = {}
+
+    def log(
+        self,
         score: pd.Series,
         group: pd.Series,
         conversion: pd.Series,
     ) -> None:
-        self.metrics = metrics
-        self.results = self._calculate(score, group, conversion)
-
-    def _calculate(
-        self, score: pd.Series, group: pd.Series, conversion: pd.Series
-    ) -> dict[str, float]:
-        return {
+        self.results = {
             metric.name: metric(score, group, conversion) for metric in self.metrics
         }
 
@@ -31,18 +31,14 @@ class Artifacts:
     def __init__(
         self,
         artifacts: list[AbstraceImageArtifat | AbstractChartArtifat],
-        score: pd.Series,
-        group: pd.Series,
-        conversion: pd.Series,
-        path: Path,
     ) -> None:
         self.artifacts = artifacts
-        self.results = self._calculate(score, group, conversion, path)
+        
 
-    def _calculate(
+    def log(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series, path: Path
-    ) -> dict[str, Path]:
-        return dict(
+    ) -> None:
+        self.results = dict(
             artifact(score, group, conversion, path) for artifact in self.artifacts
         )
 

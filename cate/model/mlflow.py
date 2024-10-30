@@ -1,3 +1,4 @@
+from tempfile import TemporaryDirectory
 from typing import Any
 
 import mlflow
@@ -17,11 +18,12 @@ def initialize(experiment_name: str) -> str:
         return experiment_id
     else:
         mlflow.set_experiment(experiment.experiment_id)
-        return experiment.experiment_id
+        experiment_id: str = experiment.experiment_id
+        return experiment_id
 
 
 class MlflowClient:
-    def __init__(self, experiment_name) -> None:
+    def __init__(self, experiment_name: str) -> None:
         self.experiment_id = initialize(experiment_name)
 
     def start_run(
@@ -52,8 +54,12 @@ class MlflowClient:
         mlflow.log_params(params)
 
     def log_metrics(self, metrics: Metrics) -> None:
-        mlflow.log_metrics(metrics.to_dict())
+        with TemporaryDirectory() as tempdir:
+            metrics.log(tempdir)
+            mlflow.log_metrics(metrics.to_dict())
 
     def log_artifacts(self, artifact_path: Artifacts) -> None:
-        for name, local_path in artifact_path.to_dict().items():
-            mlflow.log_artifact(local_path, name)
+        with TemporaryDirectory() as tempdir:
+            artifact_path.log(tempdir)
+            for name, local_path in artifact_path.to_dict().items():
+                mlflow.log_artifacts(local_path, name)

@@ -11,17 +11,19 @@ from causalml.inference.meta import (
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
-from cate.dataset import Dataset, to_rank
-from cate.mlflow import MlflowClient
+from cate.model.dataset import Dataset, to_rank
+from cate.model.evaluate import Auuc, QiniByPercentile, UpliftByPercentile, UpliftCurve
+from cate.model.metrics import Artifacts, Metrics
+from cate.model.mlflow import MlflowClient
 from cate.utils import Timer, get_logger, path_linker
 
-dataset_name = "criteo"
-pathlinker = path_linker("criteo")
-client = MlflowClient("criteo")
+dataset_name = "test"
+pathlinker = path_linker(dataset_name)
+client = MlflowClient(dataset_name)
 timer = Timer()
 logger = get_logger("causalml")
 
-client.start_run(tag={"models": "metalearner"})
+client.start_run(tags={"models": "metalearner", "dataset": dataset_name})
 
 ds = Dataset.load(pathlinker.base)
 base_classifier = lgb.LGBMClassifier(
@@ -69,6 +71,8 @@ for name, model in models.items():
         timer.start(name, "predict", i)
         pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
         timer.stop(name, "predict", i)
+
+        artifacts = Artifacts([UpliftCurve()], pred, valid_w, valid_y)
 
         _pred_dfs.append(
             pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})
