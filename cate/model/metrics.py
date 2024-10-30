@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 
-from cate.base.metrics import AbstraceArtifats, AbstractMetrics
+from cate.base.metrics import AbstraceImageArtifat, AbstractMetric
 
 
-class UpliftByPercentile(AbstractMetrics):
+class UpliftByPercentile(AbstractMetric):
     """
     https://note.com/dd_techblog/n/nb1ae45e79148
     スコア上位k%までのユーザーに対するUplift(tgのcv率-cgのcv率)を計算する
@@ -30,12 +30,11 @@ class UpliftByPercentile(AbstractMetrics):
         return float(tg_conversion_rate - cg_conversion_rate)
 
 
-class QiniByPercentile(AbstractMetrics):
+class QiniByPercentile(AbstractMetric):
     """
     https://note.com/dd_techblog/n/nb1ae45e79148
     スコア上位k%までのユーザーに対するQini値を計算する
     """
-
     def __init__(self, k: float) -> None:
         self.k = k
 
@@ -56,7 +55,7 @@ class QiniByPercentile(AbstractMetrics):
         return float(tg_conversion - cg_conversion * (tg_num / cg_num))
 
 
-class Auuc(AbstractMetrics):
+class Auuc(AbstractMetric):
     r"""
     UpliftCurveとbaselineに囲まれた部分の面積を計算する.
     AUUC = \sum_{k=1}^n AUUC_{\pi}(k)
@@ -108,7 +107,7 @@ class QiniCurve:
     pass
 
 
-class UpliftCurve(AbstraceArtifats):
+class UpliftCurve(AbstraceImageArtifat):
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
 
