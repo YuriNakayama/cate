@@ -15,9 +15,9 @@ for model in models:
     for epoch in epochs:
         artifacts(score, group, conversion)
         metrics(score, group, conversion)
-    client.log_metrics(metrics.to_dict())
+    client.log_metrics(metrics)
     artifacts.clear()
-    client.log_artifacts(artifacts.to_dict())
+    client.log_artifacts(artifacts)
     metrics.clear()
 
 client.end_run()

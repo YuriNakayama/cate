@@ -12,8 +12,8 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 from cate.model.dataset import Dataset, to_rank
-from cate.model.evaluate import UpliftCurve
-from cate.model.metrics import Artifacts
+from cate.model.evaluate import Auuc, QiniByPercentile, UpliftByPercentile, UpliftCurve
+from cate.model.metrics import Artifacts, Metrics
 from cate.model.mlflow import MlflowClient
 from cate.utils import Timer, get_logger, path_linker
 
@@ -44,6 +44,9 @@ models = {
 
 np.int = int  # type: ignore
 
+metrics = Metrics([Auuc(), UpliftByPercentile(0.1), QiniByPercentile(0.1)])
+artifacts = Artifacts([UpliftCurve()])
+
 pred_dfs = {}
 skf = StratifiedKFold(5, shuffle=True, random_state=42)
 for name, model in models.items():
@@ -72,11 +75,16 @@ for name, model in models.items():
         pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
         timer.stop(name, "predict", i)
 
-        artifacts = Artifacts([UpliftCurve()])
+        artifacts(pred, valid_y, valid_w)
+        metrics(pred, valid_y, valid_w)
 
         _pred_dfs.append(
             pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})
         )
+    client.log_metrics(metrics)
+    artifacts.clear()
+    client.log_artifacts(artifacts)
+    metrics.clear()
     pred_dfs[name] = _pred_dfs
 
 output_df = pd.merge(ds.y.copy(), ds.w.copy(), left_index=True, right_index=True)
