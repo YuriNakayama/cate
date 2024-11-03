@@ -11,7 +11,7 @@ class Metrics:
         metrics: list[AbstractMetric],
     ) -> None:
         self.metrics = metrics
-        self.results = {}
+        self.results: dict[str, float] = {}
 
     def log(
         self,
@@ -33,7 +33,6 @@ class Artifacts:
         artifacts: list[AbstraceImageArtifat | AbstractChartArtifat],
     ) -> None:
         self.artifacts = artifacts
-        
 
     def log(
         self, score: pd.Series, group: pd.Series, conversion: pd.Series, path: Path
