@@ -3,6 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
+import numpy.typing as npt
+import numpy as np
 
 import pandas as pd
 from matplotlib.figure import Figure
@@ -35,7 +37,12 @@ class AbstractImageArtifact(ABC):
         pass
 
     @abstractmethod
-    def _calculate(self, pred, y, w) -> Figure:
+    def _calculate(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> Figure:
         """
         artifactsの計算ロジック
         """
@@ -52,11 +59,21 @@ class AbstractTableArtifact(ABC):
         pass
 
     @abstractmethod
-    def _calculate(self, pred, y, w) -> pd.DataFrame:
+    def _calculate(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> pd.DataFrame:
         """
         artifactsの計算ロジック
         """
         raise NotImplementedError
 
-    def __call__(self, pred, y, w) -> Table:
+    def __call__(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> Table:
         return Table(self.name, self._calculate(pred, y, w))

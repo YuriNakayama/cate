@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 
+import numpy as np
 import numpy.typing as npt
 
 from cate.base.metrics import (
@@ -20,9 +21,9 @@ class Metrics:
 
     def __call__(
         self,
-        pred: npt.NDArray,
-        y: npt.NDArray,
-        w: npt.NDArray,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
     ) -> Metrics:
         self.results = [metrics(pred, y, w) for metrics in self.metrics]
         return self
@@ -45,9 +46,9 @@ class Artifacts:
 
     def __call__(
         self,
-        pred: npt.NDArray,
-        y: npt.NDArray,
-        w: npt.NDArray,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
     ) -> Artifacts:
         self.results = [artifact(pred, y, w) for artifact in self.artifacts]
         return self

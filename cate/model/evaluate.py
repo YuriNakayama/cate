@@ -16,6 +16,10 @@ class UpliftByPercentile(AbstractMetric):
     def __init__(self, k: float) -> None:
         self.k = k
 
+    @property
+    def name(self) -> str:
+        return f"uplift@{int(self.k * 100)}"
+
     def _calculate(
         self,
         pred: npt.NDArray[np.float_],
@@ -42,6 +46,10 @@ class QiniByPercentile(AbstractMetric):
 
     def __init__(self, k: float) -> None:
         self.k = k
+
+    @property
+    def name(self) -> str:
+        return f"qini@{int(self.k * 100)}"
 
     def _calculate(
         self,
@@ -72,6 +80,10 @@ class Auuc(AbstractMetric):
 
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
+
+    @property
+    def name(self) -> str:
+        return "auuc"
 
     def _calculate(
         self,
@@ -121,6 +133,10 @@ class QiniCurve:
 class UpliftCurve(AbstractImageArtifact):
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
+    
+    @property
+    def name(self) -> str:
+        return "uplift_curve"
 
     def _calculate(
         self,

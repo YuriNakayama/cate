@@ -72,7 +72,7 @@ for name, model in models.items():
         pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
         timer.stop(name, "predict", i)
 
-        artifacts = Artifacts([UpliftCurve()], pred, valid_w, valid_y)
+        artifacts = Artifacts([UpliftCurve()])
 
         _pred_dfs.append(
             pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})
