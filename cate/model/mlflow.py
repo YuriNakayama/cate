@@ -1,10 +1,11 @@
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
 import mlflow
 import mlflow.system_metrics
 
-from cate.base.metrics import Artifacts, Metrics
+from cate.model.metrics import Artifacts, Metrics
 
 
 def initialize(experiment_name: str) -> str:
@@ -54,12 +55,10 @@ class MlflowClient:
         mlflow.log_params(params)
 
     def log_metrics(self, metrics: Metrics) -> None:
-        with TemporaryDirectory() as tempdir:
-            metrics.log(tempdir)
-            mlflow.log_metrics(metrics.to_dict())
+        mlflow.log_metrics({value.name: value.data for value in metrics.results})
 
-    def log_artifacts(self, artifact_path: Artifacts) -> None:
-        with TemporaryDirectory() as tempdir:
-            artifact_path.log(tempdir)
-            for name, local_path in artifact_path.to_dict().items():
-                mlflow.log_artifacts(local_path, name)
+    def log_artifacts(self, artifacts: Artifacts) -> None:
+        with TemporaryDirectory() as tmpdir:
+            for artifact in artifacts.results:
+                name, path = artifact.save(Path(tmpdir))
+                mlflow.log_artifact(local_path=str(path), artifact_path=name)

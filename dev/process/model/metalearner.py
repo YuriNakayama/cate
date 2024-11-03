@@ -12,8 +12,8 @@ from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 from cate.model.dataset import Dataset, to_rank
-from cate.model.evaluate import Auuc, QiniByPercentile, UpliftByPercentile, UpliftCurve
-from cate.model.metrics import Artifacts, Metrics
+from cate.model.evaluate import UpliftCurve
+from cate.model.metrics import Artifacts
 from cate.model.mlflow import MlflowClient
 from cate.utils import Timer, get_logger, path_linker
 

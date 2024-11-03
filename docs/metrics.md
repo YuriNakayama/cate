@@ -50,27 +50,28 @@ class AbstractMetric(ABC):
 
     def __call__(
         self, pred, y, w
-    ) -> float:
+    ) -> Value:
         return Value(self.name, self._calculate(pred, y, w))
     
 
 class Metrics:
-    def __init__(self, metrics: list[AbstractMetrics]) -> None:
+    def __init__(self, metrics: list[AbstractMetric]) -> None:
         self.metrics = metrics
         self.results: list[Value] = []
     
     def __call__(
         self, 
-        pred: np.NDArray, 
-        y: np.NDArray,
-        w: np.NDArray, 
+        pred: npt.NDArray, 
+        y: npt.NDArray,
+        w: npt.NDArray, 
     ) -> Metrics:
         self.results = [
             metrics(pred, y, w) for metrics in self.metrics
         ]
+        return self
     
-    @staticmethod
-    def result() -> list[Value]:
+    @property
+    def result(self) -> list[Value]:
         return self.results
 
     def clear(self) -> Metrics:
@@ -80,7 +81,7 @@ class Metrics:
 class MlflowClient:
     def log_metrics(self, metrics: Metrics) -> None:
         self.client.log_metrics(
-            {value.name, value.data for value in metrics.results}
+            {value.name: value.data for value in metrics.results}
         )
 
 ```
@@ -94,7 +95,7 @@ class Image:
     data: plt.Figure
 
     def save(self, path: Path) -> tuple[str, Path]:
-        self.data.savefit(path / self.name)
+        self.data.savefig(path / self.name)
         return self.name, path / self.name
 
 class AbstractImageArtifact(ABC):
@@ -118,22 +119,22 @@ class AbstractImageArtifact(ABC):
     
 
 class Artifacts:
-    def __init__(self, artifacts: list[AbstractArtifacts]) -> None:
+    def __init__(self, artifacts: list[AbstractImageArtifact]) -> None:
         self.artifacts = artifacts
         self.results: list[Image | Table] = []
     
     def __call__(
         self, 
-        pred: np.NDArray, 
-        y: np.NDArray,
-        w: np.NDArray, 
+        pred: npt.NDArray, 
+        y: npt.NDArray,
+        w: npt.NDArray, 
     ) -> Artifacts:
         self.results = [
             artifact(pred, y, w) for artifact in self.artifacts
         ]
     
-    @staticmethod
-    def result() -> list[Image | Table]:
+    @property
+    def result(self) -> list[Image | Table]:
         return self.results
 
     def clear(self) -> Artifacts:
@@ -142,8 +143,7 @@ class Artifacts:
     
 class MlflowClient:
     def log_artifacts(self, artifacts: Artifacts) -> None:
-        with TemporaryDirectory as tmp_dir:
+        with TemporaryDirectory() as tmpdir:
             for artifact in artifacts.results:
-                self.client.log_artifact(artifact.save(tmp_dir))
-
+                self.client.log_artifact(artifact.save(tmpdir))
 ```

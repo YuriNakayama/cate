@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from matplotlib.figure import Figure
 
-from cate.base.metrics import AbstraceImageArtifat, AbstractMetric
+from cate.base.metrics import AbstractImageArtifact, AbstractMetric
 
 
 class UpliftByPercentile(AbstractMetric):
@@ -16,11 +17,14 @@ class UpliftByPercentile(AbstractMetric):
         self.k = k
 
     def _calculate(
-        self, score: pd.Series, group: pd.Series, conversion: pd.Series
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
-        data = pd.concat(
-            [score, group, conversion], keys=["score", "group", "conversion"], axis=1
-        ).sort_values(by="score", ascending=False)
+        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
+            by="score", ascending=False
+        )
         top_k_data = data.iloc[: int(len(data) * self.k / 100)]
 
         # Calculate conversion rates for treatment and control groups
@@ -35,15 +39,19 @@ class QiniByPercentile(AbstractMetric):
     https://note.com/dd_techblog/n/nb1ae45e79148
     スコア上位k%までのユーザーに対するQini値を計算する
     """
+
     def __init__(self, k: float) -> None:
         self.k = k
 
     def _calculate(
-        self, score: pd.Series, group: pd.Series, conversion: pd.Series
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
-        data = pd.concat(
-            [score, group, conversion], keys=["score", "group", "conversion"], axis=1
-        ).sort_values(by="score", ascending=False)
+        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
+            by="score", ascending=False
+        )
         top_k_data = data.iloc[: int(len(data) * self.k / 100)]
 
         # Calculate cumulative gains for treatment and control groups
@@ -66,11 +74,14 @@ class Auuc(AbstractMetric):
         self.bin_num = bin_num
 
     def _calculate(
-        self, score: pd.Series, group: pd.Series, conversion: pd.Series
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
-        data = pd.concat(
-            [score, group, conversion], keys=["score", "group", "conversion"], axis=1
-        ).sort_values(by="score", ascending=False)
+        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
+            by="score", ascending=False
+        )
         data["rank"] = np.ceil(
             np.arange(1, len(data) + 1) / len(data) * self.bin_num
         ).astype(int)
@@ -107,16 +118,19 @@ class QiniCurve:
     pass
 
 
-class UpliftCurve(AbstraceImageArtifat):
+class UpliftCurve(AbstractImageArtifact):
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
 
     def _calculate(
-        self, score: pd.Series, group: pd.Series, conversion: pd.Series
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
     ) -> Figure:
-        data = pd.concat(
-            [score, group, conversion], keys=["score", "group", "conversion"], axis=1
-        ).sort_values(by="score", ascending=False)
+        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
+            by="score", ascending=False
+        )
 
         data["rank"] = np.ceil(
             np.arange(1, len(data) + 1) / len(data) * self.bin_num

@@ -1,45 +1,61 @@
-from pathlib import Path
+from __future__ import annotations
 
-import pandas as pd
 
-from cate.base.metrics import AbstraceImageArtifat, AbstractChartArtifat, AbstractMetric
+import numpy.typing as npt
+
+from cate.base.metrics import (
+    AbstractImageArtifact,
+    AbstractMetric,
+    AbstractTableArtifact,
+    Image,
+    Table,
+    Value,
+)
 
 
 class Metrics:
-    def __init__(
-        self,
-        metrics: list[AbstractMetric],
-    ) -> None:
+    def __init__(self, metrics: list[AbstractMetric]) -> None:
         self.metrics = metrics
-        self.results: dict[str, float] = {}
+        self.results: list[Value] = []
 
-    def log(
+    def __call__(
         self,
-        score: pd.Series,
-        group: pd.Series,
-        conversion: pd.Series,
-    ) -> None:
-        self.results = {
-            metric.name: metric(score, group, conversion) for metric in self.metrics
-        }
+        pred: npt.NDArray,
+        y: npt.NDArray,
+        w: npt.NDArray,
+    ) -> Metrics:
+        self.results = [metrics(pred, y, w) for metrics in self.metrics]
+        return self
 
-    def to_dict(self) -> dict[str, float]:
+    @property
+    def result(self) -> list[Value]:
         return self.results
+
+    def clear(self) -> Metrics:
+        self.results = []
+        return self
 
 
 class Artifacts:
     def __init__(
-        self,
-        artifacts: list[AbstraceImageArtifat | AbstractChartArtifat],
+        self, artifacts: list[AbstractImageArtifact | AbstractTableArtifact]
     ) -> None:
         self.artifacts = artifacts
+        self.results: list[Image | Table] = []
 
-    def log(
-        self, score: pd.Series, group: pd.Series, conversion: pd.Series, path: Path
-    ) -> None:
-        self.results = dict(
-            artifact(score, group, conversion, path) for artifact in self.artifacts
-        )
+    def __call__(
+        self,
+        pred: npt.NDArray,
+        y: npt.NDArray,
+        w: npt.NDArray,
+    ) -> Artifacts:
+        self.results = [artifact(pred, y, w) for artifact in self.artifacts]
+        return self
 
-    def to_dict(self) -> dict[str, str]:
-        return {k: str(v) for k, v in self.results.items()}
+    @property
+    def result(self) -> list[Image | Table]:
+        return self.results
+
+    def clear(self) -> Artifacts:
+        self.results = []
+        return self
