@@ -18,13 +18,14 @@ from cate.model.mlflow import MlflowClient
 from cate.utils import Timer, get_logger, path_linker
 
 dataset_name = "test"
+logger = get_logger("causalml")
 pathlinker = path_linker(dataset_name)
 client = MlflowClient(dataset_name)
 timer = Timer()
-logger = get_logger("causalml")
 
 client.start_run(tags={"models": "metalearner", "dataset": dataset_name})
 
+logger.info("load dataset")
 ds = Dataset.load(pathlinker.base)
 base_classifier = lgb.LGBMClassifier(
     importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
@@ -75,8 +76,8 @@ for name, model in models.items():
         pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
         timer.stop(name, "predict", i)
 
-        artifacts(pred, valid_y, valid_w)
-        metrics(pred, valid_y, valid_w)
+        artifacts(pred.reshape(-1), valid_y, valid_w)
+        metrics(pred.reshape(-1), valid_y, valid_w)
 
         _pred_dfs.append(
             pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})

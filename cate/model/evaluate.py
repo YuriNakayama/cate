@@ -18,7 +18,7 @@ class UpliftByPercentile(AbstractMetric):
 
     @property
     def name(self) -> str:
-        return f"uplift@{int(self.k * 100)}"
+        return f"uplift_at_{int(self.k * 100)}"
 
     def _calculate(
         self,
@@ -49,7 +49,7 @@ class QiniByPercentile(AbstractMetric):
 
     @property
     def name(self) -> str:
-        return f"qini@{int(self.k * 100)}"
+        return f"qini_at_{int(self.k * 100)}"
 
     def _calculate(
         self,
