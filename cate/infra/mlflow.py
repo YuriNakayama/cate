@@ -12,11 +12,14 @@ REMOTE_TRACKING_URI = "http://ec2-44-217-145-52.compute-1.amazonaws.com:5000"
 
 # TODO: MlflowClientを使用するように変更
 class MlflowClient:
-    def __init__(self, experiment_name: str) -> None:
-        self.experiment_id = self.initialize(experiment_name)
+    def __init__(
+        self, experiment_name: str, tracking_uri: str = REMOTE_TRACKING_URI
+    ) -> None:
+        self.tracking_uri = tracking_uri
+        self.experiment_id = self.initialize(experiment_name, tracking_uri)
 
     @staticmethod
-    def initialize(experiment_name: str, tracking_uri: str = REMOTE_TRACKING_URI) -> str:
+    def initialize(experiment_name: str, tracking_uri: str) -> str:
         mlflow.set_tracking_uri(tracking_uri)
         mlflow.system_metrics.enable_system_metrics_logging()  # type: ignore
 
@@ -60,7 +63,7 @@ class MlflowClient:
         mlflow.log_metrics({value.name: value.data for value in metrics.results})
 
     # TODO: client.log_figure()により実装
-    # TODO: log_artifacts()により実装
+    # TODO: log_artifact
     def log_artifacts(self, artifacts: Artifacts) -> None:
         with TemporaryDirectory() as tmpdir:
             for artifact in artifacts.results:
