@@ -10,7 +10,7 @@ from cate.model.metrics import Artifacts, Metrics
 REMOTE_TRACKING_URI = "http://ec2-44-217-145-52.compute-1.amazonaws.com:5000"
 
 
-
+# TODO: MlflowClientを使用するように変更
 class MlflowClient:
     def __init__(self, experiment_name: str) -> None:
         self.experiment_id = self.initialize(experiment_name)
@@ -59,6 +59,8 @@ class MlflowClient:
     def log_metrics(self, metrics: Metrics) -> None:
         mlflow.log_metrics({value.name: value.data for value in metrics.results})
 
+    # TODO: client.log_figure()により実装
+    # TODO: log_artifacts()により実装
     def log_artifacts(self, artifacts: Artifacts) -> None:
         with TemporaryDirectory() as tmpdir:
             for artifact in artifacts.results:
