@@ -48,7 +48,12 @@ class AbstractImageArtifact(ABC):
         """
         raise NotImplementedError
 
-    def __call__(self, pred, y, w) -> Image:
+    def __call__(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> Image:
         return Image(self.name, self._calculate(pred, y, w))
 
 
