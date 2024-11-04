@@ -131,6 +131,17 @@ class QiniCurve:
 
 
 class UpliftCurve(AbstractImageArtifact):
+    """
+    This class generates an uplift curve, which is a graphical representation of the uplift 
+    (difference in conversion rates) between the treatment and control groups across different 
+    percentiles of the predicted scores.
+
+    Attributes:
+        bin_num (int): The number of bins to divide the data into for calculating the uplift curve.
+
+    Methods:
+        _calculate(pred, y, w): Calculates the uplift curve and returns it as a matplotlib Figure.
+    """
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
 
