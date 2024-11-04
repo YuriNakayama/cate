@@ -5,7 +5,7 @@ from typing import Any, Generator
 import mlflow
 import pytest
 
-from cate.infra.mlflow import REMOTE_TRACKING_URI, MlflowClient
+from cate.infra.mlflow import MlflowClient
 
 
 @pytest.fixture
@@ -37,3 +37,5 @@ def test_initialize_existing_experiment(
     expect = mlflow.get_experiment_by_name(experiment_name)
 
     assert expect is not None and actual == expect.experiment_id
+
+
