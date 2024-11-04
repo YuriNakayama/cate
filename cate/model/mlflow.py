@@ -7,25 +7,27 @@ import mlflow.system_metrics
 
 from cate.model.metrics import Artifacts, Metrics
 
+REMOTE_TRACKING_URI = "http://ec2-44-217-145-52.compute-1.amazonaws.com:5000"
 
-def initialize(experiment_name: str) -> str:
-    mlflow.set_tracking_uri("http://ec2-44-217-145-52.compute-1.amazonaws.com:5000")
-    mlflow.system_metrics.enable_system_metrics_logging()  # type: ignore
-
-    experiment = mlflow.get_experiment_by_name(experiment_name)
-    if experiment is None:
-        experiment_id = mlflow.create_experiment(experiment_name)
-        mlflow.set_experiment(experiment_id=experiment_id)
-        return experiment_id
-    else:
-        mlflow.set_experiment(experiment.experiment_id)
-        experiment_id: str = experiment.experiment_id
-        return experiment_id
 
 
 class MlflowClient:
     def __init__(self, experiment_name: str) -> None:
-        self.experiment_id = initialize(experiment_name)
+        self.experiment_id = self.initialize(experiment_name)
+
+    @staticmethod
+    def initialize(experiment_name: str, tracking_uri: str = REMOTE_TRACKING_URI) -> str:
+        mlflow.set_tracking_uri(tracking_uri)
+        mlflow.system_metrics.enable_system_metrics_logging()  # type: ignore
+
+        experiment = mlflow.get_experiment_by_name(experiment_name)
+        if experiment is None:
+            experiment_id = mlflow.create_experiment(experiment_name)
+            mlflow.set_experiment(experiment_id=experiment_id)
+            return experiment_id
+        else:
+            mlflow.set_experiment(experiment_id=experiment.experiment_id)
+            return str(experiment.experiment_id)
 
     def start_run(
         self,

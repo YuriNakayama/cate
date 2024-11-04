@@ -1,47 +1,59 @@
-import pandas as pd
+import numpy as np
 
-from cate.metrics import UpliftByPercentile
+from cate.model.evaluate import UpliftByPercentile
 
 
 def test_uplift_by_percentile() -> None:
-    score = pd.Series([0.9, 0.8, 0.7, 0.6, 0.5])
-    group = pd.Series([1, 0, 1, 0, 1])
-    conversion = pd.Series([1, 0, 1, 0, 0])
-    uplift = UpliftByPercentile(k=40)
+    score = np.array([0.9, 0.8, 0.7, 0.6, 0.5])
+    group = np.array([1, 0, 1, 0, 1])
+    conversion = np.array([1, 0, 1, 0, 0])
+    uplift = UpliftByPercentile(k=0.4)
 
     result = uplift(score, group, conversion)
 
-    assert result == 1.0, f"Expected uplift to be 1.0, but got {result}"
+    assert result.data == 1.0, f"Expected uplift to be 1.0, but got {result.data}"
+    assert (
+        result.name == "uplift_at_40"
+    ), f"Expected name to be uplift_at_40, but got {result.name}"
 
 
 def test_uplift_by_percentile_no_conversion() -> None:
-    score = pd.Series([0.9, 0.8, 0.7, 0.6, 0.5])
-    group = pd.Series([1, 0, 1, 0, 1])
-    conversion = pd.Series([0, 0, 0, 0, 0])
-    uplift = UpliftByPercentile(k=40)
+    score = np.array([0.9, 0.8, 0.7, 0.6, 0.5])
+    group = np.array([1, 0, 1, 0, 1])
+    conversion = np.array([0, 0, 0, 0, 0])
+    uplift = UpliftByPercentile(k=0.4)
 
-    result = uplift(score, group, conversion)
+    result = uplift(score, conversion, group)
 
-    assert result == 0.0, f"Expected uplift to be 0.0, but got {result}"
+    assert result.data == 0.0, f"Expected uplift to be 0.0, but got {result.data}"
+    assert (
+        result.name == "uplift_at_40"
+    ), f"Expected name to be uplift_at_40, but got {result.name}"
 
 
 def test_uplift_by_percentile_all_conversion() -> None:
-    score = pd.Series([0.9, 0.8, 0.7, 0.6, 0.5])
-    group = pd.Series([1, 0, 1, 0, 1])
-    conversion = pd.Series([1, 1, 1, 1, 1])
-    uplift = UpliftByPercentile(k=40)
+    score = np.array([0.9, 0.8, 0.7, 0.6, 0.5])
+    group = np.array([1, 0, 1, 0, 1])
+    conversion = np.array([1, 1, 1, 1, 1])
+    uplift = UpliftByPercentile(k=0.4)
 
-    result = uplift(score, group, conversion)
+    result = uplift(score, conversion, group)
 
-    assert result == 0.0, f"Expected uplift to be 0.0, but got {result}"
+    assert result.data == 0.0, f"Expected uplift to be 0.0, but got {result.data}"
+    assert (
+        result.name == "uplift_at_40"
+    ), f"Expected name to be uplift_at_40, but got {result.name}"
 
 
 def test_uplift_by_percentile_different_k() -> None:
-    score = pd.Series([0.9, 0.8, 0.7, 0.6, 0.5])
-    group = pd.Series([1, 0, 1, 0, 1])
-    conversion = pd.Series([1, 0, 0, 0, 0])
-    uplift = UpliftByPercentile(k=60)
+    score = np.array([0.9, 0.8, 0.7, 0.6, 0.5])
+    group = np.array([1, 0, 1, 0, 1])
+    conversion = np.array([1, 0, 0, 0, 0])
+    uplift = UpliftByPercentile(k=0.6)
 
-    result = uplift(score, group, conversion)
+    result = uplift(score, conversion, group)
 
-    assert result == 0.5, f"Expected uplift to be 0.5, but got {result}"
+    assert result.data == 0.5, f"Expected uplift to be 0.5, but got {result.data}"
+    assert (
+        result.name == "uplift_at_60"
+    ), f"Expected name to be uplift_at_60, but got {result.name}"

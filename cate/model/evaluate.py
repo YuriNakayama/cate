@@ -29,7 +29,7 @@ class UpliftByPercentile(AbstractMetric):
         data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
             by="score", ascending=False
         )
-        top_k_data = data.iloc[: int(len(data) * self.k / 100)]
+        top_k_data = data.iloc[: int(len(data) * self.k)]
 
         # Calculate conversion rates for treatment and control groups
         tg_flg = top_k_data["group"] == 1
@@ -60,7 +60,7 @@ class QiniByPercentile(AbstractMetric):
         data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
             by="score", ascending=False
         )
-        top_k_data = data.iloc[: int(len(data) * self.k / 100)]
+        top_k_data = data.iloc[: int(len(data) * self.k)]
 
         # Calculate cumulative gains for treatment and control groups
         tg_flg = top_k_data["group"] == 1
@@ -133,7 +133,7 @@ class QiniCurve:
 class UpliftCurve(AbstractImageArtifact):
     def __init__(self, bin_num: int = 10_000) -> None:
         self.bin_num = bin_num
-    
+
     @property
     def name(self) -> str:
         return "uplift_curve"
