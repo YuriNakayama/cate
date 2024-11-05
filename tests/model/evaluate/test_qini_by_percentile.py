@@ -41,5 +41,3 @@ def test_qini_by_percentile_calculate_no_control() -> None:
 
     assert isinstance(result, float)
     assert result == 0.0
-
-
