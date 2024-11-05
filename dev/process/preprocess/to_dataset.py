@@ -53,20 +53,20 @@ def make_test() -> None:
 )
 def main(name: str) -> None:
     if "lenta" == name:
-        click.echo("download lenta")
+        click.echo("create lenta")
         make_lenta()
     elif "criteo" == name:
-        click.echo("download criteo")
+        click.echo("create criteo")
         make_criteo()
     elif "test" == name:
-        click.echo("download test")
+        click.echo("create test")
         make_test()
     elif "all" == name:
-        click.echo("download lenta")
+        click.echo("create lenta")
         make_lenta()
-        click.echo("download criteo")
+        click.echo("create criteo")
         make_criteo()
-        click.echo("download test")
+        click.echo("create test")
         make_test()
 
 
