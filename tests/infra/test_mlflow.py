@@ -37,5 +37,3 @@ def test_initialize_existing_experiment(
     expect = mlflow.get_experiment_by_name(experiment_name)
 
     assert expect is not None and actual == expect.experiment_id
-
-

@@ -35,4 +35,3 @@ class AbstractMetric(ABC):
         w: npt.NDArray[np.float_ | np.int_],
     ) -> Value:
         return Value(self.name, self._calculate(pred, y, w))
-

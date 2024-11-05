@@ -54,7 +54,7 @@ class AbstractMetric(ABC):
 class Metrics:
     def __init__(self, metrics: list[AbstractMetric]) -> None:
         self.metrics = metrics
-        self.results: list[Value] = []
+        self.results: dict[str, Value] = {}
     
     def __call__(
         self, 
@@ -64,19 +64,19 @@ class Metrics:
         epoch: int | None
     ) -> Metrics:
         self.results = {
-            f"{metrics.name}": metrics(pred, y, w) 
-            for metrics in self.metrics 
+            f"{metric.name}": metrics(pred, y, w)
             if epoch is None else
-            f"{metrics.name}_{epoch}": metrics(pred, y, w) 
+            f"{metric.name}_{epoch}": metrics(pred, y, w)
+            for metric in self.metrics 
         }
         return self
     
     @property
-    def result(self) -> list[Value]:
+    def result(self) -> dict[str, Value]:
         return self.results
     
     def clear(self) -> Metrics:
-        self.results = []
+        self.results = {}
         return self
     
 class MlflowClient:

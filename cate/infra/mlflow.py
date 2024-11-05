@@ -59,8 +59,10 @@ class MlflowClient:
     def log_params(self, params: dict[str, Any]) -> None:
         mlflow.log_params(params)
 
-    def log_metrics(self, metrics: Metrics) -> None:
-        mlflow.log_metrics({value.name: value.data for value in metrics.results})
+    def log_metrics(self, metrics: Metrics, step: int | None) -> None:
+        mlflow.log_metrics(
+            {name: value.data for name, value in metrics.results.items()}, step=step
+        )
 
     # TODO: client.log_figure()により実装
     # TODO: log_artifact
