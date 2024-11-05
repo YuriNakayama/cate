@@ -13,9 +13,9 @@ for model in models:
     artifacts = Artifacts([UpliftCurve()])
     client.start_run()
     for epoch in epochs:
-        metrics(score, group, conversion, step=epoch)
+        metrics(score, group, conversion)
+        client.log_metrics(metrics)
     artifacts(score, group, conversion)
-    client.log_metrics(metrics)
     client.log_artifacts(artifacts)
     client.end_run()
 ```
@@ -54,34 +54,29 @@ class AbstractMetric(ABC):
 class Metrics:
     def __init__(self, metrics: list[AbstractMetric]) -> None:
         self.metrics = metrics
-        self.results: dict[str, Value] = {}
+        self.results: list[Value] = []
     
     def __call__(
-        self, 
-        pred: npt.NDArray, 
-        y: npt.NDArray,
-        w: npt.NDArray, 
-        epoch: int | None
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+        step: int | None,
     ) -> Metrics:
-        self.results = {
-            f"{metric.name}": metrics(pred, y, w)
-            if epoch is None else
-            f"{metric.name}_{epoch}": metrics(pred, y, w)
-            for metric in self.metrics 
-        }
+        self.results = [metric(pred, y, w) for metric in self.metrics]
         return self
     
     @property
-    def result(self) -> dict[str, Value]:
+    def result(self) -> list[Value]:
         return self.results
-    
+
     def clear(self) -> Metrics:
-        self.results = {}
+        self.results = []
         return self
     
 class MlflowClient:
     def log_metrics(self, metrics: Metrics, step: int | None) -> None:
-        self.client.log_metrics(
+        mlflow.log_metrics(
             {value.name: value.data for value in metrics.results}, step=step
         )
 ```
