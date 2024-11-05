@@ -28,9 +28,9 @@ class MlflowClient:
             experiment_id = mlflow.create_experiment(experiment_name)
             mlflow.set_experiment(experiment_id=experiment_id)
             return experiment_id
-        else:
-            mlflow.set_experiment(experiment_id=experiment.experiment_id)
-            return str(experiment.experiment_id)
+
+        mlflow.set_experiment(experiment_id=experiment.experiment_id)
+        return str(experiment.experiment_id)
 
     def start_run(
         self,

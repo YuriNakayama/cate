@@ -46,9 +46,9 @@ class Dataset:
         w_diff_columns = set(w_columns) - set(columns)
         if x_diff_columns:
             raise ValueError(f"x columns {x_diff_columns} do not exist in df.")
-        elif y_diff_columns:
+        if y_diff_columns:
             raise ValueError(f"x columns {y_diff_columns} do not exist in df.")
-        elif w_diff_columns:
+        if w_diff_columns:
             raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
 
     @property
