@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib.figure import Figure
 
 from cate.base.metrics import AbstractImageArtifact, AbstractMetric
+from cate.base.metrics.artifacts import AbstractTableArtifact
 
 
 class UpliftByPercentile(AbstractMetric):
@@ -150,6 +151,34 @@ class UpliftCurve(AbstractImageArtifact):
     def name(self) -> str:
         return "uplift_curve"
 
+    def _plot(
+        self,
+        baseline_x: npt.NDArray[np.float_],
+        baseline_y: npt.NDArray[np.float_],
+        uplift_x: npt.NDArray[np.float_],
+        uplift_y: npt.NDArray[np.float_],
+    ) -> Figure:
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111)
+
+        ax.tick_params(labelsize=14)
+        ax.set_xlabel("percentile", fontsize=18)
+        ax.set_ylabel("uplift", fontsize=18)
+        ax.tick_params(length=10, width=1)
+
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(False)
+
+        ax.plot(uplift_x, uplift_y, label="uplift")
+        ax.plot(
+            baseline_x,
+            baseline_y,
+            label="random",
+        )
+        ax.legend(fontsize=18, framealpha=0)
+        return fig
+
     def _calculate(
         self,
         pred: npt.NDArray[np.float_],
@@ -179,23 +208,40 @@ class UpliftCurve(AbstractImageArtifact):
                 cg_conversion = top_k_data.loc[~tg_flg, "conversion"].mean()
                 uplift = tg_conversion - cg_conversion
                 uplifts.append(uplift)
+        baseline_x = np.arange(0, 1, 1 / len(uplifts))
+        baseline_y = np.arange(0, average_uplift, average_uplift / len(uplifts))
+        uplift_x = np.arange(0, 1, 1 / len(uplifts))
+        uplift_y = np.array(uplifts).astype(float)
+        return self._plot(baseline_x, baseline_y, uplift_x, uplift_y)
 
-        fig = plt.figure(figsize=(10, 10))
-        ax = fig.add_subplot(111)
 
-        ax.tick_params(labelsize=14)
-        ax.set_xlabel("percentile", fontsize=18)
-        ax.set_ylabel("uplift", fontsize=18)
-        ax.tick_params(length=10, width=1)
+class Outputs(AbstractTableArtifact):
+    """
+    This class generates a table of the predicted uplifts, actual conversions, and group assignments
+    for each observation in the dataset.
 
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
+    Attributes:
+        None
 
-        ax.plot(np.arange(0, 1, 1 / len(uplifts)), uplifts, label="uplift")
-        ax.plot(
-            np.arange(0, 1, 1 / len(uplifts)),
-            np.arange(0, average_uplift, average_uplift / len(uplifts)),
-            label="random",
+    Methods:
+        _calculate(pred, y, w): Creates a pandas DataFrame containing the predicted uplifts, actual
+        conversions, and group assignments for each observation.
+    """
+
+    @property
+    def name(self) -> str:
+        return "outputs"
+
+    def _calculate(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "pred": pred,
+                "conversion": y,
+                "group": w,
+            }
         )
-        ax.legend(fontsize=18, framealpha=0)
-        return fig

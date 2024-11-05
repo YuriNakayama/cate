@@ -1,5 +1,5 @@
 from .dataset import Dataset, to_rank
-from .evaluate import Auuc, QiniByPercentile, UpliftByPercentile, UpliftCurve
+from .evaluate import Auuc, QiniByPercentile, UpliftByPercentile, UpliftCurve, Outputs
 from .metrics import Artifacts, Metrics
 
 __all__ = [
@@ -11,4 +11,5 @@ __all__ = [
     "UpliftCurve",
     "Metrics",
     "Artifacts",
+    "Outputs",
 ]

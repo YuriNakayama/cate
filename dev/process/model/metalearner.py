@@ -13,11 +13,17 @@ from tqdm import tqdm
 
 from cate.infra.mlflow import MlflowClient
 from cate.model.dataset import Dataset
-from cate.model.evaluate import Auuc, QiniByPercentile, UpliftByPercentile, UpliftCurve
+from cate.model.evaluate import (
+    Auuc,
+    Outputs,
+    QiniByPercentile,
+    UpliftByPercentile,
+    UpliftCurve,
+)
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
-dataset_name = "test"
+dataset_name = "criteo"
 logger = get_logger("causalml")
 pathlinker = path_linker(dataset_name)
 client = MlflowClient(dataset_name)
@@ -47,7 +53,8 @@ skf = StratifiedKFold(5, shuffle=True, random_state=42)
 for name, model in models.items():
     logger.info(f"start {name}")
     client.start_run(
-        tags={"model": name, "dataset": dataset_name, "package": "causalml"}
+        run_name=f"{name}",
+        tags={"model": name, "dataset": dataset_name, "package": "causalml"},
     )
     _pred_dfs = []
     for i, (train_idx, valid_idx) in tqdm(
@@ -72,7 +79,14 @@ for name, model in models.items():
         timer.start(name, "predict", i)
         pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
         timer.stop(name, "predict", i)
-        metrics = Metrics([Auuc(), UpliftByPercentile(0.1), QiniByPercentile(0.1)])
+
+        metrics = Metrics(
+            list(
+                [Auuc()]
+                + [UpliftByPercentile(k) for k in [0.1, 0.2, 0.3, 0.4, 0.5]]
+                + [QiniByPercentile(k) for k in [0.1, 0.2, 0.3, 0.4, 0.5]]
+            )
+        )
         metrics(pred.reshape(-1), valid_y, valid_w)
         client.log_metrics(metrics, i)
 
@@ -81,10 +95,15 @@ for name, model in models.items():
         )
 
     pred_df = pd.concat(_pred_dfs, axis=0)
-    base_df = pd.merge(ds.y.copy(), ds.w.copy(), left_index=True, right_index=True)
+    base_df = pd.merge(
+        ds.y.rename(columns={ds.y_columns[0]: "y"}),
+        ds.w.rename(columns={ds.w_columns[0]: "w"}),
+        left_index=True,
+        right_index=True,
+    )
     output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
-    artifacts = Artifacts([UpliftCurve()])
+    artifacts = Artifacts([UpliftCurve(), Outputs()])
     artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
     client.log_artifacts(artifacts)
     client.end_run()
