@@ -109,4 +109,41 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pyright]
 include = ["dev", "cate", "tests"]
-exclude = []
+exclude= [
+    "data",
+    ".venv",
+    "outputs",
+    "**/traces",
+    "**/traces_ts",
+    "**/example_files**",
+    "**/.pkl",
+    "**/bazel-bin",
+    "**/bazel",
+    "apps/**",
+    "**/resources/**",
+    "**/tests/**",
+    "**/node_modules",
+    "**/.next",
+    "**/__pycache__",
+    "**/.coverage/**",
+    "**/.git",
+    "**/dist/**",
+    "**/build/**",
+    "**/.husky",
+    "**/migrations"
+]
+ignore= [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "**/dist",
+    "**/.vscode",
+    "**/*.pyi",
+    "**/__init__.py"
+]
+typeCheckingMode = "basic"
+
+[tool.pylint]
+ignore-paths = [
+    ".venv", ".github", "data", "docs", "env", "outputs"
+]
