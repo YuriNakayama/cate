@@ -11,16 +11,6 @@ git config --global user.email "yuri620620@gmail.com"
 git config --global user.name "YuriNakayama"
 git config --global credential.helper store
 
-# poetry install & setting
-pip install poetry
-poetry config virtualenvs.path --unset
-poetry config virtualenvs.in-project true
-## activate poetry and install library
-poetry env use 3.11
-poetry install
-poetry shell
-ipython kernel install --user --name=cate
-
 # kaggle setup
 mkdir -p /root/.config/kaggle
 cp /workspace/env/tokens/kaggle.json /root/.config/kaggle/kaggle.json
@@ -35,6 +25,16 @@ chmod 600 /root/.aws/credentials
 mkdir -p /root/.mlflow
 cp /workspace/env/tokens/mlflow.env /root/.mlflow/credentials
 chmod 600 /root/.mlflow/credentials
+
+# poetry install & setting
+pip install poetry
+poetry config virtualenvs.path --unset
+poetry config virtualenvs.in-project true
+## activate poetry and install library
+poetry env use 3.11
+poetry install
+poetry shell
+ipython kernel install --user --name=cate
 
 # hugging face setup
 # export HUGGINGFACE_TOKEN=$(cat /workspace/env/tokens/huggingface.env)
