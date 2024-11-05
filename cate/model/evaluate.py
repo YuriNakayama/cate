@@ -201,12 +201,12 @@ class UpliftCurve(AbstractImageArtifact):
         for rank in ranks:
             rank_flg = data["rank"] <= rank
             top_k_data = data.loc[rank_flg]
-            if tg_flg.loc[rank_flg].sum() != 0 and (~tg_flg[rank_flg]).sum() != 0:
+            if (tg_flg & rank_flg).sum() != 0 and (~tg_flg & rank_flg).sum() != 0:
                 tg_conversion = top_k_data.loc[tg_flg, "conversion"].mean()
                 cg_conversion = top_k_data.loc[~tg_flg, "conversion"].mean()
                 uplift = tg_conversion - cg_conversion
                 uplifts.append(uplift)
-        data = pd.DataFrame(
+        result = pd.DataFrame(
             {
                 "baseline_x": np.arange(0, 1, 1 / len(uplifts)),
                 "baseline_y": np.arange(
@@ -216,7 +216,7 @@ class UpliftCurve(AbstractImageArtifact):
                 "uplift_y": uplifts,
             }
         )
-        return data
+        return result
 
 
 class Outputs(AbstractTableArtifact):
