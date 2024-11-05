@@ -72,18 +72,18 @@ class Dataset:
                 "y_columns": self.y_columns,
                 "w_columns": self.w_columns,
             },
-            (path / "property.json").open("w"),
+            (path / "meta.json").open("w"),
         )
 
     @classmethod
     def load(cls, path: Path) -> Dataset:
         data_path = path / "data.csv"
-        property_path = path / "property.json"
-        if (not data_path.exists()) or (not property_path.exists()):
+        meta_path = path / "meta.json"
+        if (not data_path.exists()) or (not meta_path.exists()):
             raise FileNotFoundError()
 
         df = pd.read_csv(data_path)
-        property = json.load(property_path.open(mode="r"))
+        property = json.load(meta_path.open(mode="r"))
         return cls(df, **property)
 
     def __len__(self) -> int:
