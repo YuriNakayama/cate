@@ -7,20 +7,17 @@ from cate.mlflow import MlflowClient
 from cate.metrics import Auuc, Metrics, UpliftCurve, Artifacts
 
 client = MlflowClient("example")
-client.start_run()
 
-metrics = Metrics([Auuc()])
-artifacts = Artifacts([UpliftCurve()])
 for model in models:
+    metrics = Metrics([Auuc()])
+    artifacts = Artifacts([UpliftCurve()])
+    client.start_run()
     for epoch in epochs:
-        artifacts(score, group, conversion, step=epoch)
         metrics(score, group, conversion, step=epoch)
+    artifacts(score, group, conversion)
     client.log_metrics(metrics)
-    artifacts.clear()
     client.log_artifacts(artifacts)
-    metrics.clear()
-
-client.end_run()
+    client.end_run()
 ```
 
 ## Classes
@@ -73,15 +70,15 @@ class Metrics:
     @property
     def result(self) -> list[Value]:
         return self.results
-
+    
     def clear(self) -> Metrics:
         self.results = []
         return self
     
 class MlflowClient:
-    def log_metrics(self, metrics: Metrics) -> None:
+    def log_metrics(self, metrics: Metrics, step: int | None) -> None:
         self.client.log_metrics(
-            {value.name: value.data for value in metrics.results}
+            {value.name: value.data for value in metrics.results}, step=step
         )
 
 ```
