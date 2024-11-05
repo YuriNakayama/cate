@@ -61,10 +61,14 @@ class Metrics:
         pred: npt.NDArray, 
         y: npt.NDArray,
         w: npt.NDArray, 
+        epoch: int | None
     ) -> Metrics:
-        self.results = [
-            metrics(pred, y, w) for metrics in self.metrics
-        ]
+        self.results = {
+            f"{metrics.name}": metrics(pred, y, w) 
+            for metrics in self.metrics 
+            if epoch is None else
+            f"{metrics.name}_{epoch}": metrics(pred, y, w) 
+        }
         return self
     
     @property
@@ -80,7 +84,6 @@ class MlflowClient:
         self.client.log_metrics(
             {value.name: value.data for value in metrics.results}, step=step
         )
-
 ```
 
 ### Artifacts
