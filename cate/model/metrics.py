@@ -16,31 +16,23 @@ from cate.base.metrics import (
 class Metrics:
     def __init__(self, metrics: list[AbstractMetric]) -> None:
         self.metrics = metrics
-        self.results: dict[str, Value] = {}
+        self.results: list[Value] = []
 
     def __call__(
         self,
         pred: npt.NDArray[np.float_],
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
-        epoch: int | None,
     ) -> Metrics:
-        self.results = {
-            f"{metric.name}" if epoch is None else f"{metric.name}_{epoch}": metric(
-                pred, y, w
-            )
-            if epoch is None
-            else metric(pred, y, w)
-            for metric in self.metrics
-        }
+        self.results = [metric(pred, y, w) for metric in self.metrics]
         return self
 
     @property
-    def result(self) -> dict[str, Value]:
+    def result(self) -> list[Value]:
         return self.results
 
     def clear(self) -> Metrics:
-        self.results = {}
+        self.results = []
         return self
 
 

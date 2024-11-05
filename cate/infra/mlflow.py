@@ -61,7 +61,7 @@ class MlflowClient:
 
     def log_metrics(self, metrics: Metrics, step: int | None) -> None:
         mlflow.log_metrics(
-            {name: value.data for name, value in metrics.results.items()}, step=step
+            {value.name: value.data for value in metrics.results}, step=step
         )
 
     # TODO: client.log_figure()により実装
