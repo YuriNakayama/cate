@@ -70,4 +70,4 @@ class MlflowClient:
         with TemporaryDirectory() as tmpdir:
             for artifact in artifacts.results:
                 name, path = artifact.save(Path(tmpdir))
-                mlflow.log_artifact(local_path=str(path), artifact_path=name)
+            mlflow.log_artifacts(local_dir=tmpdir)
