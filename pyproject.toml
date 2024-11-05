@@ -25,6 +25,7 @@ click = "^8.1.7"
 pynvml = "^11.5.3"
 pytest = "^8.3.3"
 pylint = "^3.3.1"
+pytest-coverage = "^0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -98,10 +99,12 @@ warn_unreachable = true
 addopts = [
     '--rootdir=tests',
     '--strict-config',
+    '--cov=cate',
     '-ra',
 ]
 testpaths = ['tests']
 cache_dir = "tests/.pytest_cache"
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

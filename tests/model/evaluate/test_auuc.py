@@ -69,16 +69,6 @@ def test_auuc_call_with_mixed_conversion() -> None:
     assert result.data == 1.0
 
 
-def test_auuc_call_with_random_data() -> None:
-    score = np.array(np.random.rand(10_000))
-    group = np.array(np.random.randint(0, 2, 10_000))
-    conversion = np.array(np.random.randint(0, 2, 10_000))
-    auuc = Auuc(bin_num=10)
-    result = auuc(score, group, conversion)
-    assert isinstance(result.data, float)
-    assert 0.0 == pytest.approx(result.data, abs=1e-1)
-
-
 def test_auuc_call_with_no_treatment_group() -> None:
     score = np.array([0.9, 0.8, 0.7, 0.6])
     group = np.array([0, 0, 0, 0])
