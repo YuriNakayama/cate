@@ -36,6 +36,8 @@ class UpliftByPercentile(AbstractMetric):
         tg_flg = top_k_data["group"] == 1
         tg_conversion_rate = top_k_data.loc[tg_flg, "conversion"].mean()
         cg_conversion_rate = top_k_data.loc[~tg_flg, "conversion"].mean()
+        if tg_conversion_rate is np.nan or cg_conversion_rate is np.nan:
+            return 0.0
         return float(tg_conversion_rate - cg_conversion_rate)
 
 
@@ -69,6 +71,8 @@ class QiniByPercentile(AbstractMetric):
         cg_conversion = top_k_data.loc[~tg_flg, "conversion"].sum()
         tg_num = tg_flg.sum()
         cg_num = (~tg_flg).sum()
+        if cg_num == 0:
+            return 0.0
         return float(tg_conversion - cg_conversion * (tg_num / cg_num))
 
 

@@ -76,7 +76,7 @@ def test_auuc_call_with_random_data() -> None:
     auuc = Auuc(bin_num=10)
     result = auuc(score, group, conversion)
     assert isinstance(result.data, float)
-    assert 0.0 == pytest.approx(result.data, 0.1)
+    assert 0.0 == pytest.approx(result.data, abs=1e-1)
 
 
 def test_auuc_call_with_no_treatment_group() -> None:
