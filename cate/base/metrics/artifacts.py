@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-import numpy.typing as npt
-import numpy as np
 
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from matplotlib.figure import Figure
 
@@ -26,7 +26,7 @@ class Table:
     data: pd.DataFrame
 
     def save(self, path: Path) -> tuple[str, Path]:
-        self.data.to_csv(path / self.name)
+        self.data.to_json(path / self.name)
         return self.name, path / self.name
 
 
@@ -42,9 +42,16 @@ class AbstractImageArtifact(ABC):
         pred: npt.NDArray[np.float_],
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
-    ) -> Figure:
+    ) -> pd.DataFrame:
         """
         artifactsの計算ロジック
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _plot(self, data: pd.DataFrame) -> Figure:
+        """
+        dataをplotするロジック
         """
         raise NotImplementedError
 
@@ -54,7 +61,8 @@ class AbstractImageArtifact(ABC):
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
     ) -> Image:
-        return Image(self.name, self._calculate(pred, y, w))
+        data = self._calculate(pred, y, w)
+        return Image(self.name, self._plot(data))
 
 
 class AbstractTableArtifact(ABC):
