@@ -13,8 +13,8 @@ metrics = Metrics([Auuc()])
 artifacts = Artifacts([UpliftCurve()])
 for model in models:
     for epoch in epochs:
-        artifacts(score, group, conversion)
-        metrics(score, group, conversion)
+        artifacts(score, group, conversion, step=epoch)
+        metrics(score, group, conversion, step=epoch)
     client.log_metrics(metrics)
     artifacts.clear()
     client.log_artifacts(artifacts)
@@ -145,5 +145,6 @@ class MlflowClient:
     def log_artifacts(self, artifacts: Artifacts) -> None:
         with TemporaryDirectory() as tmpdir:
             for artifact in artifacts.results:
-                self.client.log_artifact(artifact.save(tmpdir))
+                artifact.save(tmpdir)
+            self.client.log_artifacts(tmpdir)
 ```
