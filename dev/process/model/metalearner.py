@@ -26,7 +26,7 @@ from cate.utils import Timer, get_logger, path_linker
 dataset_name = "criteo"
 logger = get_logger("causalml")
 pathlinker = path_linker(dataset_name)
-client = MlflowClient(dataset_name)
+client = MlflowClient("base_pattern")
 timer = Timer()
 
 logger.info("load dataset")
@@ -53,8 +53,9 @@ skf = StratifiedKFold(5, shuffle=True, random_state=42)
 for name, model in models.items():
     logger.info(f"start {name}")
     client.start_run(
-        run_name=f"{name}",
+        run_name=f"{dataset_name}_{name}",
         tags={"model": name, "dataset": dataset_name, "package": "causalml"},
+        description=f"base_pattern: {name} training and evaluation using {dataset_name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
     _pred_dfs = []
     for i, (train_idx, valid_idx) in tqdm(
