@@ -26,7 +26,7 @@ class Table:
     data: pd.DataFrame
 
     def save(self, path: Path) -> tuple[str, Path]:
-        self.data.to_json(path / self.name)
+        self.data.to_json(path / f"{self.name}.json")
         return self.name, path / self.name
 
 
