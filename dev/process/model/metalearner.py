@@ -7,6 +7,7 @@ from causalml.inference.meta import (
     BaseSClassifier,
     BaseTClassifier,
     BaseXClassifier,
+    BaseDRRegressor,
 )
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
@@ -23,7 +24,7 @@ from cate.model.evaluate import (
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
-dataset_name = "criteo"
+dataset_name = "test"
 logger = get_logger("causalml")
 pathlinker = path_linker(dataset_name)
 client = MlflowClient("base_pattern")
@@ -57,10 +58,19 @@ for name, model in models.items():
         tags={"model": name, "dataset": dataset_name, "package": "causalml"},
         description=f"base_pattern: {name} training and evaluation using {dataset_name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
+    client.log_params(
+        {
+            "importance_type": "gain",
+            "random_state": 42,
+            "n_jobs": -1,
+            "force_col_wise": True,
+        }
+    )
     _pred_dfs = []
     for i, (train_idx, valid_idx) in tqdm(
         enumerate(skf.split(np.zeros(len(ds)), ds.y))
     ):
+        logger.info(f"epoch {i}")
         train_X = ds.X.iloc[train_idx]
         train_y = ds.y.iloc[train_idx].to_numpy().reshape(-1)
         train_w = ds.w.iloc[train_idx].to_numpy().reshape(-1)
@@ -84,8 +94,8 @@ for name, model in models.items():
         metrics = Metrics(
             list(
                 [Auuc()]
-                + [UpliftByPercentile(k) for k in [0.1, 0.2, 0.3, 0.4, 0.5]]
-                + [QiniByPercentile(k) for k in [0.1, 0.2, 0.3, 0.4, 0.5]]
+                + [UpliftByPercentile(k) for k in np.arange(0, 1, 0.1)]
+                + [QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
             )
         )
         metrics(pred.reshape(-1), valid_y, valid_w)
