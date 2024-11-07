@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 
 def to_rank(
@@ -95,3 +96,12 @@ class Dataset:
 
     def to_pandas(self) -> pd.DataFrame:
         return self.__df.copy()
+
+    def split(self, test_size: float, random_state: int) -> tuple[Dataset, Dataset]:
+        train_df, valid_df = train_test_split(
+            self.__df, test_size =test_size, random_state=random_state
+        )
+        return (
+            Dataset(train_df, self.x_columns, self.y_columns, self.w_columns),
+            Dataset(valid_df, self.x_columns, self.y_columns, self.w_columns),
+        )
