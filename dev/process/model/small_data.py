@@ -9,7 +9,6 @@ from causalml.inference.meta import (
     BaseTClassifier,
     BaseXClassifier,
 )
-from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 from cate.infra.mlflow import MlflowClient
@@ -43,10 +42,10 @@ base_regressor = lgb.LGBMRegressor(
 
 models = {
     "drlearner": BaseDRLearner(base_regressor),
-    # "xlearner": BaseXClassifier(base_classifier, base_regressor),
-    # "rlearner": BaseRClassifier(base_classifier, base_regressor),
-    # "slearner": BaseSClassifier(base_classifier),
-    # "tlearner": BaseTClassifier(base_classifier),
+    "xlearner": BaseXClassifier(base_classifier, base_regressor),
+    "rlearner": BaseRClassifier(base_classifier, base_regressor),
+    "slearner": BaseSClassifier(base_classifier),
+    "tlearner": BaseTClassifier(base_classifier),
     # "cevae": CEVAE(),
 }
 
@@ -67,7 +66,6 @@ for name, model in models.items():
             "force_col_wise": True,
         }
     )
-    _pred_dfs = []
     for i in tqdm(range(sample_num)):
         logger.info(f"epoch {i}")
         train_ds, test_ds = ds.split(sample_size, random_state=i)
