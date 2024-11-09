@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from causalml.inference.meta import (
     BaseDRLearner,
-    BaseDRRegressor,
     BaseRClassifier,
     BaseSClassifier,
     BaseTClassifier,

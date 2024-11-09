@@ -7,7 +7,6 @@ from causalml.inference.meta import (
     BaseSClassifier,
     BaseTClassifier,
     BaseXClassifier,
-    BaseDRRegressor,
 )
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
