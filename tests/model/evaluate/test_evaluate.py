@@ -38,6 +38,7 @@ def test_calculate_uplift_curve_tg_all_cv() -> None:
 
     pd.testing.assert_frame_equal(actual, expect)
 
+
 def test_calculate_uplift_curve_cg_all_cv() -> None:
     pred = np.array([0.9, 0.8, 0.7, 0.6, 0.5])
     y = np.array([0, 1, 0, 1, 0])
@@ -55,6 +56,7 @@ def test_calculate_uplift_curve_cg_all_cv() -> None:
     )
 
     pd.testing.assert_frame_equal(actual, expect)
+
 
 def test_calculate_uplift_curve_all_cv() -> None:
     pred = np.array([0.9, 0.8, 0.7, 0.6, 0.5])
