@@ -17,7 +17,7 @@ def test_calculate_uplift_curve() -> None:
     assert "baseline_y" in result.columns
     assert "uplift_x" in result.columns
     assert "uplift_y" in result.columns
-    assert len(result) == 4
+    assert len(result) == 5
 
 
 def test_calculate_uplift_curve_tg_all_cv() -> None:
@@ -29,10 +29,10 @@ def test_calculate_uplift_curve_tg_all_cv() -> None:
     actual = uplift_curve._calculate(pred, y, w)
     expect = pd.DataFrame(
         {
-            "baseline_x": [0.0, 0.25, 0.5, 0.75],
-            "baseline_y": [0.0, 0.25, 0.5, 0.75],
-            "uplift_x": [0.0, 0.25, 0.5, 0.75],
-            "uplift_y": [1.0, 1.0, 1.0, 1.0],
+            "baseline_x": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "baseline_y": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "uplift_x": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "uplift_y": [0.0, 1.0, 1.0, 1.0, 1.0],
         }
     )
 
@@ -48,10 +48,10 @@ def test_calculate_uplift_curve_cg_all_cv() -> None:
     actual = uplift_curve._calculate(pred, y, w)
     expect = pd.DataFrame(
         {
-            "baseline_x": [0.0, 0.25, 0.5, 0.75],
-            "baseline_y": [0.0, -0.25, -0.5, -0.75],
-            "uplift_x": [0.0, 0.25, 0.5, 0.75],
-            "uplift_y": [-1.0, -1.0, -1.0, -1.0],
+            "baseline_x": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "baseline_y": [0.0, -0.2, -0.4, -0.6, -0.8],
+            "uplift_x": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "uplift_y": [0.0, -1.0, -1.0, -1.0, -1.0],
         }
     )
 
@@ -67,10 +67,10 @@ def test_calculate_uplift_curve_all_cv() -> None:
     actual = uplift_curve._calculate(pred, y, w)
     expect = pd.DataFrame(
         {
-            "baseline_x": [0.0, 0.25, 0.5, 0.75],
-            "baseline_y": [0.0, 0.125, 0.25, 0.375],
-            "uplift_x": [0.0, 0.25, 0.5, 0.75],
-            "uplift_y": [1.0, 1.0, 0.5, 0.5],
+            "baseline_x": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "baseline_y": [0.0, 0.1, 0.2, 0.3, 0.4],
+            "uplift_x": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "uplift_y": [0.0, 1.0, 1.0, 0.5, 0.5],
         }
     )
 
