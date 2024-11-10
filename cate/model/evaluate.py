@@ -83,7 +83,7 @@ class Auuc(AbstractMetric):
     AUUC_{\pi}(k) =  AUL_{\pi}^T(k) - AUL_{\pi}^C(k) = \sum_{i=1}^k (R_{\pi}^T(i) - R_{\pi}^C(i)) - \frac{k}{2}(\bar{R}^T(k) - \bar{R}^C(k))
     """
 
-    def __init__(self, bin_num: int = 10_000) -> None:
+    def __init__(self, bin_num: int = 500) -> None:
         self.bin_num = bin_num
 
     @property
@@ -151,7 +151,7 @@ class UpliftCurve(AbstractImageArtifact):
         _calculate(pred, y, w): Calculates the uplift curve and returns it as a matplotlib Figure.
     """
 
-    def __init__(self, bin_num: int = 1_000) -> None:
+    def __init__(self, bin_num: int = 500) -> None:
         self.bin_num = bin_num
 
     @property
