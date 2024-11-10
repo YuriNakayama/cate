@@ -24,6 +24,7 @@
 .config
 .coverage
 .dotnet
+.dmypy.json
 .DS_Store
 .env
 .flake8
