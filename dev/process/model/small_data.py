@@ -1,24 +1,12 @@
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from causalml.inference.meta import (
-    BaseDRLearner,
-    BaseRClassifier,
-    BaseSClassifier,
-    BaseTClassifier,
-    BaseXClassifier,
-)
+from causalml.inference import meta
 from tqdm import tqdm
 
 from cate.infra.mlflow import MlflowClient
 from cate.model.dataset import Dataset, split
-from cate.model.evaluate import (
-    Auuc,
-    Outputs,
-    QiniByPercentile,
-    UpliftByPercentile,
-    UpliftCurve,
-)
+from cate import evaluate
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
@@ -27,7 +15,7 @@ sample_num = 10
 sample_size = 10_000
 logger = get_logger("causalml")
 pathlinker = path_linker(dataset_name)
-client = MlflowClient("base_pattern")
+client = MlflowClient("small_data")
 timer = Timer()
 
 logger.info("load dataset")
@@ -40,11 +28,11 @@ base_regressor = lgb.LGBMRegressor(
 )
 
 models = {
-    "drlearner": BaseDRLearner(base_regressor),
-    "xlearner": BaseXClassifier(base_classifier, base_regressor),
-    "rlearner": BaseRClassifier(base_classifier, base_regressor),
-    "slearner": BaseSClassifier(base_classifier),
-    "tlearner": BaseTClassifier(base_classifier),
+    "drlearner": meta.BaseDRLearner(base_regressor),
+    "xlearner": meta.BaseXClassifier(base_classifier, base_regressor),
+    "rlearner": meta.BaseRClassifier(base_classifier, base_regressor),
+    "slearner": meta.BaseSClassifier(base_classifier),
+    "tlearner": meta.BaseTClassifier(base_classifier),
     # "cevae": CEVAE(),
 }
 
@@ -90,9 +78,9 @@ for name, model in models.items():
 
         metrics = Metrics(
             list(
-                [Auuc()]
-                + [UpliftByPercentile(k) for k in np.arange(0, 1, 0.1)]
-                + [QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
+                [evaluate.Auuc()]
+                + [evaluate.UpliftByPercentile(k) for k in np.arange(0, 1, 0.1)]
+                + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
             )
         )
         metrics(pred.reshape(-1), valid_y, valid_w)
@@ -107,7 +95,7 @@ for name, model in models.items():
     )
     output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
-    artifacts = Artifacts([UpliftCurve(), Outputs()])
+    artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
     artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
     client.log_artifacts(artifacts)
     client.end_run()
