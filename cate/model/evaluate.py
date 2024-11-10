@@ -96,6 +96,7 @@ class Auuc(AbstractMetric):
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
+        # TODO: wがnp.float_や0,1のbinary以外の場合エラーが起きる
         data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
             by="score", ascending=False
         )
@@ -118,6 +119,8 @@ class Auuc(AbstractMetric):
                 cg_conversion = top_k_data.loc[~tg_flg, "conversion"].mean()
                 uplift = tg_conversion - cg_conversion
                 auuc += uplift - average_uplift / 2
+            else:
+                auuc += 0.0 - average_uplift / 2
         return auuc
 
 
@@ -148,7 +151,7 @@ class UpliftCurve(AbstractImageArtifact):
         _calculate(pred, y, w): Calculates the uplift curve and returns it as a matplotlib Figure.
     """
 
-    def __init__(self, bin_num: int = 10_000) -> None:
+    def __init__(self, bin_num: int = 1_000) -> None:
         self.bin_num = bin_num
 
     @property
@@ -206,6 +209,8 @@ class UpliftCurve(AbstractImageArtifact):
                 cg_conversion = top_k_data.loc[~tg_flg, "conversion"].mean()
                 uplift = tg_conversion - cg_conversion
                 uplifts.append(uplift)
+            else:
+                uplifts.append(0.0)
         result = pd.DataFrame(
             {
                 "baseline_x": np.arange(0, 1, 1 / len(uplifts)),
