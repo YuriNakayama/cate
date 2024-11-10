@@ -11,7 +11,7 @@ from causalml.inference.meta import (
 from tqdm import tqdm
 
 from cate.infra.mlflow import MlflowClient
-from cate.model.dataset import Dataset
+from cate.model.dataset import Dataset, split
 from cate.model.evaluate import (
     Auuc,
     Outputs,
@@ -67,7 +67,7 @@ for name, model in models.items():
     )
     for i in tqdm(range(sample_num)):
         logger.info(f"epoch {i}")
-        train_ds, test_ds = ds.split(sample_size, random_state=i)
+        train_ds, test_ds = split(ds, sample_size, random_state=i)
         train_X = train_ds.X
         train_y = train_ds.y.to_numpy().reshape(-1)
         train_w = train_ds.w.to_numpy().reshape(-1)
