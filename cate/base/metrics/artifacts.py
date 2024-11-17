@@ -64,8 +64,8 @@ class AbstractImageArtifact(ABC):
         data = self._calculate(pred, y, w)
         return Image(self.name, self._plot(data))
 
+    @staticmethod
     def shape_data(
-        self,
         pred: npt.NDArray[np.float_],
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],

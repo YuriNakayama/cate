@@ -29,8 +29,8 @@ class AbstractMetric(ABC):
     ) -> float:
         raise NotImplementedError
 
+    @staticmethod
     def shape_data(
-        self,
         pred: npt.NDArray[np.float_],
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
