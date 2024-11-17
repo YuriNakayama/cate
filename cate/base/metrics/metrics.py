@@ -18,7 +18,7 @@ class AbstractMetric(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _calculate(

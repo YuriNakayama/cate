@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.figure import Figure
-from matplotlib.pyplot import Axes
+from matplotlib.axes import Axes
 
 
 class Ticks:
@@ -28,6 +28,7 @@ class LinePlot:
     def __call__(
         self, data: pd.DataFrame, title: str, x_label: str, y_label: str
     ) -> Figure:
+        plt.ioff()
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111)
 
@@ -41,6 +42,7 @@ class LinePlot:
 
         ax = self.x_ticks(ax)
 
+        ax.set_title(title, fontsize=24)
         ax.plot(data)
         ax.legend(data.columns, fontsize=18, framealpha=0)
         return fig
