@@ -27,9 +27,7 @@ class UpliftByPercentile(AbstractMetric):
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
-        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
-            by="score", ascending=False
-        )
+        data = self.shape_data(pred, y, w)
         top_k_data = data.iloc[: int(len(data) * self.k)]
 
         # Calculate conversion rates for treatment and control groups
@@ -60,9 +58,7 @@ class QiniByPercentile(AbstractMetric):
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
-        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
-            by="score", ascending=False
-        )
+        data = self.shape_data(pred, y, w)
         top_k_data = data.iloc[: int(len(data) * self.k)]
 
         # Calculate cumulative gains for treatment and control groups
@@ -83,7 +79,7 @@ class Auuc(AbstractMetric):
     AUUC_{\pi}(k) =  AUL_{\pi}^T(k) - AUL_{\pi}^C(k) = \sum_{i=1}^k (R_{\pi}^T(i) - R_{\pi}^C(i)) - \frac{k}{2}(\bar{R}^T(k) - \bar{R}^C(k))
     """
 
-    def __init__(self, bin_num: int = 500) -> None:
+    def __init__(self, bin_num: int = 100) -> None:
         self.bin_num = bin_num
 
     @property
@@ -97,14 +93,14 @@ class Auuc(AbstractMetric):
         w: npt.NDArray[np.float_ | np.int_],
     ) -> float:
         # TODO: wがnp.float_や0,1のbinary以外の場合エラーが起きる
-        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
-            by="score", ascending=False
-        )
+        data = self.shape_data(pred, y, w)
         data["rank"] = np.ceil(
             np.arange(1, len(data) + 1) / len(data) * self.bin_num
         ).astype(int)
 
         tg_flg = data["group"] == 1
+        if tg_flg.sum() == 0 or (~tg_flg).sum() == 0:
+            return 0.0
         average_uplift = (
             data.loc[tg_flg, "conversion"].mean()
             - data.loc[~tg_flg, "conversion"].mean()
@@ -151,7 +147,7 @@ class UpliftCurve(AbstractImageArtifact):
         _calculate(pred, y, w): Calculates the uplift curve and returns it as a matplotlib Figure.
     """
 
-    def __init__(self, bin_num: int = 500) -> None:
+    def __init__(self, bin_num: int = 100) -> None:
         self.bin_num = bin_num
 
     @property
@@ -186,9 +182,7 @@ class UpliftCurve(AbstractImageArtifact):
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
     ) -> pd.DataFrame:
-        data = pd.DataFrame({"score": pred, "group": w, "conversion": y}).sort_values(
-            by="score", ascending=False
-        )
+        data = self.shape_data(pred, y, w)
 
         data["rank"] = np.ceil(
             np.arange(1, len(data) + 1) / len(data) * self.bin_num
@@ -213,11 +207,9 @@ class UpliftCurve(AbstractImageArtifact):
                 uplifts.append(0.0)
         result = pd.DataFrame(
             {
-                "baseline_x": np.arange(0, 1, 1 / len(uplifts)),
-                "baseline_y": np.arange(
-                    0, average_uplift, average_uplift / len(uplifts)
-                ),
-                "uplift_x": np.arange(0, 1, 1 / len(uplifts)),
+                "baseline_x": np.arange(0, 1, 1 / len(ranks)),
+                "baseline_y": np.arange(0, average_uplift, average_uplift / len(ranks)),
+                "uplift_x": np.arange(0, 1, 1 / len(ranks)),
                 "uplift_y": uplifts,
             }
         )

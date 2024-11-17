@@ -64,6 +64,24 @@ class AbstractImageArtifact(ABC):
         data = self._calculate(pred, y, w)
         return Image(self.name, self._plot(data))
 
+    def shape_data(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> pd.DataFrame:
+        return (
+            pd.DataFrame({"score": pred, "group": w, "conversion": y})
+            .sort_values(by="score", ascending=False)
+            .astype(
+                {
+                    "score": float,
+                    "group": int,
+                    "conversion": int,
+                }
+            )
+        )
+
 
 class AbstractTableArtifact(ABC):
     @property

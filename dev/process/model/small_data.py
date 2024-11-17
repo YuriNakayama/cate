@@ -10,8 +10,8 @@ from cate import evaluate
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
-dataset_name = "criteo"
-sample_num = 10
+dataset_name = "lenta"
+sample_num = 100
 sample_size = 10_000
 logger = get_logger("causalml")
 pathlinker = path_linker(dataset_name)

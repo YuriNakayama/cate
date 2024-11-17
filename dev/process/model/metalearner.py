@@ -7,18 +7,18 @@ from tqdm import tqdm
 
 from cate import evaluate
 from cate.infra.mlflow import MlflowClient
-from cate.model.dataset import Dataset
+from cate.model.dataset import Dataset, sample
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
-dataset_name = "lenta"
-logger = get_logger("causalml")
-pathlinker = path_linker(dataset_name)
+dataset_name = "criteo"
 client = MlflowClient("base_pattern")
+pathlinker = path_linker(dataset_name)
+logger = get_logger("causalml")
+logger.info("load dataset")
 timer = Timer()
 
-logger.info("load dataset")
-ds = Dataset.load(pathlinker.base)
+ds = sample(Dataset.load(pathlinker.base), frac=0.1, random_state=42)
 base_classifier = lgb.LGBMClassifier(
     importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
 )
@@ -42,7 +42,12 @@ for name, model in models.items():
     logger.info(f"start {name}")
     client.start_run(
         run_name=f"{dataset_name}_{name}",
-        tags={"model": name, "dataset": dataset_name, "package": "causalml"},
+        tags={
+            "model": name,
+            "dataset": dataset_name,
+            "package": "causalml",
+            "sample": "0.1",
+        },
         description=f"base_pattern: {name} training and evaluation using {dataset_name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
     client.log_params(
