@@ -56,6 +56,7 @@ for name, model in models.items():
             "random_state": 42,
             "n_jobs": -1,
             "force_col_wise": True,
+            "model_name": name,
         }
     )
     _pred_dfs = []
@@ -98,6 +99,7 @@ for name, model in models.items():
         )
 
     pred_df = pd.concat(_pred_dfs, axis=0)
+    pred_df.to_csv("pred")
     base_df = pd.merge(
         ds.y.rename(columns={ds.y_columns[0]: "y"}),
         ds.w.rename(columns={ds.w_columns[0]: "w"}),
