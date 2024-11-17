@@ -80,10 +80,8 @@ line-ending = "auto"
 [tool.ruff.lint.isort]
 case-sensitive = true
 
-[mypy]
-exclude = [".venv", ".github", "data", "docs", "env", "outputs"]
-
 [tool.mypy]
+exclude = [".venv", ".github", "data", "docs", "env", "outputs"]
 python_version = "3.11"
 strict = true
 disallow_any_decorated = false
@@ -94,6 +92,7 @@ show_error_codes = true
 strict_equality = true
 strict_optional = true
 warn_unreachable = true
+plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.pytest.ini_options]
 addopts = [
@@ -114,6 +113,7 @@ build-backend = "poetry.core.masonry.api"
 include = ["dev", "cate", "tests"]
 exclude= [
     "data",
+    "docs",
     ".venv",
     "outputs",
     "**/traces",
