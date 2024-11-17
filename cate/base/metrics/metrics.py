@@ -24,16 +24,16 @@ class AbstractMetric(ABC):
     def _calculate(
         self,
         pred: npt.NDArray[np.float_],
-        y: npt.NDArray[np.float_ | np.int_],
-        w: npt.NDArray[np.float_ | np.int_],
+        y: npt.NDArray[np.number],
+        w: npt.NDArray[np.number],
     ) -> float:
         raise NotImplementedError
 
     def shape_data(
         self,
         pred: npt.NDArray[np.float_],
-        y: npt.NDArray[np.float_ | np.int_],
-        w: npt.NDArray[np.float_ | np.int_],
+        y: npt.NDArray[np.number],
+        w: npt.NDArray[np.number],
     ) -> pd.DataFrame:
         return (
             pd.DataFrame({"score": pred, "group": w, "conversion": y})
@@ -50,7 +50,7 @@ class AbstractMetric(ABC):
     def __call__(
         self,
         pred: npt.NDArray[np.float_],
-        y: npt.NDArray[np.float_ | np.int_],
-        w: npt.NDArray[np.float_ | np.int_],
+        y: npt.NDArray[np.number],
+        w: npt.NDArray[np.number],
     ) -> Value:
         return Value(self.name, self._calculate(pred, y, w))
