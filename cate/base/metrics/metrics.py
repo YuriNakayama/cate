@@ -35,6 +35,24 @@ class AbstractMetric(ABC):
         y: npt.NDArray[np.number],
         w: npt.NDArray[np.number],
     ) -> pd.DataFrame:
+        """
+        Transforms prediction, actual values, and group data into a sorted DataFrame.
+
+        Parameters
+        ----------
+        pred : npt.NDArray[np.float_]
+            Array of predicted scores.
+        y : npt.NDArray[np.number]
+            Array of actual conversion values.
+        w : npt.NDArray[np.number]
+            Array of group identifiers.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing the columns 'score', 'group', and 'conversion',
+            sorted by 'score' in descending order and with specified data types.
+        """
         return (
             pd.DataFrame({"score": pred, "group": w, "conversion": y})
             .sort_values(by="score", ascending=False)
