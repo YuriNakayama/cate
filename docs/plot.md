@@ -16,30 +16,26 @@ line_plot(data, title, x_label, y_label)
 ```python
 class Ticks:
     def __init__(
-        self, 
-        ticks: list[str|int, float] | None = None, 
-        labels: list[str, int, float]| None = None,
+        self,
+        ticks: list[str | int | float] | None = None,
+        labels: list[str] | None = None,
     ) -> None:
         self.ticks = ticks
         self.labels = labels
-    
+
     def __call__(self, ax: Axes) -> Axes:
         if self.ticks is not None:
             ax.set_xticks(self.ticks)
-        if self.labsels is not None:
+        if self.labels is not None:
             ax.set_xticklabels(self.labels)
         return ax
+
 
 class LinePlot:
     def __init__(self, *, x_ticks: Ticks = Ticks()) -> None:
         self.x_ticks = x_ticks
-    
-    def __call__(
-        data: pd.DataFrame, 
-        title: str, 
-        x_label: str, 
-        y_label: str
-    ) -> Figure:
+
+    def __call__(self, data: pd.DataFrame, title: str, x_label: str, y_label: str) -> Figure:
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111)
 
