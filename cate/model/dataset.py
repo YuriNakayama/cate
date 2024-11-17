@@ -93,12 +93,17 @@ class Dataset:
     def to_pandas(self) -> pd.DataFrame:
         return self.__df.copy()
 
-def sample(ds: Dataset, n: int, frac: float, random_state: int) -> Dataset:
+
+def sample(
+    ds: Dataset, n: int | None = None, frac: float | None = None, random_state: int = 42
+) -> Dataset:
     df = ds.to_pandas().sample(n=n, frac=frac, random_state=random_state)
     return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
 
 
-def split(ds: Dataset, test_size: float, random_state: int) -> tuple[Dataset, Dataset]:
+def split(
+    ds: Dataset, test_size: float, random_state: int = 42
+) -> tuple[Dataset, Dataset]:
     train_df, valid_df = train_test_split(
         ds.to_pandas(), test_size=test_size, random_state=random_state
     )
