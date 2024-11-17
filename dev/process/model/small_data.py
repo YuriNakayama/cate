@@ -10,7 +10,7 @@ from cate import evaluate
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
-dataset_name = "lenta"
+dataset_name = "criteo"
 sample_num = 100
 sample_size = 10_000
 logger = get_logger("causalml")
@@ -51,6 +51,7 @@ for name, model in models.items():
             "random_state": 42,
             "n_jobs": -1,
             "force_col_wise": True,
+            "model_name": name,
         }
     )
     for i in tqdm(range(sample_num)):

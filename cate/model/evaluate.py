@@ -173,7 +173,7 @@ class UpliftCurve(AbstractImageArtifact):
             data["baseline_y"],
             label="random",
         )
-        ax.legend(fontsize=18, framealpha=0)
+        ax.legend()
         return fig
 
     def _calculate(

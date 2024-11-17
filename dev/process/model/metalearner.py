@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from cate import evaluate
 from cate.infra.mlflow import MlflowClient
-from cate.model.dataset import Dataset, sample
+from cate.model.dataset import Dataset
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import Timer, get_logger, path_linker
 
@@ -18,7 +18,7 @@ logger = get_logger("causalml")
 logger.info("load dataset")
 timer = Timer()
 
-ds = sample(Dataset.load(pathlinker.base), frac=0.1, random_state=42)
+ds = Dataset.load(pathlinker.base)
 base_classifier = lgb.LGBMClassifier(
     importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
 )
@@ -46,7 +46,7 @@ for name, model in models.items():
             "model": name,
             "dataset": dataset_name,
             "package": "causalml",
-            "sample": "0.1",
+            # "sample": "0.1",
         },
         description=f"base_pattern: {name} training and evaluation using {dataset_name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
@@ -95,11 +95,12 @@ for name, model in models.items():
         client.log_metrics(metrics, i)
 
         _pred_dfs.append(
-            pd.DataFrame({"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)})
+            pd.DataFrame(
+                {"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)}
+            ).set_index("index")
         )
 
     pred_df = pd.concat(_pred_dfs, axis=0)
-    pred_df.to_csv("pred")
     base_df = pd.merge(
         ds.y.rename(columns={ds.y_columns[0]: "y"}),
         ds.w.rename(columns={ds.w_columns[0]: "w"}),
