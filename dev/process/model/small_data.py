@@ -28,8 +28,8 @@ base_regressor = lgb.LGBMRegressor(
 )
 
 models = {
-    "drlearner": meta.BaseDRLearner(base_regressor),
-    "xlearner": meta.BaseXClassifier(base_classifier, base_regressor),
+    # "drlearner": meta.BaseDRLearner(base_regressor),
+    # "xlearner": meta.BaseXClassifier(base_classifier, base_regressor),
     "rlearner": meta.BaseRClassifier(base_classifier, base_regressor),
     "slearner": meta.BaseSClassifier(base_classifier),
     "tlearner": meta.BaseTClassifier(base_classifier),
@@ -79,15 +79,17 @@ for name, model in models.items():
 
         metrics = Metrics(
             list(
-                [evaluate.Auuc()]
-                + [evaluate.UpliftByPercentile(k) for k in np.arange(0, 1, 0.1)]
-                + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
+                [evaluate.Auuc(10)]
+                + [evaluate.UpliftByPercentile(k) for k in np.arange(0, 1.1, 0.1)]
+                + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1.1, 0.1)]
             )
         )
         metrics(pred.reshape(-1), valid_y, valid_w)
         client.log_metrics(metrics, i)
 
-    pred_df = pd.DataFrame({"index": test_ds.y.index, "pred": pred.reshape(-1)})
+    pred_df = pd.DataFrame(
+        {"index": test_ds.y.index, "pred": pred.reshape(-1)}
+    ).set_index("index")
     base_df = pd.merge(
         ds.y.rename(columns={ds.y_columns[0]: "y"}),
         ds.w.rename(columns={ds.w_columns[0]: "w"}),
@@ -96,7 +98,7 @@ for name, model in models.items():
     )
     output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
-    artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
+    artifacts = Artifacts([evaluate.UpliftCurve(10), evaluate.Outputs()])
     artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
     client.log_artifacts(artifacts)
     client.end_run()
