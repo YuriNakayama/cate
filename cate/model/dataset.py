@@ -9,13 +9,13 @@ from sklearn.model_selection import train_test_split
 
 
 def to_rank(
-    primary_key: pd.Series, score: pd.Series, ascending: bool = True
+    primary_key: pd.Series, score: pd.Series, ascending: bool = True, k: int = 100
 ) -> pd.Series:
     df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
         primary_key.name, drop=True
     )
     df = df.sort_values(by=str(score.name), ascending=ascending)
-    df["rank"] = np.ceil(np.arange(1, len(df) + 1) / len(df) * 100).astype(int)
+    df["rank"] = np.ceil(np.arange(1, len(df) + 1) / len(df) * k).astype(int)
     return df["rank"]
 
 
