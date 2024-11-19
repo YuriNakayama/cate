@@ -15,7 +15,7 @@ def to_rank(
         primary_key.name, drop=True
     )
     df = df.sort_values(by=str(score.name), ascending=ascending)
-    df["rank"] = np.ceil(np.arange(len(df)) / len(df) * 100).astype(int)
+    df["rank"] = np.ceil(np.arange(1, len(df) + 1) / len(df) * 100).astype(int)
     return df["rank"]
 
 
