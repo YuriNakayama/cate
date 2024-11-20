@@ -11,7 +11,7 @@ from cate.model.dataset import Dataset, split, to_rank
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import get_logger, path_linker
 
-dataset_name = "test"
+dataset_name = "lenta"
 num_rank = 10
 client = MlflowClient("biased_data")
 pathlinker = path_linker(dataset_name)
@@ -21,13 +21,6 @@ logger.info("load dataset")
 ds = Dataset.load(pathlinker.base)
 train_ds, test_ds = split(ds, 1 / 3, random_state=42)
 
-dataset_name = "test"
-pathlinker = path_linker(dataset_name)
-logger = get_logger("causalml")
-logger.info("load dataset")
-
-ds = Dataset.load(pathlinker.base)
-train_ds, test_ds = split(ds, 1 / 3, random_state=42)
 
 # Add Bias To Train Dataset Using LightGBM
 _pred_dfs = []
@@ -73,10 +66,18 @@ for rank in range(1, num_rank + 1):
 
 # Fit Metalearner
 base_classifier = lgb.LGBMClassifier(
-    importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
+    importance_type="gain",
+    random_state=42,
+    force_col_wise=True,
+    n_jobs=-1,
+    verbosity=0,
 )
 base_regressor = lgb.LGBMRegressor(
-    importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
+    importance_type="gain",
+    random_state=42,
+    force_col_wise=True,
+    n_jobs=-1,
+    verbosity=0,
 )
 
 models = {
@@ -161,4 +162,4 @@ for name, model in models.items():
             output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy()
         )
         client.log_artifacts(artifacts)
-        client.end_run()
+    client.end_run()

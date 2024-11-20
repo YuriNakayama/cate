@@ -14,6 +14,7 @@ def make_lenta() -> None:
         left_index=True,
         right_index=True,
     )
+    df = df.fillna(0)
     df["group"] = df["group"].apply(lambda x: {"test": 1, "control": 0}.get(x))
     y_columns = ["response_att"]
     w_columns = ["group"]
