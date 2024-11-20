@@ -12,6 +12,7 @@ from cate.model.metrics import Artifacts, Metrics
 from cate.utils import get_logger, path_linker
 
 dataset_name = "test"
+num_rank = 10
 client = MlflowClient("biased_data")
 pathlinker = path_linker(dataset_name)
 logger = get_logger("causalml")
@@ -61,7 +62,7 @@ pred_df = pd.concat(_pred_dfs)
 rank = to_rank(pred_df.index.to_series(), pred_df["pred"]).to_frame()
 train_df = pd.merge(train_ds.to_pandas(), rank, left_index=True, right_index=True)
 train_ds_list: list[Dataset] = []
-for rank in range(1, 101):
+for rank in range(1, num_rank + 1):
     rank_flg = train_df["rank"] <= rank
     localized_train_df = train_df.loc[rank_flg]
     localized_train_ds = Dataset(
@@ -109,14 +110,16 @@ for name, model in models.items():
             "model_name": name,
         }
     )
-    for rank in tqdm(range(1, 101)):
+    for rank in tqdm(range(1, num_rank + 1)):
         logger.info(f"rank {rank}")
         rank_flg = train_df["rank"] <= rank
         localized_train_ds = Dataset(
-            train_df.loc[rank_flg], train_ds.x_columns, train_ds.y_columns, train_ds.w_columns
+            train_df.loc[rank_flg],
+            train_ds.x_columns,
+            train_ds.y_columns,
+            train_ds.w_columns,
         )
-        
-  
+
         train_X = localized_train_ds.X
         train_y = localized_train_ds.y.to_numpy().reshape(-1)
         train_w = localized_train_ds.w.to_numpy().reshape(-1)
@@ -143,7 +146,7 @@ for name, model in models.items():
         client.log_metrics(metrics, rank)
 
         pred_df = pd.DataFrame(
-            {"index": test_ds.y.index[valid_idx], "pred": pred.reshape(-1)}
+            {"index": test_ds.y.index, "pred": pred.reshape(-1)}
         ).set_index("index")
         base_df = pd.merge(
             test_ds.y.rename(columns={test_ds.y_columns[0]: "y"}),
@@ -154,6 +157,8 @@ for name, model in models.items():
         output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
         artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
-        artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
+        artifacts(
+            output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy()
+        )
         client.log_artifacts(artifacts)
         client.end_run()
