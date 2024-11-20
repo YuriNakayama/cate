@@ -89,16 +89,14 @@ models = {
 
 np.int = int  # type: ignore
 
-skf = StratifiedKFold(5, shuffle=True, random_state=42)
 for name, model in models.items():
     logger.info(f"start {name}")
     client.start_run(
-        run_name=f"{dataset_name}_{name}",
+        run_name=f"{dataset_name}_{name}_{rank}",
         tags={
             "model": name,
             "dataset": dataset_name,
             "package": "causalml",
-            # "sample": "0.1",
         },
         description=f"base_pattern: {name} training and evaluation using {dataset_name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
@@ -111,26 +109,28 @@ for name, model in models.items():
             "model_name": name,
         }
     )
-    _pred_dfs = []
-    for i, (train_idx, valid_idx) in tqdm(
-        enumerate(skf.split(np.zeros(len(ds)), ds.y))
-    ):
-        logger.info(f"epoch {i}")
-        train_X = ds.X.iloc[train_idx]
-        train_y = ds.y.iloc[train_idx].to_numpy().reshape(-1)
-        train_w = ds.w.iloc[train_idx].to_numpy().reshape(-1)
-        valid_X = ds.X.iloc[valid_idx]
-        valid_y = ds.y.iloc[valid_idx].to_numpy().reshape(-1)
-        valid_w = ds.w.iloc[valid_idx].to_numpy().reshape(-1)
+    for rank in tqdm(range(1, 101)):
+        logger.info(f"rank {rank}")
+        rank_flg = train_df["rank"] <= rank
+        localized_train_ds = Dataset(
+            train_df.loc[rank_flg], train_ds.x_columns, train_ds.y_columns, train_ds.w_columns
+        )
+        
+  
+        train_X = localized_train_ds.X
+        train_y = localized_train_ds.y.to_numpy().reshape(-1)
+        train_w = localized_train_ds.w.to_numpy().reshape(-1)
+        test_X = test_ds.X
+        test_y = test_ds.y.to_numpy().reshape(-1)
+        test_w = test_ds.w.to_numpy().reshape(-1)
 
         model.fit(
             train_X,
             train_w,
             train_y,
-            p=np.full(train_w.shape, train_w.mean()),
         )
 
-        pred = model.predict(valid_X, p=np.full(valid_X.shape[0], train_w.mean()))
+        pred = model.predict(test_X)
 
         metrics = Metrics(
             list(
@@ -139,25 +139,21 @@ for name, model in models.items():
                 + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
             )
         )
-        metrics(pred.reshape(-1), valid_y, valid_w)
-        client.log_metrics(metrics, i)
+        metrics(pred.reshape(-1), test_y, test_w)
+        client.log_metrics(metrics, rank)
 
-        _pred_dfs.append(
-            pd.DataFrame(
-                {"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)}
-            ).set_index("index")
+        pred_df = pd.DataFrame(
+            {"index": test_ds.y.index[valid_idx], "pred": pred.reshape(-1)}
+        ).set_index("index")
+        base_df = pd.merge(
+            test_ds.y.rename(columns={test_ds.y_columns[0]: "y"}),
+            test_ds.w.rename(columns={test_ds.w_columns[0]: "w"}),
+            left_index=True,
+            right_index=True,
         )
+        output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
-    pred_df = pd.concat(_pred_dfs, axis=0)
-    base_df = pd.merge(
-        ds.y.rename(columns={ds.y_columns[0]: "y"}),
-        ds.w.rename(columns={ds.w_columns[0]: "w"}),
-        left_index=True,
-        right_index=True,
-    )
-    output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
-
-    artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
-    artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
-    client.log_artifacts(artifacts)
-    client.end_run()
+        artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
+        artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
+        client.log_artifacts(artifacts)
+        client.end_run()
