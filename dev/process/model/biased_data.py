@@ -60,7 +60,9 @@ for rank in range(1, num_rank + 1):
     group_flg = train_df[ds.w_columns] == 1
     tg_train_df = train_df.loc[rank_flg & group_flg]
     cg_train_df = train_df.loc[~rank_flg & ~group_flg]
-    localized_train_df = pd.concat([tg_train_df, cg_train_df]).sample(frac=1, random_state=42)
+    localized_train_df = pd.concat([tg_train_df, cg_train_df]).sample(
+        frac=1, random_state=42
+    )
     localized_train_ds = Dataset(
         localized_train_df, train_ds.x_columns, train_ds.y_columns, train_ds.w_columns
     )
