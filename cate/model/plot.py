@@ -21,12 +21,43 @@ class Ticks:
         return ax
 
 
+class ErrorBar:
+    def __init__(
+        self,
+        *,
+        data: pd.DataFrame | None = None,
+        error_data: pd.DataFrame | None = None,
+    ) -> None:
+        self.data = data
+        self.error_data = error_data
+
+    def __call__(self, ax: Axes) -> Axes:
+        if (self.data is not None) and (self.error_data is not None):
+            for column in self.data.columns:
+                ax.errorbar(
+                    self.data.index,
+                    self.data[column],
+                    yerr=self.error_data[column],
+                    fmt="o",
+                    capsize=5,
+                    label=column,
+                )
+        return ax
+
+
 class LinePlot:
-    def __init__(self, *, x_ticks: Ticks = Ticks()) -> None:
+    def __init__(
+        self, *, x_ticks: Ticks = Ticks(), error_bar: ErrorBar = ErrorBar()
+    ) -> None:
         self.x_ticks = x_ticks
+        self.error_bar = error_bar
 
     def __call__(
-        self, data: pd.DataFrame, title: str, x_label: str, y_label: str
+        self,
+        data: pd.DataFrame,
+        title: str,
+        x_label: str,
+        y_label: str,
     ) -> Figure:
         plt.ioff()
         fig = plt.figure(figsize=(10, 10))
@@ -44,5 +75,7 @@ class LinePlot:
 
         ax.set_title(title, fontsize=24)
         ax.plot(data)
+        ax = self.error_bar(ax)
+        ax.legend(data.columns, fontsize=18, framealpha=0)
         ax.legend(data.columns, fontsize=18, framealpha=0)
         return fig
