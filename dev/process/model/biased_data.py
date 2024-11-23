@@ -13,6 +13,7 @@ from cate.utils import get_logger, path_linker
 
 dataset_name = "lenta"
 num_rank = 10
+
 client = MlflowClient("biased_data")
 pathlinker = path_linker(dataset_name)
 logger = get_logger("causalml")
@@ -58,8 +59,8 @@ train_ds_list: list[Dataset] = []
 for rank in range(1, num_rank + 1):
     rank_flg = train_df["rank"] <= rank
     group_flg = train_df[ds.w_columns] == 1
-    tg_train_df = train_df.loc[rank_flg & group_flg]
-    cg_train_df = train_df.loc[~rank_flg & ~group_flg]
+    tg_train_df = train_df[rank_flg & group_flg]
+    cg_train_df = train_df[~rank_flg & ~group_flg]
     localized_train_df = pd.concat([tg_train_df, cg_train_df]).sample(
         frac=1, random_state=42
     )
