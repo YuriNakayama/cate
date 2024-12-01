@@ -1,0 +1,27 @@
+hydra:
+  run:
+    dir: process/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.type}
+
+data:
+  name: "test"
+
+model:
+  name: "example_model"
+  num_rank: 10
+
+training:
+  classifier:
+    importance_type: "gain"
+    random_state: 42
+    force_col_wise: True
+    n_jobs: -1
+    verbosity: 0
+  regressor:
+    importance_type: "gain"
+    random_state: 42
+    force_col_wise: True
+    n_jobs: -1
+    verbosity: 0
+
+mlflow:
+  experiment_name: "biased_data"

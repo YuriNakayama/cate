@@ -1,5 +1,5 @@
-from .path import path_linker
-from .time import Timer
 from .log import get_logger
+from .path import AbstractLink, path_linker
+from .time import Timer
 
-__all__ = ["path_linker", "Timer", "get_logger"]
+__all__ = ["path_linker", "AbstractLink", "Timer", "get_logger"]
