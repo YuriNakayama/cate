@@ -1,12 +1,12 @@
 hydra:
   run:
-    dir: process/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.type}
+    dir: process/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.name}
 
 data:
   name: "test"
 
 model:
-  name: "example_model"
+  name: "tlearner"
   num_rank: 10
 
 training:

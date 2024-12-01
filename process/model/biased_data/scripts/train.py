@@ -29,7 +29,7 @@ def tg_cg_split(ds: Dataset, rank_flg: pd.Series) -> Dataset:
 
 
 def setup_dataset(
-    cfg: DictConfig, client: MlflowClient, logger: Logger, link: AbstractLink
+    cfg: DictConfig, logger: Logger, link: AbstractLink
 ) -> tuple[Dataset, Dataset]:
     logger.info("load dataset")
     ds = Dataset.load(link.base)
@@ -80,7 +80,6 @@ def train(
     cfg: DictConfig,
     client: MlflowClient,
     logger: Logger,
-    link: AbstractLink,
     *,
     rank: int,
     train_ds: Dataset,
@@ -99,7 +98,6 @@ def train(
         # "cevae": CEVAE(),
     }
     model = models[cfg.model.name]
-
     np.int = int  # type: ignore
 
     logger.info(f"start {cfg.model.name}")
@@ -112,7 +110,7 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
-    client.log_params(cfg.trainig | cfg.model)
+    client.log_params(dict(cfg.training) | dict(cfg.model))
 
     logger.info(f"rank {rank}")
     train_df = train_ds.to_pandas()
