@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from logging import Logger
 
 import lightgbm as lgb
@@ -5,32 +7,27 @@ import numpy as np
 import pandas as pd
 from causalml.inference import meta
 from omegaconf import DictConfig
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 
-from cate import evaluate
+from cate import base, evaluate
 from cate.infra.mlflow import MlflowClient
-from cate.model.dataset import Dataset, sample, split, to_rank
+from cate.model.dataset import Dataset, concat, filter, sample, split, to_rank
 from cate.model.metrics import Artifacts, Metrics
 from cate.utils import AbstractLink
 
 
-def tg_cg_split(ds: Dataset, rank_flg: pd.Series) -> Dataset:
-    df = ds.to_pandas()
-    tg_flg = df[ds.w_columns] == 1
-    tg_df = df[rank_flg & tg_flg]
-    cg_df = df[~rank_flg & ~tg_flg]
-    localized_ds = Dataset(
-        pd.concat([tg_df, cg_df]),
-        ds.x_columns,
-        ds.y_columns,
-        ds.w_columns,
-    )
+def tg_cg_split(ds: Dataset, rank_flg: pd.Series[bool]) -> Dataset:
+    tg_flg = (ds.w == 1)[ds.w.columns[0]]
+    tg_ds = filter(ds, [tg_flg, rank_flg])
+    cg_ds = filter(ds, [~tg_flg, ~rank_flg])
+    localized_ds = concat([tg_ds, cg_ds])
     return sample(localized_ds, frac=1)
 
 
 def setup_dataset(
     cfg: DictConfig, logger: Logger, link: AbstractLink
-) -> tuple[Dataset, Dataset]:
+) -> tuple[Dataset, Dataset, pd.DataFrame]:
     logger.info("load dataset")
     ds = Dataset.load(link.base)
     train_ds, test_ds = split(ds, 1 / 3, random_state=42)
@@ -42,18 +39,9 @@ def setup_dataset(
         train_X = train_ds.X.iloc[train_idx]
         train_y = train_ds.y.iloc[train_idx].to_numpy().reshape(-1)
         valid_X = train_ds.X.iloc[valid_idx]
-        valid_y = train_ds.y.iloc[valid_idx].to_numpy().reshape(-1)
 
-        base_classifier = lgb.LGBMClassifier(
-            importance_type="gain",
-            random_state=42,
-            force_col_wise=True,
-            n_jobs=-1,
-            verbosity=0,
-        )
-        base_classifier.fit(
-            train_X, train_y, eval_set=[(valid_X, valid_y)], eval_metric="auc"
-        )
+        base_classifier = LogisticRegression(max_iter=1000)
+        base_classifier.fit(train_X, train_y)
         pred = np.array(base_classifier.predict_proba(valid_X))
 
         _pred_dfs.append(
@@ -68,12 +56,16 @@ def setup_dataset(
     ).to_frame()
     train_df = pd.merge(train_ds.to_pandas(), rank, left_index=True, right_index=True)
 
-    return Dataset(
-        train_df,
-        train_ds.x_columns,
-        train_ds.y_columns,
-        train_ds.w_columns,
-    ), test_ds
+    return (
+        Dataset(
+            train_df,
+            train_ds.x_columns,
+            train_ds.y_columns,
+            train_ds.w_columns,
+        ),
+        test_ds,
+        rank,
+    )
 
 
 def train(
@@ -84,7 +76,9 @@ def train(
     rank: int,
     train_ds: Dataset,
     test_ds: Dataset,
+    rank_df: pd.DataFrame,
 ) -> None:
+    logger.info(f"start train in rank {rank}")
     # Fit Metalearner
     base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
     base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
@@ -100,7 +94,6 @@ def train(
     model = models[cfg.model.name]
     np.int = int  # type: ignore
 
-    logger.info(f"start {cfg.model.name}")
     client.start_run(
         run_name=f"{cfg.data.name}_{cfg.model.name}_{rank}",
         tags={
@@ -112,30 +105,27 @@ def train(
     )
     client.log_params(dict(cfg.training) | dict(cfg.model))
 
-    logger.info(f"rank {rank}")
-    train_df = train_ds.to_pandas()
-    rank_flg = train_df["rank"] <= rank
-    train_ds = tg_cg_split(train_ds, rank_flg)
-    localized_train_ds = Dataset(
-        train_df.loc[rank_flg],
-        train_ds.x_columns,
-        train_ds.y_columns,
-        train_ds.w_columns,
-    )
+    logger.info("split dataseet")
+    rank_flg = rank_df <= rank
+    train_ds = tg_cg_split(train_ds, rank_flg["rank"])
 
-    train_X = localized_train_ds.X
-    train_y = localized_train_ds.y.to_numpy().reshape(-1)
-    train_w = localized_train_ds.w.to_numpy().reshape(-1)
+    train_X = train_ds.X
+    train_y = train_ds.y.to_numpy().reshape(-1)
+    train_w = train_ds.w.to_numpy().reshape(-1)
     test_X = test_ds.X
     test_y = test_ds.y.to_numpy().reshape(-1)
     test_w = test_ds.w.to_numpy().reshape(-1)
 
-    model.fit(
+    del train_ds
+
+    logger.info(f"strart train {cfg.model.name}")
+    model = model.fit(
         train_X,
         train_w,
         train_y,
     )
 
+    logger.info(f"strart prediction {cfg.model.name}")
     pred = model.predict(test_X)
 
     metrics = Metrics(

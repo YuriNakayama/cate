@@ -94,6 +94,17 @@ class Dataset:
         return self.__df.copy()
 
 
+def filter(ds: Dataset, flgs: list[pd.Series[bool]]) -> Dataset:
+    flg = pd.concat(flgs, axis=1).all(axis=1)
+    df = ds.to_pandas().loc[flg]
+    return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
+
+
+def concat(ds_list: list[Dataset]) -> Dataset:
+    df = pd.concat([ds.to_pandas() for ds in ds_list])
+    return Dataset(df, ds_list[0].x_columns, ds_list[0].y_columns, ds_list[0].w_columns)
+
+
 def sample(
     ds: Dataset, n: int | None = None, frac: float | None = None, random_state: int = 42
 ) -> Dataset:
