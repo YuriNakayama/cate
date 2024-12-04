@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 
-from cate import base, evaluate
+from cate import evaluate
 from cate.infra.mlflow import MlflowClient
 from cate.model.dataset import Dataset, concat, filter, sample, split, to_rank
 from cate.model.metrics import Artifacts, Metrics
