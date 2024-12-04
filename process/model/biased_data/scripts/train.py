@@ -33,9 +33,11 @@ def setup_dataset(
     train_ds, test_ds = split(ds, 1 / 3, random_state=42)
 
     # Add Bias To Train Dataset Using LightGBM
+    logger.info("start training bias model")
     _pred_dfs = []
     skf = StratifiedKFold(5, shuffle=True, random_state=42)
-    for train_idx, valid_idx in skf.split(np.zeros(len(train_ds)), train_ds.y):
+    for i, (train_idx, valid_idx) in enumerate(skf.split(np.zeros(len(train_ds)), train_ds.y)):
+        logger.info(f"start {i} fold")
         train_X = train_ds.X.iloc[train_idx]
         train_y = train_ds.y.iloc[train_idx].to_numpy().reshape(-1)
         valid_X = train_ds.X.iloc[valid_idx]
@@ -103,7 +105,7 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
-    client.log_params(dict(cfg.training) | dict(cfg.model))
+    client.log_params(dict(cfg.training) | dict(cfg.model) | {"rank": rank})
 
     logger.info("split dataseet")
     rank_flg = rank_df <= rank
@@ -119,7 +121,7 @@ def train(
     del train_ds
 
     logger.info(f"strart train {cfg.model.name}")
-    model = model.fit(
+    model.fit(
         train_X,
         train_w,
         train_y,

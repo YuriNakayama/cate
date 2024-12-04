@@ -12,7 +12,7 @@ def main(cfg: DictConfig) -> None:
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
     train_ds, test_ds, rank_df = setup_dataset(cfg, logger, pathlink)
-    for rank in range(1, cfg.model.num_rank + 1):
+    for rank in range(1, cfg.model.num_rank):
         train(cfg, client, logger, rank=rank, train_ds=train_ds, test_ds=test_ds, rank_df=rank_df)
 
 
