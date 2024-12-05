@@ -134,8 +134,8 @@ def train(
             "model": cfg.model.name,
             "dataset": cfg.data.name,
             "package": "causalml",
-            "rank": rank,
-            "random_ratio": random_ratio,
+            "rank": str(rank),
+            "random_ratio": str(random_ratio),
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
@@ -150,13 +150,14 @@ def train(
     train_ds = tg_cg_split(
         train_ds, rank_flg["rank"], random_ratio=random_ratio, random_state=42
     )
-
+    
     train_X = train_ds.X
     train_y = train_ds.y.to_numpy().reshape(-1)
     train_w = train_ds.w.to_numpy().reshape(-1)
     test_X = test_ds.X
     test_y = test_ds.y.to_numpy().reshape(-1)
     test_w = test_ds.w.to_numpy().reshape(-1)
+    logger.info(f"train X shape{train_X.shape}, test X shape{test_X.shape}")
 
     del train_ds
 
