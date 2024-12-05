@@ -1,6 +1,8 @@
 hydra:
   run:
-    dir: process/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.name}
+    dir: process/outputs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.name}
+  sweep:
+    dir: process/outputs/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
 
 data:
   name: "test"

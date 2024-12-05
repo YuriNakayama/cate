@@ -108,17 +108,56 @@ def concat(ds_list: list[Dataset]) -> Dataset:
 def sample(
     ds: Dataset, n: int | None = None, frac: float | None = None, random_state: int = 42
 ) -> Dataset:
+    if n == 0 or frac == 0:
+        return Dataset(
+            pd.DataFrame(ds.to_pandas().columns),
+            ds.x_columns,
+            ds.y_columns,
+            ds.w_columns,
+        )
+
     df = ds.to_pandas().sample(n=n, frac=frac, random_state=random_state)
     return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
 
 
 def split(
-    ds: Dataset, test_size: float, random_state: int = 42
+    ds: Dataset,
+    test_frac: float | None = None,
+    test_n: float | None = None,
+    random_state: int = 42,
 ) -> tuple[Dataset, Dataset]:
-    train_df, valid_df = train_test_split(
+    """
+    Splits a Dataset into training and testing sets.
+
+    Parameters:
+    ds (Dataset): The dataset to be split.
+    test_frac (float, optional): The fraction of the dataset to be used as the test set. Defaults to None.
+    test_n (float, optional): The number of samples to be used as the test set. Defaults to None.
+    random_state (int, optional): The seed used by the random number generator. Defaults to 42.
+
+    Returns:
+    tuple[Dataset, Dataset]: A tuple containing the training and testing datasets.
+    """
+    if test_frac == 0 or test_n == 0:
+        return ds, Dataset(
+            pd.DataFrame(columns=ds.to_pandas().columns),
+            ds.x_columns,
+            ds.y_columns,
+            ds.w_columns,
+        )
+    if test_frac == 1 or test_n == 1:
+        return Dataset(
+            pd.DataFrame(columns=ds.to_pandas().columns),
+            ds.x_columns,
+            ds.y_columns,
+            ds.w_columns,
+        ), ds
+
+    test_size = test_frac if test_frac is not None else test_n
+    train_df, test_df = train_test_split(
         ds.to_pandas(), test_size=test_size, random_state=random_state
     )
     return (
         Dataset(train_df, ds.x_columns, ds.y_columns, ds.w_columns),
-        Dataset(valid_df, ds.x_columns, ds.y_columns, ds.w_columns),
+        Dataset(test_df, ds.x_columns, ds.y_columns, ds.w_columns),
     )

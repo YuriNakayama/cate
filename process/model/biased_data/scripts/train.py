@@ -17,12 +17,29 @@ from cate.model.metrics import Artifacts, Metrics
 from cate.utils import AbstractLink
 
 
-def tg_cg_split(ds: Dataset, rank_flg: pd.Series[bool]) -> Dataset:
+def get_biased_ds(
+    ds: Dataset,
+    rank_flg: pd.Series[bool],
+) -> Dataset:
     tg_flg = (ds.w == 1)[ds.w.columns[0]]
     tg_ds = filter(ds, [tg_flg, rank_flg])
     cg_ds = filter(ds, [~tg_flg, ~rank_flg])
-    localized_ds = concat([tg_ds, cg_ds])
-    return sample(localized_ds, frac=1)
+    biased_ds = concat([tg_ds, cg_ds])
+    return sample(biased_ds, frac=1)
+
+
+def tg_cg_split(
+    ds: Dataset,
+    rank_flg: pd.Series[bool],
+    random_ratio: float = 0.0,
+    random_state: int = 42,
+) -> Dataset:
+    sample_bias_ds = get_biased_ds(ds, rank_flg)
+    biased_ds_ratio = len(sample_bias_ds) / len(ds)
+    random_ds_ratio = random_ratio * biased_ds_ratio
+    _ds, random_ds = split(ds, test_frac=random_ds_ratio, random_state=random_state)
+    biased_ds = get_biased_ds(_ds, rank_flg)
+    return sample(concat([biased_ds, random_ds]), frac=1, random_state=random_state)
 
 
 def setup_dataset(
@@ -36,7 +53,9 @@ def setup_dataset(
     logger.info("start training bias model")
     _pred_dfs = []
     skf = StratifiedKFold(5, shuffle=True, random_state=42)
-    for i, (train_idx, valid_idx) in enumerate(skf.split(np.zeros(len(train_ds)), train_ds.y)):
+    for i, (train_idx, valid_idx) in enumerate(
+        skf.split(np.zeros(len(train_ds)), train_ds.y)
+    ):
         logger.info(f"start {i} fold")
         train_X = train_ds.X.iloc[train_idx]
         train_y = train_ds.y.iloc[train_idx].to_numpy().reshape(-1)
@@ -76,11 +95,12 @@ def train(
     logger: Logger,
     *,
     rank: int,
+    random_ratio: float,
     train_ds: Dataset,
     test_ds: Dataset,
     rank_df: pd.DataFrame,
 ) -> None:
-    logger.info(f"start train in rank {rank}")
+    logger.info(f"start train in rank {rank}, random_ratio {random_ratio}")
     # Fit Metalearner
     base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
     base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
@@ -97,7 +117,7 @@ def train(
     np.int = int  # type: ignore
 
     client.start_run(
-        run_name=f"{cfg.data.name}_{cfg.model.name}_{rank}",
+        run_name=f"{cfg.data.name}_{cfg.model.name}_rank-{rank}_random_ratio-{random_ratio}",
         tags={
             "model": cfg.model.name,
             "dataset": cfg.data.name,
@@ -105,11 +125,17 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
-    client.log_params(dict(cfg.training) | dict(cfg.model) | {"rank": rank})
+    client.log_params(
+        dict(cfg.training)
+        | dict(cfg.model)
+        | {"rank": rank, "random_ratio": random_ratio}
+    )
 
     logger.info("split dataseet")
     rank_flg = rank_df <= rank
-    train_ds = tg_cg_split(train_ds, rank_flg["rank"])
+    train_ds = tg_cg_split(
+        train_ds, rank_flg["rank"], random_ratio=random_ratio, random_state=42
+    )
 
     train_X = train_ds.X
     train_y = train_ds.y.to_numpy().reshape(-1)
