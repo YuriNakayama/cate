@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from causalml.inference import meta
 from omegaconf import DictConfig
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 
 from cate import evaluate
@@ -42,7 +41,7 @@ def tg_cg_split(
     random_ds_ratio = random_ratio * biased_ds_ratio
     if random_ratio == 1:
         return sample(ds, frac=random_ds_ratio, random_state=random_state)
-    
+
     _ds, random_ds = split(ds, test_frac=random_ds_ratio, random_state=random_state)
     biased_ds = get_biased_ds(_ds, rank_flg)
     return sample(concat([biased_ds, random_ds]), frac=1, random_state=random_state)
@@ -67,7 +66,14 @@ def setup_dataset(
         train_y = train_ds.y.iloc[train_idx].to_numpy().reshape(-1)
         valid_X = train_ds.X.iloc[valid_idx]
 
-        base_classifier = LogisticRegression(max_iter=1000)
+        # base_classifier = LogisticRegression(max_iter=5)
+        base_classifier = lgb.LGBMClassifier(
+            verbosity=-1,
+            n_jobs=-1,
+            importance_type="gain",
+            force_col_wise=True,
+            random_state=42,
+        )
         base_classifier.fit(train_X, train_y)
         pred = np.array(base_classifier.predict_proba(valid_X))
 
@@ -128,6 +134,8 @@ def train(
             "model": cfg.model.name,
             "dataset": cfg.data.name,
             "package": "causalml",
+            "rank": rank,
+            "random_ratio": random_ratio,
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
