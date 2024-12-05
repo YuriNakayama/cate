@@ -34,9 +34,15 @@ def tg_cg_split(
     random_ratio: float = 0.0,
     random_state: int = 42,
 ) -> Dataset:
+    if random_ratio == 0:
+        return get_biased_ds(ds, rank_flg)
+
     sample_bias_ds = get_biased_ds(ds, rank_flg)
     biased_ds_ratio = len(sample_bias_ds) / len(ds)
     random_ds_ratio = random_ratio * biased_ds_ratio
+    if random_ratio == 1:
+        return sample(ds, frac=random_ds_ratio, random_state=random_state)
+    
     _ds, random_ds = split(ds, test_frac=random_ds_ratio, random_state=random_state)
     biased_ds = get_biased_ds(_ds, rank_flg)
     return sample(concat([biased_ds, random_ds]), frac=1, random_state=random_state)
