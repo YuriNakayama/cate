@@ -1,6 +1,6 @@
 import hydra
 from omegaconf import DictConfig
-from scripts.train import setup_dataset, train
+from process.model.biased_data.scripts.train import setup_dataset, train
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils import get_logger, path_linker

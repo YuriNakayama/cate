@@ -1,9 +1,9 @@
 import hydra
 from omegaconf import DictConfig
-from scripts.train import setup_dataset, train
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils import get_logger, path_linker
+from process.model.small_data.scripts.train import setup_dataset, train
 
 
 @hydra.main(config_name="config.yaml", version_base=None, config_path="conf")
