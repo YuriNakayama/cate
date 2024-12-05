@@ -129,7 +129,7 @@ def train(
     np.int = int  # type: ignore
 
     client.start_run(
-        run_name=f"{cfg.data.name}_{cfg.model.name}_rank-{rank}_random_ratio-{random_ratio}",
+        run_name=f"{cfg.data.name}-{cfg.model.name}-rank_{rank}-random_ratio_{random_ratio}",
         tags={
             "model": cfg.model.name,
             "dataset": cfg.data.name,
