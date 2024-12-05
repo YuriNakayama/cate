@@ -29,4 +29,7 @@ jobs:
     
       - name: Run Mypy (type check)
         run: poetry run mypy --config-file pyproject.toml . --output-format=github
+
+      - name: Run Pytest (unit test)
+        run: poetry run pytest  tests
       
