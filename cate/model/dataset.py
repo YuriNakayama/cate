@@ -84,8 +84,8 @@ class Dataset:
             raise FileNotFoundError()
 
         df = pd.read_csv(data_path)
-        property = json.load(meta_path.open(mode="r"))
-        return cls(df, **property)
+        meta = json.load(meta_path.open(mode="r"))
+        return cls(df, **meta)
 
     def __len__(self) -> int:
         return len(self.__df)
