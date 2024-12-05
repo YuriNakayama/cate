@@ -25,5 +25,8 @@ jobs:
           poetry install
       
       - name: Run Ruff (lint)
-        run: ruff check --output-format=github --exclude "scripts" .
+        run: poetry run ruff check --output-format=github --exclude "dev" .
+    
+      - name: Run Mypy (type check)
+        run: poetry run mypy --config-file pyproject.toml . --output-format=github
       
