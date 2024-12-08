@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils import get_logger, path_linker
-from process.model.small_data.scripts.train import setup_dataset, train
+from process.model.small_data.scripts.train import train
 
 
 @hydra.main(config_name="config.yaml", version_base=None, config_path="conf")
@@ -12,17 +12,14 @@ def main(cfg: DictConfig) -> None:
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
     # for rank in range(1, cfg.model.num_rank):
-    train_ds, test_ds, rank_df = setup_dataset(cfg, logger, pathlink, sample_ratio=0.5, random_state=42)
-    for random_ratio in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
+    for sample_ratio in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
         train(
             cfg,
             client,
             logger,
-            rank=5,
-            random_ratio=random_ratio,
-            train_ds=train_ds,
-            test_ds=test_ds,
-            rank_df=rank_df,
+            pathlink,
+            sample_ratio=sample_ratio,
+            random_state=42
         )
 
 
