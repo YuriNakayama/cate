@@ -19,3 +19,8 @@ for epoch in epochs:
     tlearner.predict(X, p=None)
     
 ```
+
+## Reference
+
+- [causalml](https://github.com/uber/causalml)
+- [lightgbm](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier)
