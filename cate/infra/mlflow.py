@@ -5,7 +5,7 @@ from typing import Any
 import mlflow
 import mlflow.system_metrics
 
-from cate.model.metrics import Artifacts, Metrics
+from cate.metrics import Artifacts, Metrics
 
 REMOTE_TRACKING_URI = "http://ec2-44-217-145-52.compute-1.amazonaws.com:5000"
 

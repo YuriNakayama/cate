@@ -1,4 +1,5 @@
+from . import dataset, metrics
 from .infra import mlflow
-from .model import dataset, evaluate, metrics
+from . import evaluate
 
 __all__ = ["dataset", "evaluate", "metrics", "mlflow"]
