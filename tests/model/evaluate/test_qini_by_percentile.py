@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from cate.model.evaluate import QiniByPercentile
+from cate.evaluate import QiniByPercentile
 
 
 def test_qini_by_percentile_calculate() -> None:

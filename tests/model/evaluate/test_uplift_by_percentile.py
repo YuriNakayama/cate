@@ -1,6 +1,6 @@
 import numpy as np
 
-from cate.model.evaluate import UpliftByPercentile
+from cate.evaluate import UpliftByPercentile
 
 
 def test_uplift_by_percentile() -> None:

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from cate.model.evaluate import UpliftCurve
+from cate.evaluate import UpliftCurve
 
 
 def test_calculate_uplift_curve() -> None:

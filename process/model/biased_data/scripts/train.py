@@ -151,7 +151,7 @@ def train(
         train_ds, rank_flg["rank"], random_ratio=random_ratio, random_state=42
     )
     train_ds = sample(train_ds, frac=0.1, random_state=42)
-    
+
     train_X = train_ds.X
     train_y = train_ds.y.to_numpy().reshape(-1)
     train_w = train_ds.w.to_numpy().reshape(-1)

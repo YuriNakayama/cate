@@ -1,6 +1,6 @@
 import pandas as pd
 
-from cate.model.dataset import to_rank
+from cate.dataset import to_rank
 
 
 def test_to_rank_ascending() -> None:
