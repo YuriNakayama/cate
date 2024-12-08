@@ -9,30 +9,30 @@ from causalml.inference import meta
 from omegaconf import DictConfig
 from sklearn.model_selection import StratifiedKFold
 
+import cate.dataset as cds
 from cate import evaluate
 from cate.infra.mlflow import MlflowClient
-from cate.model.dataset import Dataset, concat, filter, sample, split, to_rank
-from cate.model.metrics import Artifacts, Metrics
+from cate.metrics import Artifacts, Metrics
 from cate.utils import AbstractLink
 
 
 def get_biased_ds(
-    ds: Dataset,
+    ds: cds.Dataset,
     rank_flg: pd.Series[bool],
-) -> Dataset:
+) -> cds.Dataset:
     tg_flg = (ds.w == 1)[ds.w.columns[0]]
-    tg_ds = filter(ds, [tg_flg, rank_flg])
-    cg_ds = filter(ds, [~tg_flg, ~rank_flg])
-    biased_ds = concat([tg_ds, cg_ds])
-    return sample(biased_ds, frac=1)
+    tg_ds = cds.filter(ds, [tg_flg, rank_flg])
+    cg_ds = cds.filter(ds, [~tg_flg, ~rank_flg])
+    biased_ds = cds.concat([tg_ds, cg_ds])
+    return cds.sample(biased_ds, frac=1)
 
 
 def tg_cg_split(
-    ds: Dataset,
+    ds: cds.Dataset,
     rank_flg: pd.Series[bool],
     random_ratio: float = 0.0,
     random_state: int = 42,
-) -> Dataset:
+) -> cds.Dataset:
     if random_ratio == 0:
         return get_biased_ds(ds, rank_flg)
 
@@ -40,19 +40,21 @@ def tg_cg_split(
     biased_ds_ratio = len(sample_bias_ds) / len(ds)
     random_ds_ratio = random_ratio * biased_ds_ratio
     if random_ratio == 1:
-        return sample(ds, frac=random_ds_ratio, random_state=random_state)
+        return cds.sample(ds, frac=random_ds_ratio, random_state=random_state)
 
-    _ds, random_ds = split(ds, test_frac=random_ds_ratio, random_state=random_state)
+    _ds, random_ds = cds.split(ds, test_frac=random_ds_ratio, random_state=random_state)
     biased_ds = get_biased_ds(_ds, rank_flg)
-    return sample(concat([biased_ds, random_ds]), frac=1, random_state=random_state)
+    return cds.sample(
+        cds.concat([biased_ds, random_ds]), frac=1, random_state=random_state
+    )
 
 
 def setup_dataset(
     cfg: DictConfig, logger: Logger, link: AbstractLink
-) -> tuple[Dataset, Dataset, pd.DataFrame]:
+) -> tuple[cds.Dataset, cds.Dataset, pd.DataFrame]:
     logger.info("load dataset")
-    ds = Dataset.load(link.base)
-    train_ds, test_ds = split(ds, 1 / 3, random_state=42)
+    ds = cds.Dataset.load(link.base)
+    train_ds, test_ds = cds.split(ds, 1 / 3, random_state=42)
 
     # Add Bias To Train Dataset Using LightGBM
     logger.info("start training bias model")
@@ -84,13 +86,13 @@ def setup_dataset(
         )
 
     pred_df = pd.concat(_pred_dfs)
-    rank = to_rank(
+    rank = cds.to_rank(
         pred_df.index.to_series(), pred_df["pred"], k=cfg.model.num_rank
     ).to_frame()
     train_df = pd.merge(train_ds.to_pandas(), rank, left_index=True, right_index=True)
 
     return (
-        Dataset(
+        cds.Dataset(
             train_df,
             train_ds.x_columns,
             train_ds.y_columns,
@@ -108,9 +110,10 @@ def train(
     *,
     rank: int,
     random_ratio: float,
-    train_ds: Dataset,
-    test_ds: Dataset,
+    train_ds: cds.Dataset,
+    test_ds: cds.Dataset,
     rank_df: pd.DataFrame,
+    sample_ratio: float = 1.0,
 ) -> None:
     logger.info(f"start train in rank {rank}, random_ratio {random_ratio}")
     # Fit Metalearner
@@ -136,13 +139,14 @@ def train(
             "package": "causalml",
             "rank": str(rank),
             "random_ratio": str(random_ratio),
+            "sample_ratio": str(sample_ratio),
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
     client.log_params(
         dict(cfg.training)
         | dict(cfg.model)
-        | {"rank": rank, "random_ratio": random_ratio}
+        | {"rank": rank, "random_ratio": random_ratio, "sample_ratio": sample_ratio}
     )
 
     logger.info("split dataseet")
@@ -150,7 +154,7 @@ def train(
     train_ds = tg_cg_split(
         train_ds, rank_flg["rank"], random_ratio=random_ratio, random_state=42
     )
-    train_ds = sample(train_ds, frac=0.1, random_state=42)
+    train_ds = cds.sample(train_ds, frac=sample_ratio, random_state=42)
 
     train_X = train_ds.X
     train_y = train_ds.y.to_numpy().reshape(-1)

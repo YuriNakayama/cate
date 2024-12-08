@@ -1,9 +1,9 @@
 import hydra
 from omegaconf import DictConfig
-from process.model.biased_data.scripts.train import setup_dataset, train
 
 from cate.infra.mlflow import MlflowClient
-from cate.utils import get_logger, path_linker
+from cate.utils import get_logger, path_linker, send_messages
+from process.model.biased_data.scripts.train import setup_dataset, train
 
 
 @hydra.main(config_name="config.yaml", version_base=None, config_path="conf")
@@ -21,10 +21,12 @@ def main(cfg: DictConfig) -> None:
             logger,
             rank=5,
             random_ratio=random_ratio,
+            sample_ratio=0.5,
             train_ds=train_ds,
             test_ds=test_ds,
             rank_df=rank_df,
         )
+    send_messages(["Training Finished biased_data"])
 
 
 if __name__ == "__main__":
