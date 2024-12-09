@@ -21,12 +21,12 @@ def main(cfg: DictConfig) -> None:
             logger,
             rank=5,
             random_ratio=random_ratio,
-            sample_ratio=0.5,
+            sample_ratio=0.1,
             train_ds=train_ds,
             test_ds=test_ds,
             rank_df=rank_df,
         )
-    send_messages(["Training Finished biased_data"])
+    send_messages([f"Training Finished biased_data {cfg.model.name}"])
 
 
 if __name__ == "__main__":

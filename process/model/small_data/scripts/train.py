@@ -29,12 +29,9 @@ def train(
     logger.info("load dataset")
     ds = cds.Dataset.load(link.base)
 
-    base_classifier = lgb.LGBMClassifier(
-        importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
-    )
-    base_regressor = lgb.LGBMRegressor(
-        importance_type="gain", random_state=42, force_col_wise=True, n_jobs=-1
-    )
+    base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
+    base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
+
     models = {
         "drlearner": meta.BaseDRLearner(base_regressor),
         "xlearner": meta.BaseXClassifier(base_classifier, base_regressor),
@@ -103,6 +100,8 @@ def train(
             )
         )
         metrics(pred.reshape(-1), test_y, test_w)
+        client.log_metrics(metrics, epoch)
+        
         _pred_df = pd.DataFrame(
             {"index": test_ds.y.index, "pred": pred.reshape(-1)}
         ).set_index("index")
