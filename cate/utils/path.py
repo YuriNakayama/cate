@@ -28,6 +28,13 @@ class AbstractLink(ABC):
     def __post_init__(self) -> None:
         self._make_paths()
 
+@dataclass(frozen=True)
+class Test(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/criteo.csv")
+    base: Path = Path("/workspace/data/base/test")
+    prediction: Path = Path("/workspace/data/prediction/test")
+    output: Path = Path("/workspace/data/output/test")
+
 
 @dataclass(frozen=True)
 class Lenta(AbstractLink):
@@ -44,21 +51,40 @@ class Criteo(AbstractLink):
     prediction: Path = Path("/workspace/data/prediction/criteo")
     output: Path = Path("/workspace/data/output/criteo")
 
+@dataclass(frozen=True)
+class Hillstorm(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/hillstorm.csv")
+    base: Path = Path("/workspace/data/base/hillstorm")
+    prediction: Path = Path("/workspace/data/prediction/hillstorm")
+    output: Path = Path("/workspace/data/output/hillstorm")
 
 @dataclass(frozen=True)
-class Test(AbstractLink):
-    origin: Path = Path("/workspace/data/origin/criteo.csv")
-    base: Path = Path("/workspace/data/base/test")
-    prediction: Path = Path("/workspace/data/prediction/test")
-    output: Path = Path("/workspace/data/output/test")
+class Megafon(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/megafon.csv")
+    base: Path = Path("/workspace/data/base/megafon")
+    prediction: Path = Path("/workspace/data/prediction/megafon")
+    output: Path = Path("/workspace/data/output/megafon")
+
+@dataclass(frozen=True)
+class X5(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/x5.csv")
+    base: Path = Path("/workspace/data/base/x5")
+    prediction: Path = Path("/workspace/data/prediction/x5")
+    output: Path = Path("/workspace/data/output/x5")
 
 
 def path_linker(link_name: str) -> AbstractLink:
-    if link_name == "lenta":
+    if link_name == "test":
+        return Test()
+    elif link_name == "lenta":
         return Lenta()
     elif link_name == "criteo":
         return Criteo()
-    elif link_name == "test":
-        return Test()
+    elif link_name == "hillstorm":
+        return Hillstorm()
+    elif link_name == "megafon":
+        return Megafon()
+    elif link_name == "x5":
+        return X5()
     else:
         raise ValueError(f"Unknown link name: {link_name}")
