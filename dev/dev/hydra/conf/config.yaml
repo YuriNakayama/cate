@@ -1,0 +1,3 @@
+max_epochs: 10
+gpus: 1
+precisiona: 16
