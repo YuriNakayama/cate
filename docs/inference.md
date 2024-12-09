@@ -5,9 +5,9 @@
 ```python
 from cate.model import Tlearner
 
-tlearner = Tlearner(learner=lgbm_classifier)
+xlearner = Xlearner(learner=lgbm_classifier)
 for epoch in epochs:
-    tlearner.fit(
+    xlearner.fit(
         X, 
         y, 
         w, 
@@ -16,7 +16,7 @@ for epoch in epochs:
         sample_weight=None, 
         verbose=1
     )
-    tlearner.predict(X, p=None)
+    xlearner.predict(X, p=None)
     
 ```
 
