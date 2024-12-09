@@ -11,6 +11,21 @@ git config --global user.email "yuri620620@gmail.com"
 git config --global user.name "YuriNakayama"
 git config --global credential.helper store
 
+# kaggle setup
+mkdir -p /root/.config/kaggle
+cp /workspace/env/tokens/kaggle.json /root/.config/kaggle/kaggle.json
+chmod 600 /root/.config/kaggle/kaggle.json
+
+# aws.envファイルを読み込み、環境変数として設定
+mkdir -p /root/.aws
+cp /workspace/env/tokens/aws.env /root/.aws/credentials
+chmod 600 /root/.aws/credentials
+
+# mlflow
+mkdir -p /root/.mlflow
+cp /workspace/env/tokens/mlflow.env /root/.mlflow/credentials
+chmod 600 /root/.mlflow/credentials
+
 # poetry install & setting
 pip install poetry
 poetry config virtualenvs.path --unset
@@ -21,24 +36,12 @@ poetry install
 poetry shell
 ipython kernel install --user --name=cate
 
-#kaggle setup
-mkdir -p /root/.config/kaggle
-cp /workspace/env/tokens/kaggle.json /root/.config/kaggle/kaggle.json
-chmod 600 /root/.config/kaggle/kaggle.json
-
-# aws.envファイルを読み込み、環境変数として設定
-mkdir -p /root/.aws
-cat /workspace/env/tokens/aws.env > /root/.aws/credentials
-chmod 600 /root/.aws/credentials
-
 # hugging face setup
-export HUGGINGFACE_TOKEN=$(cat /workspace/env/tokens/huggingface.env)
-huggingface-cli login --token $HUGGINGFACE_TOKEN --add-to-git-credential
+# export HUGGINGFACE_TOKEN=$(cat /workspace/env/tokens/huggingface.env)
+# huggingface-cli login --token $HUGGINGFACE_TOKEN --add-to-git-credential
 
 # wandb
 # export WANDB_TOKEN=$(cat /workspace/env/tokens/wandb.env)
 # wandb login $WANDB_TOKEN
-
-
 
 source ~/.bashrc

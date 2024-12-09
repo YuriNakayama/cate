@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 @dataclass(frozen=True)
-class AbstractFlow(ABC):
+class AbstractLink(ABC):
     origin: Path
     base: Path
     prediction: Path
@@ -28,25 +28,8 @@ class AbstractFlow(ABC):
     def __post_init__(self) -> None:
         self._make_paths()
 
-
 @dataclass(frozen=True)
-class Lenta(AbstractFlow):
-    origin: Path = Path("/workspace/data/origin/lenta.csv")
-    base: Path = Path("/workspace/data/base/lenta")
-    prediction: Path = Path("/workspace/data/prediction/lenta")
-    output: Path = Path("/workspace/data/output/lenta")
-
-
-@dataclass(frozen=True)
-class Criteo(AbstractFlow):
-    origin: Path = Path("/workspace/data/origin/criteo.csv")
-    base: Path = Path("/workspace/data/base/criteo")
-    prediction: Path = Path("/workspace/data/prediction/criteo")
-    output: Path = Path("/workspace/data/output/criteo")
-
-
-@dataclass(frozen=True)
-class Test(AbstractFlow):
+class Test(AbstractLink):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
     base: Path = Path("/workspace/data/base/test")
     prediction: Path = Path("/workspace/data/prediction/test")
@@ -54,12 +37,54 @@ class Test(AbstractFlow):
 
 
 @dataclass(frozen=True)
-class DataPath:
-    lenta: Lenta = Lenta()
-    criteo: Criteo = Criteo()
-    test: Test = Test()
+class Lenta(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/lenta.csv")
+    base: Path = Path("/workspace/data/base/lenta")
+    prediction: Path = Path("/workspace/data/prediction/lenta")
+    output: Path = Path("/workspace/data/output/lenta")
 
 
 @dataclass(frozen=True)
-class PathLinker:
-    data: DataPath = DataPath()
+class Criteo(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/criteo.csv")
+    base: Path = Path("/workspace/data/base/criteo")
+    prediction: Path = Path("/workspace/data/prediction/criteo")
+    output: Path = Path("/workspace/data/output/criteo")
+
+@dataclass(frozen=True)
+class Hillstorm(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/hillstorm.csv")
+    base: Path = Path("/workspace/data/base/hillstorm")
+    prediction: Path = Path("/workspace/data/prediction/hillstorm")
+    output: Path = Path("/workspace/data/output/hillstorm")
+
+@dataclass(frozen=True)
+class Megafon(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/megafon.csv")
+    base: Path = Path("/workspace/data/base/megafon")
+    prediction: Path = Path("/workspace/data/prediction/megafon")
+    output: Path = Path("/workspace/data/output/megafon")
+
+@dataclass(frozen=True)
+class X5(AbstractLink):
+    origin: Path = Path("/workspace/data/origin/x5.csv")
+    base: Path = Path("/workspace/data/base/x5")
+    prediction: Path = Path("/workspace/data/prediction/x5")
+    output: Path = Path("/workspace/data/output/x5")
+
+
+def path_linker(link_name: str) -> AbstractLink:
+    if link_name == "test":
+        return Test()
+    elif link_name == "lenta":
+        return Lenta()
+    elif link_name == "criteo":
+        return Criteo()
+    elif link_name == "hillstorm":
+        return Hillstorm()
+    elif link_name == "megafon":
+        return Megafon()
+    elif link_name == "x5":
+        return X5()
+    else:
+        raise ValueError(f"Unknown link name: {link_name}")

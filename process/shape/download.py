@@ -3,11 +3,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pandas as pd
-from sklift.datasets.datasets import fetch_lenta
+from sklift.datasets.datasets import (
+    fetch_lenta,
+    fetch_hillstrom,
+    fetch_megafon,
+    # fetch_x5,
+)
 
-from cate.utils import PathLinker
-
-pathlinker = PathLinker()
+from cate.utils import path_linker
 
 
 def download_from_kaggle(owner_slug: str, dataset_slug: str) -> pd.DataFrame:
@@ -35,11 +38,32 @@ def merge_Xyt(
     df = pd.merge(df, t, left_index=True, right_index=True)
     return df
 
+
 # lenta
+pathlinker = path_linker("lenta")
 X, y, t = fetch_lenta(return_X_y_t=True)
 df = merge_Xyt(X, y, t)
-df.to_csv(pathlinker.data.lenta.origin, index=False)
+df.to_csv(pathlinker.origin, index=False)
 
 # criteo
+pathlinker = path_linker("criteo")
 df = download_from_kaggle("arashnic", "uplift-modeling")
-df.to_csv(pathlinker.data.criteo.origin, index=False)
+df.to_csv(pathlinker.origin, index=False)
+
+# hillstrom
+pathlinker = path_linker("hillstorm")
+X, y, t = fetch_hillstrom(return_X_y_t=True)
+df = merge_Xyt(X, y, t)
+df.to_csv(pathlinker.origin, index=False)
+
+# megafon
+pathlinker = path_linker("megafon")
+X, y, t = fetch_megafon(return_X_y_t=True)
+df = merge_Xyt(X, y, t)
+df.to_csv(pathlinker.origin, index=False)
+
+# x5
+# pathlinker = path_linker("x5")
+# X, y, t = fetch_x5(return_X_y_t=True)
+# df = merge_Xyt(X, y, t)
+# df.to_csv(pathlinker.origin, index=False)

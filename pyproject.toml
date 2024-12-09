@@ -7,6 +7,7 @@ readme = "README.md"
 
 packages = [
     { include = "cate" },
+    { include = "process" }
 ]
 
 [tool.poetry.dependencies]
@@ -22,12 +23,23 @@ causalml = {extras = ["torch"], version = "^0.15.2"}
 scipy = "1.13.1"
 scikit-uplift = "^0.5.1"
 click = "^8.1.7"
+pynvml = "^11.5.3"
+pytest = "^8.3.3"
+pylint = "^3.3.1"
+pytest-coverage = "^0.0"
+hydra-core = "^1.3.2"
+line-bot-sdk = "^3.14.2"
 
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.3"
 mypy = "^1.7.0"
 ipykernel = "^6.26.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 
 [tool.ruff]
 exclude = [
@@ -68,18 +80,16 @@ ignore = []
 fixable = ["ALL"]
 unfixable = []
 
+[tool.ruff.lint.isort]
+case-sensitive = true
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
-[tool.ruff.lint.isort]
-case-sensitive = true
-
-[mypy]
-exclude = [".venv", ".github", "data", "docs", "env"]
-
 [tool.mypy]
+exclude = [".venv", ".github", "data", "docs", "env", "outputs"]
 python_version = "3.11"
 strict = true
 disallow_any_decorated = false
@@ -90,20 +100,56 @@ show_error_codes = true
 strict_equality = true
 strict_optional = true
 warn_unreachable = true
+plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.pytest.ini_options]
 addopts = [
     '--rootdir=tests',
     '--strict-config',
+    '--cov=cate',
     '-ra',
 ]
 testpaths = ['tests']
 cache_dir = "tests/.pytest_cache"
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.pyright]
-include = ["dev", "cate", "tests"]
-exclude = []
+include = ["dev", "cate", "tests", "process"]
+exclude= [
+    "data",
+    "docs",
+    ".venv",
+    "outputs",
+    "**/traces",
+    "**/traces_ts",
+    "**/example_files**",
+    "**/.pkl",
+    "**/bazel-bin",
+    "**/bazel",
+    "apps/**",
+    "**/resources/**",
+    "**/tests/**",
+    "**/node_modules",
+    "**/.next",
+    "**/__pycache__",
+    "**/.coverage/**",
+    "**/.git",
+    "**/dist/**",
+    "**/build/**",
+    "**/.husky",
+    "**/migrations"
+]
+ignore= [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "**/dist",
+    "**/.vscode",
+    "**/*.pyi",
+    "**/__init__.py"
+]
+typeCheckingMode = "basic"
+
+[tool.pylint]
+ignore-paths = [
+    ".venv", ".github", "data", "docs", "env", "outputs"
+]

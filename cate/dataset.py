@@ -1,18 +1,21 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 
 def to_rank(
-    primary_key: pd.Series, score: pd.Series, ascending: bool = True
+    primary_key: pd.Series, score: pd.Series, ascending: bool = True, k: int = 100
 ) -> pd.Series:
     df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
         primary_key.name, drop=True
     )
-    df = df.sort_values(by=score.name, ascending=ascending)  # type: ignore
-    df["rank"] = np.ceil(np.arange(len(df)) / len(df) * 100).astype(int)
+    df = df.sort_values(by=str(score.name), ascending=ascending)
+    df["rank"] = np.ceil(np.arange(1, len(df) + 1) / len(df) * k).astype(int)
     return df["rank"]
 
 
@@ -44,9 +47,9 @@ class Dataset:
         w_diff_columns = set(w_columns) - set(columns)
         if x_diff_columns:
             raise ValueError(f"x columns {x_diff_columns} do not exist in df.")
-        elif y_diff_columns:
+        if y_diff_columns:
             raise ValueError(f"x columns {y_diff_columns} do not exist in df.")
-        elif w_diff_columns:
+        if w_diff_columns:
             raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
 
     @property
@@ -70,19 +73,91 @@ class Dataset:
                 "y_columns": self.y_columns,
                 "w_columns": self.w_columns,
             },
-            (path / "property.json").open("w"),
+            (path / "meta.json").open("w"),
         )
 
     @classmethod
-    def load(cls, path: Path) -> "Dataset":
+    def load(cls, path: Path) -> Dataset:
         data_path = path / "data.csv"
-        property_path = path / "property.json"
-        if (not data_path.exists()) or (not property_path.exists()):
+        meta_path = path / "meta.json"
+        if (not data_path.exists()) or (not meta_path.exists()):
             raise FileNotFoundError()
 
         df = pd.read_csv(data_path)
-        property = json.load(property_path.open(mode="r"))
-        return cls(df, **property)
+        meta = json.load(meta_path.open(mode="r"))
+        return cls(df, **meta)
 
     def __len__(self) -> int:
         return len(self.__df)
+
+    def to_pandas(self) -> pd.DataFrame:
+        return self.__df.copy()
+
+
+def filter(ds: Dataset, flgs: list[pd.Series[bool]]) -> Dataset:
+    flg = pd.concat(flgs, axis=1).all(axis=1)
+    df = ds.to_pandas().loc[flg]
+    return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
+
+
+def concat(ds_list: list[Dataset]) -> Dataset:
+    df = pd.concat([ds.to_pandas() for ds in ds_list])
+    return Dataset(df, ds_list[0].x_columns, ds_list[0].y_columns, ds_list[0].w_columns)
+
+
+def sample(
+    ds: Dataset, n: int | None = None, frac: float | None = None, random_state: int = 42
+) -> Dataset:
+    if n == 0 or frac == 0:
+        return Dataset(
+            pd.DataFrame(ds.to_pandas().columns),
+            ds.x_columns,
+            ds.y_columns,
+            ds.w_columns,
+        )
+
+    df = ds.to_pandas().sample(n=n, frac=frac, random_state=random_state)
+    return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
+
+
+def split(
+    ds: Dataset,
+    test_frac: float | None = None,
+    test_n: float | None = None,
+    random_state: int = 42,
+) -> tuple[Dataset, Dataset]:
+    """
+    Splits a Dataset into training and testing sets.
+
+    Parameters:
+    ds (Dataset): The dataset to be split.
+    test_frac (float, optional): The fraction of the dataset to be used as the test set. Defaults to None.
+    test_n (float, optional): The number of samples to be used as the test set. Defaults to None.
+    random_state (int, optional): The seed used by the random number generator. Defaults to 42.
+
+    Returns:
+    tuple[Dataset, Dataset]: A tuple containing the training and testing datasets.
+    """
+    if test_frac == 0 or test_n == 0:
+        return ds, Dataset(
+            pd.DataFrame(columns=ds.to_pandas().columns),
+            ds.x_columns,
+            ds.y_columns,
+            ds.w_columns,
+        )
+    if test_frac == 1 or test_n == 1:
+        return Dataset(
+            pd.DataFrame(columns=ds.to_pandas().columns),
+            ds.x_columns,
+            ds.y_columns,
+            ds.w_columns,
+        ), ds
+
+    test_size = test_frac if test_frac is not None else test_n
+    train_df, test_df = train_test_split(
+        ds.to_pandas(), test_size=test_size, random_state=random_state
+    )
+    return (
+        Dataset(train_df, ds.x_columns, ds.y_columns, ds.w_columns),
+        Dataset(test_df, ds.x_columns, ds.y_columns, ds.w_columns),
+    )
