@@ -36,6 +36,11 @@ ruff = "^0.4.3"
 mypy = "^1.7.0"
 ipykernel = "^6.26.0"
 
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
 [tool.ruff]
 exclude = [
     ".bzr",
@@ -75,13 +80,13 @@ ignore = []
 fixable = ["ALL"]
 unfixable = []
 
+[tool.ruff.lint.isort]
+case-sensitive = true
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
-
-[tool.ruff.lint.isort]
-case-sensitive = true
 
 [tool.mypy]
 exclude = [".venv", ".github", "data", "docs", "env", "outputs"]
@@ -106,11 +111,6 @@ addopts = [
 ]
 testpaths = ['tests']
 cache_dir = "tests/.pytest_cache"
-
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.pyright]
 include = ["dev", "cate", "tests", "process"]
