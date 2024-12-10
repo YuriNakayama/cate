@@ -11,8 +11,7 @@ def main(cfg: DictConfig) -> None:
     client = MlflowClient(cfg.mlflow.experiment_name)
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
-    
-    
+
     train(
         cfg,
         pathlink,

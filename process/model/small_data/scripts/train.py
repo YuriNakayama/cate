@@ -101,7 +101,7 @@ def train(
         )
         metrics(pred.reshape(-1), test_y, test_w)
         client.log_metrics(metrics, epoch)
-        
+
         _pred_df = pd.DataFrame(
             {"index": test_ds.y.index, "pred": pred.reshape(-1)}
         ).set_index("index")

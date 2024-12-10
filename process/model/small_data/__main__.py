@@ -11,16 +11,9 @@ def main(cfg: DictConfig) -> None:
     client = MlflowClient(cfg.mlflow.experiment_name)
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
-    
+
     for sample_ratio in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
-        train(
-            cfg,
-            client,
-            logger,
-            pathlink,
-            sample_ratio=sample_ratio,
-            random_state=42
-        )
+        train(cfg, client, logger, pathlink, sample_ratio=sample_ratio, random_state=42)
 
 
 if __name__ == "__main__":

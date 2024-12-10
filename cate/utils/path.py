@@ -28,6 +28,7 @@ class AbstractLink(ABC):
     def __post_init__(self) -> None:
         self._make_paths()
 
+
 @dataclass(frozen=True)
 class Test(AbstractLink):
     origin: Path = Path("/workspace/data/origin/criteo.csv")
@@ -51,6 +52,7 @@ class Criteo(AbstractLink):
     prediction: Path = Path("/workspace/data/prediction/criteo")
     output: Path = Path("/workspace/data/output/criteo")
 
+
 @dataclass(frozen=True)
 class Hillstorm(AbstractLink):
     origin: Path = Path("/workspace/data/origin/hillstorm.csv")
@@ -58,12 +60,14 @@ class Hillstorm(AbstractLink):
     prediction: Path = Path("/workspace/data/prediction/hillstorm")
     output: Path = Path("/workspace/data/output/hillstorm")
 
+
 @dataclass(frozen=True)
 class Megafon(AbstractLink):
     origin: Path = Path("/workspace/data/origin/megafon.csv")
     base: Path = Path("/workspace/data/base/megafon")
     prediction: Path = Path("/workspace/data/prediction/megafon")
     output: Path = Path("/workspace/data/output/megafon")
+
 
 @dataclass(frozen=True)
 class X5(AbstractLink):

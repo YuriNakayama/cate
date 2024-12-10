@@ -37,7 +37,7 @@ def train(
         "tlearner": meta.BaseTClassifier(base_classifier),
         # "cevae": CEVAE(),
     }
-    
+
     model = models[cfg.model.name]
     np.int = int  # type: ignore
 
@@ -53,9 +53,7 @@ def train(
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
     client.log_params(
-        dict(cfg.training)
-        | dict(cfg.model)
-        | {"sample_ratio": sample_ratio}
+        dict(cfg.training) | dict(cfg.model) | {"sample_ratio": sample_ratio}
     )
     _pred_dfs = []
     for epoch, (train_idx, valid_idx) in tqdm(
@@ -104,8 +102,6 @@ def train(
     output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
     artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
-    artifacts(
-        output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy()
-    )
+    artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
     client.log_artifacts(artifacts)
     client.end_run()
