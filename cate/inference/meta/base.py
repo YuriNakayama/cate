@@ -3,19 +3,29 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Protocol
 
-import numpy as np
-
 if TYPE_CHECKING:
+    import numpy as np
     import numpy.typing as npt
 
 
+class MetaLearnerException(Exception):
+    pass
+
+
 class Classifier(Protocol):
-    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[np.int_]) -> Classifier: ...
+    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[Any]) -> Classifier: ...
     def predict(self, X: npt.NDArray[Any]) -> npt.NDArray[np.int_]: ...
     def predict_proba(self, X: npt.NDArray[Any]) -> npt.NDArray[np.float_]: ...
+    def __repr__(self) -> str: ...
 
 
-class BaseLearner(ABC):
+class Regressor(Protocol):
+    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[np.float_]) -> Regressor: ...
+    def predict(self, X: npt.NDArray[Any]) -> npt.NDArray[np.float_]: ...
+    def __repr__(self) -> str: ...
+
+
+class AbstractMetaLearner(ABC):
     @abstractmethod
     def fit(
         self,
@@ -33,7 +43,7 @@ class BaseLearner(ABC):
         ]
         | None = None,
         verbose: int = 1,
-    ) -> BaseLearner:
+    ) -> AbstractMetaLearner:
         pass
 
     @abstractmethod
