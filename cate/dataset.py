@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -161,3 +162,13 @@ def split(
         Dataset(train_df, ds.x_columns, ds.y_columns, ds.w_columns),
         Dataset(test_df, ds.x_columns, ds.y_columns, ds.w_columns),
     )
+
+
+def synthetic_data(
+    n: int = 1000, p: int = 5, random_state: int = 42
+) -> tuple[npt.NDArray[np.float_], npt.NDArray[np.int_], npt.NDArray[np.int_]]:
+    np.random.seed(random_state)
+    X = np.random.normal(size=(n, p))
+    w = np.random.randint(0, 1, n)
+    y = np.random.randint(0, 1, n)
+    return X, w, y
