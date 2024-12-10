@@ -11,7 +11,7 @@ def main(cfg: DictConfig) -> None:
     client = MlflowClient(cfg.mlflow.experiment_name)
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
-    # for rank in range(1, cfg.model.num_rank):
+    
     for sample_ratio in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
         train(
             cfg,
