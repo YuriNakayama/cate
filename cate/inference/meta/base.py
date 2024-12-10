@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 import numpy as np
 
@@ -10,7 +9,10 @@ if TYPE_CHECKING:
     import numpy.typing as npt
 
 
-logger = logging.getLogger("causalml")
+class Classifier(Protocol):
+    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[np.int_]) -> Classifier: ...
+    def predict(self, X: npt.NDArray[Any]) -> npt.NDArray[np.int_]: ...
+    def predict_proba(self, X: npt.NDArray[Any]) -> npt.NDArray[np.float_]: ...
 
 
 class BaseLearner(ABC):
@@ -21,6 +23,15 @@ class BaseLearner(ABC):
         treatment: npt.NDArray[np.int_],
         y: npt.NDArray[np.float_ | np.int_],
         p: npt.NDArray[np.float_] | None = None,
+        eval_set: list[
+            tuple[
+                npt.NDArray[Any],
+                npt.NDArray[np.int_],
+                npt.NDArray[np.float_ | np.int_],
+                npt.NDArray[np.float_] | None,
+            ]
+        ]
+        | None = None,
         verbose: int = 1,
     ) -> BaseLearner:
         pass
