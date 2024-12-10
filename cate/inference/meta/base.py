@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -15,11 +15,20 @@ logger = logging.getLogger("causalml")
 
 class BaseLearner(ABC):
     @abstractmethod
-    def fit(self, X, treatment, y, p=None) -> BaseLearner:
+    def fit(
+        self,
+        X: npt.NDArray[Any],
+        treatment: npt.NDArray[np.int_],
+        y: npt.NDArray[np.float_ | np.int_],
+        p: npt.NDArray[np.float_] | None = None,
+        verbose: int = 1,
+    ) -> BaseLearner:
         pass
 
     @abstractmethod
     def predict(
-        self, X, treatment=None, y=None, p=None, verbose=True
+        self,
+        X: npt.NDArray[Any],
+        p: npt.NDArray[np.float_] | None = None,
     ) -> npt.NDArray[np.float64]:
         pass
