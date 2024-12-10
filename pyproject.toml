@@ -112,6 +112,15 @@ addopts = [
 testpaths = ['tests']
 cache_dir = "tests/.pytest_cache"
 
+[tool.coverage.run]
+branch = true
+omit = [
+    "**/__init__.py",
+]
+
+[tool.coverage.xml]
+output = "docs/coverage/coverage_report.xml"
+
 [tool.pyright]
 include = ["dev", "cate", "tests", "process"]
 exclude= [
