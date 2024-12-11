@@ -5,7 +5,11 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from cate.inference.meta.base import AbstractMetaLearner, Classifier, MetaLearnerException
+from cate.inference.meta.base import (
+    AbstractMetaLearner,
+    Classifier,
+    MetaLearnerException,
+)
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -60,8 +64,10 @@ class Tlearner(AbstractMetaLearner):
             ]
         ]
         | None = None,
-        verbose: int = 1,
+        params: dict[str, Any] | None = None,
     ) -> Tlearner:
+        if params is None:
+            params = {}
         self.t_groups = np.unique(treatment[treatment != self.control_name])
         self.t_groups.sort()
         self._classes = {group: i for i, group in enumerate(self.t_groups)}
@@ -75,8 +81,12 @@ class Tlearner(AbstractMetaLearner):
             y_filt = y[mask]
             w = (treatment_filt == group).astype(int)
 
-            self.models_c[group].fit(X_filt[w == 0], y_filt[w == 0])
-            self.models_t[group].fit(X_filt[w == 1], y_filt[w == 1])
+            self.models_c[group].fit(
+                X_filt[w == 0], y_filt[w == 0], eval_set=eval_set, **params
+            )
+            self.models_t[group].fit(
+                X_filt[w == 1], y_filt[w == 1], eval_set=eval_set, **params
+            )
         return self
 
     def predict(
@@ -90,8 +100,8 @@ class Tlearner(AbstractMetaLearner):
         for group in self.t_groups:
             model_c = self.models_c[group]
             model_t = self.models_t[group]
-            yhat_cs[group] = model_c.predict_proba(X)
-            yhat_ts[group] = model_t.predict_proba(X)
+            yhat_cs[group] = model_c.predict_proba(X)[:, 1]
+            yhat_ts[group] = model_t.predict_proba(X)[:, 1]
 
         te = np.zeros((X.shape[0], self.t_groups.shape[0]))
         for i, group in enumerate(self.t_groups):

@@ -13,7 +13,21 @@ class MetaLearnerException(Exception):
 
 
 class Classifier(Protocol):
-    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[Any]) -> Classifier: ...
+    def fit(
+        self,
+        X: npt.NDArray[Any],
+        y: npt.NDArray[Any],
+        *,
+        eval_set: list[
+            tuple[
+                npt.NDArray[Any],
+                npt.NDArray[np.int_],
+                npt.NDArray[np.float_ | np.int_],
+                npt.NDArray[np.float_] | None,
+            ]
+        ]
+        | None = None,
+    ) -> Classifier: ...
     def predict(self, X: npt.NDArray[Any]) -> npt.NDArray[np.int_]: ...
     def predict_proba(self, X: npt.NDArray[Any]) -> npt.NDArray[np.float_]: ...
     def __repr__(self) -> str: ...
@@ -42,7 +56,7 @@ class AbstractMetaLearner(ABC):
             ]
         ]
         | None = None,
-        verbose: int = 1,
+        params: dict[str, Any] | None = None,
     ) -> AbstractMetaLearner:
         pass
 
