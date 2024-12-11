@@ -4,8 +4,12 @@ import numpy.typing as npt
 import pandas as pd
 from matplotlib.figure import Figure
 
-from cate.base.metrics import AbstractImageArtifact, AbstractMetric
-from cate.base.metrics.artifacts import AbstractTableArtifact
+from cate.base.metrics.evaluate import (
+    AbstractTableArtifact,
+    AbstractImageArtifact,
+    AbstractMetric,
+)
+
 
 
 class UpliftByPercentile(AbstractMetric):

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from cate.base.metrics import (
+from cate.base.metrics.evaluate import (
     AbstractImageArtifact,
     AbstractMetric,
     AbstractTableArtifact,

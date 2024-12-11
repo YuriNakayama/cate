@@ -1,11 +1,12 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import mlflow
 import mlflow.system_metrics
 
-from cate.metrics import Artifacts, Metrics
+if TYPE_CHECKING:
+    from cate.metrics import Artifacts, Metrics
 
 REMOTE_TRACKING_URI = "http://ec2-44-217-145-52.compute-1.amazonaws.com:5000"
 
