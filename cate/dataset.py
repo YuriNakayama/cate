@@ -190,8 +190,8 @@ def synthetic_data(
         - y : numpy.ndarray of shape (n,)
             The generated target values (binary values).
     """
-    np.random.seed(random_state)
-    X = np.random.normal(size=(n, p))
-    w = np.random.randint(0, 1, n)
-    y = np.random.randint(0, 1, n)
+    rng = np.random.default_rng(random_state)
+    X = rng.normal(size=(n, p))
+    w = rng.integers(2, size=(n, 2))[:, 0].reshape(-1)
+    y = rng.integers(2, size=(n, 2))[:, 1].reshape(-1)
     return X, w, y
