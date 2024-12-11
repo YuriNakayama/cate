@@ -19,7 +19,10 @@
     "python.testing.pytestArgs": [
         "--cov=cate",
         "--cov-report",
-        "xml"
+        "xml",
+        "--cov-report",
+        "html",
+        "-ra"
     ],
     "coverage-gutters.showGutterCoverage": true,
     "coverage-gutters.showLineCoverage": true,

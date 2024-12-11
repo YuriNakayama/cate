@@ -108,8 +108,18 @@ cache_dir = "tests/.pytest_cache"
 branch = true
 omit = ["**/__init__.py"]
 
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING",
+    "if __name__ == .__main__.",
+]
+
 [tool.coverage.xml]
-output = "docs/coverage/coverage_report.xml"
+output = "docs/coverage/coverage.xml"
+
+[tool.coverage.html]
+directory = "docs/coverage/report"
 
 [tool.pyright]
 include = ["dev", "cate", "tests", "process"]

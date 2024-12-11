@@ -12,7 +12,6 @@
 *.pyc
 *.safetensor
 *.safetensors
-*.xml
 *.zip
 *.model
 *.npy
