@@ -12,8 +12,12 @@ def main(cfg: DictConfig) -> None:
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
     train_ds, test_ds, rank_df = setup_dataset(cfg, logger, pathlink)
-    # for rank in range(1, cfg.model.num_rank):
-    #     train(cfg, client, logger, rank=rank, train_ds=train_ds, test_ds=test_ds, rank_df=rank_df)
+    run = client.start_run(
+        run_name=f"{cfg.data.name}-{cfg.model.name}",
+        tags={"model": cfg.model.name, "dataset": cfg.data.name, "package": "causalml"},
+        description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
+    )
+    client.end_run()
     for random_ratio in [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]:
         train(
             cfg,
@@ -25,6 +29,7 @@ def main(cfg: DictConfig) -> None:
             train_ds=train_ds,
             test_ds=test_ds,
             rank_df=rank_df,
+            parent_run_id=run.info.run_id,
         )
     send_messages([f"Training Finished biased_data {cfg.model.name}"])
 

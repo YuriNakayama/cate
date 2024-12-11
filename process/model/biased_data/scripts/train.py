@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from logging import Logger
 
 import lightgbm as lgb
@@ -7,12 +8,40 @@ import numpy as np
 import pandas as pd
 from causalml.inference import meta
 from omegaconf import DictConfig
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedKFold
 
 import cate.dataset as cds
 from cate.infra.mlflow import MlflowClient
 from cate.metrics import Artifacts, Metrics, evaluate
 from cate.utils import AbstractLink
+
+
+class BaggingModel:
+    def __init__(self, classifiers) -> None:
+        self.classifiers = classifiers
+
+    def fit(self, X, y) -> BaggingModel:
+        for classifier in self.classifiers:
+            classifier.fit(X, y)
+        return self
+
+    def predict_proba(self, X):
+        return np.mean(
+            [classifier.predict_proba(X) for classifier in self.classifiers], axis=0
+        )
+
+
+def create_cv_models(X, y, base_classifier, random_state=42) -> tuple:
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
+    models = []
+    pred = np.zeros_like(y, dtype=float)
+    for train_idx, valid_idx in skf.split(X, y):
+        model = deepcopy(base_classifier)
+        model.fit(X[train_idx], y[train_idx])
+        models.append(model)
+        pred[valid_idx] = model.predict_proba(X[valid_idx])[:, 1]
+    return BaggingModel(models), pred
 
 
 def get_biased_ds(
@@ -67,7 +96,6 @@ def setup_dataset(
         train_y = train_ds.y.iloc[train_idx].to_numpy().reshape(-1)
         valid_X = train_ds.X.iloc[valid_idx]
 
-        # base_classifier = LogisticRegression(max_iter=5)
         base_classifier = lgb.LGBMClassifier(
             verbosity=-1,
             n_jobs=-1,
@@ -113,6 +141,7 @@ def train(
     test_ds: cds.Dataset,
     rank_df: pd.DataFrame,
     sample_ratio: float = 1.0,
+    parent_run_id: str | None = None,
 ) -> None:
     logger.info(f"start train in rank {rank}, random_ratio {random_ratio}")
     # Fit Metalearner
@@ -139,6 +168,7 @@ def train(
             "rank": str(rank),
             "random_ratio": str(random_ratio),
             "sample_ratio": str(sample_ratio),
+            "mlflow.parentRunId": parent_run_id,
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
@@ -155,25 +185,30 @@ def train(
     )
     train_ds = cds.sample(train_ds, frac=sample_ratio, random_state=42)
 
-    train_X = train_ds.X
+    train_X = train_ds.X.to_numpy()
     train_y = train_ds.y.to_numpy().reshape(-1)
     train_w = train_ds.w.to_numpy().reshape(-1)
-    test_X = test_ds.X
+    test_X = test_ds.X.to_numpy()
     test_y = test_ds.y.to_numpy().reshape(-1)
     test_w = test_ds.w.to_numpy().reshape(-1)
     logger.info(f"train X shape{train_X.shape}, test X shape{test_X.shape}")
-
     del train_ds
 
-    logger.info(f"strart train {cfg.model.name}")
-    model.fit(
-        train_X,
-        train_w,
-        train_y,
+    logger.info("strat train propensity score model")
+    propensity_base_model = CalibratedClassifierCV(
+        lgb.LGBMClassifier(**cfg.training.classifier),  # type: ignore
+        method="sigmoid",
+    )
+    propensity_model, train_p = create_cv_models(
+        train_X, train_y, propensity_base_model
     )
 
+    logger.info(f"strart train {cfg.model.name}")
+    model.fit(train_X, train_w, train_y, p=train_p)
+
     logger.info(f"strart prediction {cfg.model.name}")
-    pred = model.predict(test_X)
+    test_p = propensity_model.predict_proba(test_X)[:, 1]
+    pred = model.predict(test_X, p=test_p)
 
     metrics = Metrics(
         list(
