@@ -22,7 +22,6 @@ class MockModel:
                 npt.NDArray[Any],
                 npt.NDArray[np.int_],
                 npt.NDArray[np.float_ | np.int_],
-                npt.NDArray[np.float_] | None,
             ]
         ]
         | None = None,
