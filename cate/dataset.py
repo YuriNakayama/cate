@@ -167,6 +167,29 @@ def split(
 def synthetic_data(
     n: int = 1000, p: int = 5, random_state: int = 42
 ) -> tuple[npt.NDArray[np.float_], npt.NDArray[np.int_], npt.NDArray[np.int_]]:
+    """
+    Generate synthetic data for testing purposes.
+
+    Parameters
+    ----------
+    n : int, optional
+        Number of samples to generate. Default is 1000.
+    p : int, optional
+        Number of features for each sample. Default is 5.
+    random_state : int, optional
+        Seed for the random number generator. Default is 42.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        A tuple containing:
+        - X : numpy.ndarray of shape (n, p)
+            The generated feature matrix with `n` samples and `p` features.
+        - w : numpy.ndarray of shape (n,)
+            The generated weights (binary values).
+        - y : numpy.ndarray of shape (n,)
+            The generated target values (binary values).
+    """
     np.random.seed(random_state)
     X = np.random.normal(size=(n, p))
     w = np.random.randint(0, 1, n)
