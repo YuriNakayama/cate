@@ -11,7 +11,6 @@ from cate.base.metrics.evaluate import (
 )
 
 
-
 class UpliftByPercentile(AbstractMetric):
     """
     https://note.com/dd_techblog/n/nb1ae45e79148

@@ -1,7 +1,7 @@
 import click
 import pandas as pd
 
-from cate.model.dataset import Dataset
+from cate.dataset import Dataset
 from cate.utils import path_linker
 
 

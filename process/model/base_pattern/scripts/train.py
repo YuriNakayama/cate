@@ -8,10 +8,9 @@ from omegaconf import DictConfig
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
-from cate import evaluate
 from cate.dataset import Dataset, sample
 from cate.infra.mlflow import MlflowClient
-from cate.metrics import Artifacts, Metrics
+from cate.metrics import Artifacts, Metrics, evaluate
 from cate.utils.path import AbstractLink
 
 
