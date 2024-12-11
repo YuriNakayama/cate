@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from cate.evaluate import Auuc
+from cate.metrics import Auuc
 
 
 @pytest.fixture

@@ -1,5 +1,11 @@
-from .artifact import AbstractImageArtifact, AbstractTableArtifact, Image, Table
-from .metric import AbstractMetric, Value
+from .evaluate import (
+    AbstractImageArtifact,
+    AbstractTableArtifact,
+    Image,
+    Table,
+    AbstractMetric,
+    Value,
+)
 
 __all__ = [
     "AbstractImageArtifact",

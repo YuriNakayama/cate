@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from .base import AbstractMetaLearner, Classifier, MetaLearnerException
+from cate.inference.meta.base import AbstractMetaLearner, Classifier, MetaLearnerException
 
 if TYPE_CHECKING:
     import numpy.typing as npt

@@ -1,16 +1,18 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 import numpy as np
 import numpy.typing as npt
 
-from cate.base.metrics.evaluate import (
-    AbstractImageArtifact,
-    AbstractMetric,
-    AbstractTableArtifact,
-    Image,
-    Table,
-    Value,
-)
+if TYPE_CHECKING:
+    from cate.base.metrics.evaluate import (
+        AbstractImageArtifact,
+        AbstractMetric,
+        AbstractTableArtifact,
+        Image,
+        Table,
+        Value,
+    )
 
 
 class Metrics:
