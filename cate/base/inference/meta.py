@@ -23,7 +23,6 @@ class Classifier(Protocol):
                 npt.NDArray[Any],
                 npt.NDArray[np.int_],
                 npt.NDArray[np.float_ | np.int_],
-                npt.NDArray[np.float_] | None,
             ]
         ]
         | None = None,
@@ -34,7 +33,20 @@ class Classifier(Protocol):
 
 
 class Regressor(Protocol):
-    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[np.float_]) -> Regressor: ...
+    def fit(
+        self,
+        X: npt.NDArray[Any],
+        y: npt.NDArray[Any],
+        *,
+        eval_set: list[
+            tuple[
+                npt.NDArray[Any],
+                npt.NDArray[np.int_],
+                npt.NDArray[np.float_ | np.int_],
+            ]
+        ]
+        | None = None,
+    ) -> Regressor: ...
     def predict(self, X: npt.NDArray[Any]) -> npt.NDArray[np.float_]: ...
     def __repr__(self) -> str: ...
 
@@ -46,13 +58,11 @@ class AbstractMetaLearner(ABC):
         X: npt.NDArray[Any],
         w: npt.NDArray[np.int_],
         y: npt.NDArray[np.float_ | np.int_],
-        p: npt.NDArray[np.float_] | None = None,
         eval_set: list[
             tuple[
                 npt.NDArray[Any],
                 npt.NDArray[np.int_],
                 npt.NDArray[np.float_ | np.int_],
-                npt.NDArray[np.float_] | None,
             ]
         ]
         | None = None,
@@ -64,6 +74,5 @@ class AbstractMetaLearner(ABC):
     def predict(
         self,
         X: npt.NDArray[Any],
-        p: npt.NDArray[np.float_] | None = None,
     ) -> npt.NDArray[np.float64]:
         pass

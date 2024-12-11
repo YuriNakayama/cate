@@ -54,13 +54,11 @@ class Tlearner(AbstractMetaLearner):
         X: npt.NDArray[Any],
         w: npt.NDArray[np.int_],
         y: npt.NDArray[np.float_ | np.int_],
-        p: npt.NDArray[np.float_] | None = None,
         eval_set: list[
             tuple[
                 npt.NDArray[Any],
                 npt.NDArray[np.int_],
                 npt.NDArray[np.float_ | np.int_],
-                npt.NDArray[np.float_] | None,
             ]
         ]
         | None = None,
@@ -92,7 +90,6 @@ class Tlearner(AbstractMetaLearner):
     def predict(
         self,
         X: npt.NDArray[Any],
-        p: npt.NDArray[np.float_] | None = None,
     ) -> npt.NDArray[np.float64]:
         yhat_cs: dict[int, npt.NDArray[np.float_]] = {}
         yhat_ts: dict[int, npt.NDArray[np.float_]] = {}

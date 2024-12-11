@@ -5,10 +5,9 @@ from causalml.inference import meta
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
-from cate import evaluate
+from cate.dataset import Dataset
 from cate.infra.mlflow import MlflowClient
-from cate.model.dataset import Dataset
-from cate.model.metrics import Artifacts, Metrics
+from cate.metrics import Artifacts, Metrics, evaluate
 from cate.utils import Timer, get_logger, path_linker
 
 dataset_name = "criteo"
