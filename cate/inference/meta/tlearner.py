@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from cate.inference.meta.base import (
+from cate.base.inference.base import (
     AbstractMetaLearner,
     Classifier,
     MetaLearnerException,
