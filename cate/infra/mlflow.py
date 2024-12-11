@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 import mlflow
-import mlflow.system_metrics
+from mlflow import ActiveRun, system_metrics
 
 from cate.metrics.metrics import Artifacts, Metrics
 
@@ -21,7 +21,7 @@ class MlflowClient:
     @staticmethod
     def initialize(experiment_name: str, tracking_uri: str) -> str:
         mlflow.set_tracking_uri(tracking_uri)
-        mlflow.system_metrics.enable_system_metrics_logging()  # type: ignore
+        system_metrics.enable_system_metrics_logging()  # type: ignore
 
         experiment = mlflow.get_experiment_by_name(experiment_name)
         if experiment is None:
@@ -41,8 +41,8 @@ class MlflowClient:
         tags: dict[str, Any] | None = None,
         description: str | None = None,
         log_system_metrics: bool | None = None,
-    ) -> None:
-        mlflow.start_run(
+    ) -> ActiveRun:
+        return mlflow.start_run(
             run_id=run_id,
             experiment_id=self.experiment_id,
             run_name=run_name,
