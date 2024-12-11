@@ -44,7 +44,7 @@ class AbstractMetaLearner(ABC):
     def fit(
         self,
         X: npt.NDArray[Any],
-        treatment: npt.NDArray[np.int_],
+        w: npt.NDArray[np.int_],
         y: npt.NDArray[np.float_ | np.int_],
         p: npt.NDArray[np.float_] | None = None,
         eval_set: list[

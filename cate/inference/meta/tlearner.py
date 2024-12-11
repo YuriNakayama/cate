@@ -52,7 +52,7 @@ class Tlearner(AbstractMetaLearner):
     def fit(
         self,
         X: npt.NDArray[Any],
-        treatment: npt.NDArray[np.int_],
+        w: npt.NDArray[np.int_],
         y: npt.NDArray[np.float_ | np.int_],
         p: npt.NDArray[np.float_] | None = None,
         eval_set: list[
@@ -68,18 +68,18 @@ class Tlearner(AbstractMetaLearner):
     ) -> Tlearner:
         if params is None:
             params = {}
-        self.t_groups = np.unique(treatment[treatment != self.control_name])
+        self.t_groups = np.unique(w[w != self.control_name])
         self.t_groups.sort()
         self._classes = {group: i for i, group in enumerate(self.t_groups)}
         self.models_c = {group: deepcopy(self.model_c) for group in self.t_groups}
         self.models_t = {group: deepcopy(self.model_t) for group in self.t_groups}
 
         for group in self.t_groups:
-            mask = (treatment == group) | (treatment == self.control_name)
-            treatment_filt = treatment[mask]
+            mask = (w == group) | (w == self.control_name)
+            w_filt = w[mask]
             X_filt = X[mask]
             y_filt = y[mask]
-            w = (treatment_filt == group).astype(int)
+            w = (w_filt == group).astype(int)
 
             self.models_c[group].fit(
                 X_filt[w == 0], y_filt[w == 0], eval_set=eval_set, **params
@@ -94,8 +94,8 @@ class Tlearner(AbstractMetaLearner):
         X: npt.NDArray[Any],
         p: npt.NDArray[np.float_] | None = None,
     ) -> npt.NDArray[np.float64]:
-        yhat_cs = {}
-        yhat_ts = {}
+        yhat_cs: dict[int, npt.NDArray[np.float_]] = {}
+        yhat_ts: dict[int, npt.NDArray[np.float_]] = {}
 
         for group in self.t_groups:
             model_c = self.models_c[group]
