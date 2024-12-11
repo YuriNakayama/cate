@@ -5,10 +5,7 @@ description = "causal inference research"
 authors = ["YuriNakayama"]
 readme = "README.md"
 
-packages = [
-    { include = "cate" },
-    { include = "process" }
-]
+packages = [{ include = "cate" }, { include = "process" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -19,7 +16,7 @@ scikit-learn = "^1.5.1"
 mlflow = "^2.16.0"
 boto3 = "^1.35.19"
 lightgbm = "^4.5.0"
-causalml = {extras = ["torch"], version = "^0.15.2"}
+causalml = { extras = ["torch"], version = "^0.15.2" }
 scipy = "1.13.1"
 scikit-uplift = "^0.5.1"
 click = "^8.1.7"
@@ -103,27 +100,20 @@ warn_unreachable = true
 plugins = ["numpy.typing.mypy_plugin"]
 
 [tool.pytest.ini_options]
-addopts = [
-    '--rootdir=tests',
-    '--strict-config',
-    '--cov=cate',
-    '-ra',
-]
+addopts = ['--rootdir=tests', '--strict-config', '--cov=cate', '-ra']
 testpaths = ['tests']
 cache_dir = "tests/.pytest_cache"
 
 [tool.coverage.run]
 branch = true
-omit = [
-    "**/__init__.py",
-]
+omit = ["**/__init__.py"]
 
 [tool.coverage.xml]
 output = "docs/coverage/coverage_report.xml"
 
 [tool.pyright]
 include = ["dev", "cate", "tests", "process"]
-exclude= [
+exclude = [
     "data",
     "docs",
     ".venv",
@@ -145,20 +135,18 @@ exclude= [
     "**/dist/**",
     "**/build/**",
     "**/.husky",
-    "**/migrations"
+    "**/migrations",
 ]
-ignore= [
+ignore = [
     "**/node_modules",
     "**/__pycache__",
     "**/.*",
     "**/dist",
     "**/.vscode",
     "**/*.pyi",
-    "**/__init__.py"
+    "**/__init__.py",
 ]
 typeCheckingMode = "basic"
 
 [tool.pylint]
-ignore-paths = [
-    ".venv", ".github", "data", "docs", "env", "outputs"
-]
+ignore-paths = [".venv", ".github", "data", "docs", "env", "outputs"]
