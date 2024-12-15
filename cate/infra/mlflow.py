@@ -71,3 +71,16 @@ class MlflowClient:
             for artifact in artifacts.results:
                 _, _ = artifact.save(Path(tmpdir))
             mlflow.log_artifacts(local_dir=tmpdir)
+
+    def search_runs_by_tags(self, tags: dict[str, str]) -> list[str]:
+        runs = mlflow.search_runs(
+            experiment_ids=[self.experiment_id],
+            filter_string=" and ".join([f"tags.{k} = '{v}'" for k, v in tags.items()]),
+            output_format="list",
+        )
+
+        run_ids = []
+        for run in runs:
+            run_id = run.info.run_id  # type: ignore
+            run_ids.append(run_id)
+        return run_ids
