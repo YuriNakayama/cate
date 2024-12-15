@@ -5,7 +5,7 @@ defaults:
   - override hydra/sweeper: optuna
 
 hydra:
-  mode: MULTIRUN
+  # mode: MULTIRUN
   run:
     dir: dev/dev/hydra/outputs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.name}
   sweep:
