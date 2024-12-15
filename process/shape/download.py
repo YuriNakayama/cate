@@ -4,13 +4,13 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 from sklift.datasets.datasets import (
-    fetch_lenta,
     fetch_hillstrom,
+    fetch_lenta,
     fetch_megafon,
-    # fetch_x5,
 )
 
-from cate.utils import path_linker
+# fetch_x5,
+from cate.utils import path_linker, send_messages
 
 
 def download_from_kaggle(owner_slug: str, dataset_slug: str) -> pd.DataFrame:
@@ -52,7 +52,7 @@ df.to_csv(pathlinker.origin, index=False)
 
 # hillstrom
 pathlinker = path_linker("hillstorm")
-X, y, t = fetch_hillstrom(return_X_y_t=True)
+X, y, t = fetch_hillstrom(target_col="conversion", return_X_y_t=True)
 df = merge_Xyt(X, y, t)
 df.to_csv(pathlinker.origin, index=False)
 
@@ -67,3 +67,5 @@ df.to_csv(pathlinker.origin, index=False)
 # X, y, t = fetch_x5(return_X_y_t=True)
 # df = merge_Xyt(X, y, t)
 # df.to_csv(pathlinker.origin, index=False)
+
+send_messages(["download finished"])
