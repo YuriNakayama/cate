@@ -12,14 +12,31 @@ def main(cfg: DictConfig) -> None:
     logger = get_logger("trainer")
     pathlink = path_linker(cfg.data.name)
 
+    tags = {
+        "dataset": cfg.data.name,
+        "package": "causalml",
+        "layer": "parent",
+    }
+    run_ids = client.search_runs_by_tags(tags)
+    if not run_ids:
+        parent_run = client.start_run(
+            run_name=f"{cfg.data.name}",
+            tags=tags,
+            description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
+        )
+        client.end_run()
+        parent_run_id = parent_run.info.run_id
+    else:
+        parent_run_id = run_ids[0]
+
     train(
         cfg,
         pathlink,
         client,
         logger,
-        sample_ratio=0.1,
+        parent_run_id=parent_run_id,
     )
-    send_messages([f"Training Finished biased_data {cfg.model.name}"])
+    send_messages([f"Training Finished base_pattern {cfg.model.name}, {cfg.data.name}"])
 
 
 if __name__ == "__main__":

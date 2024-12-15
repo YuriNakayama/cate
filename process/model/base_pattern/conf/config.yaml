@@ -6,6 +6,7 @@ hydra:
 
 data:
   name: "test"
+  sample_ratio: 1.0
 
 model:
   name: "tlearner"
@@ -26,4 +27,4 @@ training:
     verbosity: 0
 
 mlflow:
-  experiment_name: "biased_data"
+  experiment_name: "base_pattern"

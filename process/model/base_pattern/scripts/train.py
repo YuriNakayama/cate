@@ -19,12 +19,12 @@ def train(
     pathlink: AbstractLink,
     client: MlflowClient,
     logger: Logger,
-    sample_ratio: float = 1.0,
+    parent_run_id: str,
 ) -> None:
-    logger.info(f"start train in sample_ratio {sample_ratio}")
+    logger.info("start train")
     logger.info("load dataset")
     ds = Dataset.load(pathlink.base)
-    ds = sample(ds, frac=sample_ratio, random_state=42)
+    ds = sample(ds, frac=cfg.data.sample_ratio, random_state=42)
     base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
     base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
 
@@ -42,19 +42,18 @@ def train(
 
     skf = StratifiedKFold(5, shuffle=True, random_state=42)
     client.start_run(
-        run_name=f"{cfg.data.name}-{cfg.model.name}-sample_ratio_{sample_ratio}",
+        run_name=f"{cfg.data.name}-{cfg.model.name}",
         tags={
             "model": cfg.model.name,
             "dataset": cfg.data.name,
             "package": "causalml",
-            "sample_ratio": str(sample_ratio),
+            "sample_ratio": str(cfg.data.sample_ratio),
+            "mlflow.parentRunId": parent_run_id,
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
-    client.log_params(
-        dict(cfg.training) | dict(cfg.model) | {"sample_ratio": sample_ratio}
-    )
-    _pred_dfs = []
+    client.log_params(dict(cfg.training) | dict(cfg.model) | dict(cfg.data))
+    _pred_dfs: list[pd.DataFrame] = []
     for epoch, (train_idx, valid_idx) in tqdm(
         enumerate(skf.split(np.zeros(len(ds)), ds.y))
     ):
@@ -77,7 +76,7 @@ def train(
 
         metrics = Metrics(
             list(
-                [evaluate.Auuc()]
+                [evaluate.Auuc(20)]
                 + [evaluate.UpliftByPercentile(k) for k in np.arange(0, 1, 0.1)]
                 + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
             )
@@ -100,7 +99,7 @@ def train(
     )
     output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
-    artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
+    artifacts = Artifacts([evaluate.UpliftCurve(40), evaluate.Outputs()])
     artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
     client.log_artifacts(artifacts)
     client.end_run()
