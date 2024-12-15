@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from copy import deepcopy
 from logging import Logger
+from typing import Any
 
 import lightgbm as lgb
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from causalml.inference import meta
 from omegaconf import DictConfig
@@ -14,25 +16,30 @@ from sklearn.model_selection import StratifiedKFold
 import cate.dataset as cds
 from cate.infra.mlflow import MlflowClient
 from cate.metrics import Artifacts, Metrics, evaluate
-from cate.utils import AbstractLink
+from cate.utils import AbstractLink, dict_flatten
 
 
 class BaggingModel:
-    def __init__(self, classifiers) -> None:
+    def __init__(self, classifiers: list) -> None:
         self.classifiers = classifiers
 
-    def fit(self, X, y) -> BaggingModel:
+    def fit(self, X: npt.NDArray, y: npt.NDArray[np.int_]) -> BaggingModel:
         for classifier in self.classifiers:
             classifier.fit(X, y)
         return self
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: npt.NDArray) -> npt.NDArray[np.float_]:
         return np.mean(
             [classifier.predict_proba(X) for classifier in self.classifiers], axis=0
         )
 
 
-def create_cv_models(X, y, base_classifier, random_state=42) -> tuple:
+def create_cv_models(
+    X: npt.NDArray,
+    y: npt.NDArray[np.int_],
+    base_classifier: Any,
+    random_state: int = 42,
+) -> tuple[BaggingModel, npt.NDArray[np.float_]]:
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
     models = []
     pred = np.zeros_like(y, dtype=float)
@@ -135,15 +142,14 @@ def train(
     client: MlflowClient,
     logger: Logger,
     *,
-    rank: int,
-    random_ratio: float,
     train_ds: cds.Dataset,
     test_ds: cds.Dataset,
     rank_df: pd.DataFrame,
-    sample_ratio: float = 1.0,
     parent_run_id: str | None = None,
 ) -> None:
-    logger.info(f"start train in rank {rank}, random_ratio {random_ratio}")
+    logger.info(
+        f"start train in rank {cfg.data.rank}, random_ratio {cfg.data.random_ratio}"
+    )
     # Fit Metalearner
     base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
     base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
@@ -160,30 +166,28 @@ def train(
     np.int = int  # type: ignore
 
     client.start_run(
-        run_name=f"{cfg.data.name}-{cfg.model.name}-rank_{rank}-random_ratio_{random_ratio}",
+        run_name=f"{cfg.data.name}-{cfg.model.name}-rank_{cfg.data.rank}-random_ratio_{cfg.data.random_ratio}",
         tags={
             "model": cfg.model.name,
             "dataset": cfg.data.name,
             "package": "causalml",
-            "rank": str(rank),
-            "random_ratio": str(random_ratio),
-            "sample_ratio": str(sample_ratio),
+            "rank": str(cfg.data.rank),
+            "random_ratio": str(cfg.data.random_ratio),
+            "sample_ratio": str(cfg.data.sample_ratio),
             "mlflow.parentRunId": parent_run_id,
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
     client.log_params(
-        dict(cfg.training)
-        | dict(cfg.model)
-        | {"rank": rank, "random_ratio": random_ratio, "sample_ratio": sample_ratio}
+        dict_flatten(cfg),
     )
 
     logger.info("split dataseet")
-    rank_flg = rank_df <= rank
+    rank_flg = rank_df <= cfg.data.rank
     train_ds = tg_cg_split(
-        train_ds, rank_flg["rank"], random_ratio=random_ratio, random_state=42
+        train_ds, rank_flg["rank"], random_ratio=cfg.data.random_ratio, random_state=42
     )
-    train_ds = cds.sample(train_ds, frac=sample_ratio, random_state=42)
+    train_ds = cds.sample(train_ds, frac=cfg.data.sample_ratio, random_state=42)
 
     train_X = train_ds.X.to_numpy()
     train_y = train_ds.y.to_numpy().reshape(-1)
@@ -196,7 +200,7 @@ def train(
 
     logger.info("strat train propensity score model")
     propensity_base_model = CalibratedClassifierCV(
-        lgb.LGBMClassifier(**cfg.training.classifier),  # type: ignore
+        lgb.LGBMClassifier(**cfg.training.classifier),
         method="sigmoid",
     )
     propensity_model, train_p = create_cv_models(
@@ -218,7 +222,7 @@ def train(
         )
     )
     metrics(pred.reshape(-1), test_y, test_w)
-    client.log_metrics(metrics, rank)
+    client.log_metrics(metrics, cfg.data.rank)
 
     pred_df = pd.DataFrame(
         {"index": test_ds.y.index, "pred": pred.reshape(-1)}
