@@ -2,5 +2,13 @@ from .line import send_messages
 from .log import get_logger
 from .path import AbstractLink, path_linker
 from .time import Timer
+from .util import dict_flatten
 
-__all__ = ["path_linker", "AbstractLink", "Timer", "get_logger", "send_messages"]
+__all__ = [
+    "path_linker",
+    "AbstractLink",
+    "Timer",
+    "get_logger",
+    "send_messages",
+    "dict_flatten",
+]
