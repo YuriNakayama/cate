@@ -1,3 +1,20 @@
-max_epochs: 10
-gpus: 1
-precisiona: 16
+defaults:
+  - _self_
+  - model: model
+  # - hydra: sweeper
+  - override hydra/sweeper: optuna
+
+hydra:
+  mode: MULTIRUN
+  run:
+    dir: dev/dev/hydra/outputs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.name}
+  sweep:
+    dir: dev/dev/hydra/outputs/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.override_dirname}
+  
+
+train:
+  max_epochs: 10
+  gpus: 1
+  precision: 8
+
