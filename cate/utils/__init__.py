@@ -1,6 +1,6 @@
-from .line import send_messages
 from .log import get_logger
 from .path import AbstractLink, path_linker
+from .slack import send_message
 from .time import Timer
 from .utils import dict_flatten
 
@@ -9,6 +9,6 @@ __all__ = [
     "AbstractLink",
     "Timer",
     "get_logger",
-    "send_messages",
+    "send_message",
     "dict_flatten",
 ]

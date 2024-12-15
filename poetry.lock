@@ -4508,6 +4508,16 @@ files = [
 ]
 
 [[package]]
+name = "slackweb"
+version = "1.0.5"
+description = "slack bot for incomming webhook"
+optional = false
+python-versions = "*"
+files = [
+    {file = "slackweb-1.0.5.tar.gz", hash = "sha256:bb64f1f8fea99fc04ce8fb300a09aab8fe51d86e25cedafb1eaca07f7b828c36"},
+]
+
+[[package]]
 name = "slicer"
 version = "0.0.8"
 description = "A small package for big slicing."
@@ -5222,4 +5232,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7c0bffb1d569b638c15337b2d054314bfcd7249266efda4818dbcc9af0bea0b1"
+content-hash = "710228c3c148b79aba242f3a2cab28f1f7f78c247c9222d5130233b680fba258"

@@ -1,0 +1,10 @@
+from pathlib import Path
+
+import slackweb
+
+
+def send_message(message: str) -> str:
+    url_path = Path("/workspace/env/tokens/slack.env")
+    slack = slackweb.Slack(url_path.read_text())
+    result = slack.notify(text=message)
+    return result
