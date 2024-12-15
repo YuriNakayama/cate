@@ -8,8 +8,7 @@ data:
   name: "test"
 
 model:
-  name: "tlearner"
-  num_rank: 10
+  name: "lightgbm"
 
 training:
   classifier:
@@ -18,12 +17,6 @@ training:
     force_col_wise: True
     n_jobs: -1
     verbosity: -1
-  regressor:
-    importance_type: "gain"
-    random_state: 42
-    force_col_wise: True
-    n_jobs: -1
-    verbosity: -1
-
+  
 mlflow:
-  experiment_name: "biased_data"
+  experiment_name: "classification"
