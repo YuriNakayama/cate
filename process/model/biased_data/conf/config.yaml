@@ -7,12 +7,12 @@ hydra:
 data:
   name: "test"
   random_ratio: 0.5
+  sample_ratio: 1.0
   rank: 5
 
 model:
   name: "tlearner"
   num_rank: 10
-  sample_ratio: 1.0
 
 training:
   classifier:

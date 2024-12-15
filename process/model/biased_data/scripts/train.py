@@ -20,7 +20,7 @@ from cate.utils import AbstractLink, dict_flatten
 
 
 class BaggingModel:
-    def __init__(self, classifiers: list) -> None:
+    def __init__(self, classifiers: list[Any]) -> None:
         self.classifiers = classifiers
 
     def fit(self, X: npt.NDArray, y: npt.NDArray[np.int_]) -> BaggingModel:

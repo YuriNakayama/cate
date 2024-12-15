@@ -27,9 +27,9 @@ def main(cfg: DictConfig) -> None:
         parent_run_id = parent_run.info.run_id
     else:
         parent_run_id = run_ids[0]
-    
+
     train_ds, test_ds, rank_df = setup_dataset(cfg, logger, pathlink)
-    
+
     train(
         cfg,
         client,
@@ -39,7 +39,9 @@ def main(cfg: DictConfig) -> None:
         rank_df=rank_df,
         parent_run_id=parent_run_id,
     )
-    send_message(f"Training Finished biased_data {cfg.model.name}")
+    send_message(
+        f"Finished biased_data {cfg.model.name} {cfg.data.name} {cfg.data.random_ratio}"
+    )
 
 
 if __name__ == "__main__":
