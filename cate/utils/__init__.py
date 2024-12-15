@@ -2,7 +2,7 @@ from .line import send_messages
 from .log import get_logger
 from .path import AbstractLink, path_linker
 from .time import Timer
-from .util import dict_flatten
+from .utils import dict_flatten
 
 __all__ = [
     "path_linker",

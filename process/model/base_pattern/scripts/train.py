@@ -11,7 +11,7 @@ from tqdm import tqdm
 from cate.dataset import Dataset, sample
 from cate.infra.mlflow import MlflowClient
 from cate.metrics import Artifacts, Metrics, evaluate
-from cate.utils.path import AbstractLink
+from cate.utils import AbstractLink, dict_flatten
 
 
 def train(
@@ -52,7 +52,7 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
     )
-    client.log_params(dict(cfg.training) | dict(cfg.model) | dict(cfg.data))
+    client.log_params(dict_flatten(cfg))
     _pred_dfs: list[pd.DataFrame] = []
     for epoch, (train_idx, valid_idx) in tqdm(
         enumerate(skf.split(np.zeros(len(ds)), ds.y))
