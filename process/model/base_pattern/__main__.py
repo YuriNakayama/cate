@@ -2,7 +2,7 @@ import hydra
 from omegaconf import DictConfig
 
 from cate.infra.mlflow import MlflowClient
-from cate.utils import get_logger, path_linker, send_messages
+from cate.utils import get_logger, path_linker, send_message
 from process.model.base_pattern.scripts.train import train
 
 
@@ -36,7 +36,7 @@ def main(cfg: DictConfig) -> None:
         logger,
         parent_run_id=parent_run_id,
     )
-    send_messages([f"Training Finished base_pattern {cfg.model.name}, {cfg.data.name}"])
+    send_message(f"Training Finished base_pattern {cfg.model.name}, {cfg.data.name}")
 
 
 if __name__ == "__main__":
