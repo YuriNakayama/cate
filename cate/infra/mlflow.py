@@ -81,6 +81,6 @@ class MlflowClient:
 
         run_ids = []
         for run in runs:
-            run_id = run.info.run_id  # type: ignore
+            run_id = run.info.run_id
             run_ids.append(run_id)
         return run_ids

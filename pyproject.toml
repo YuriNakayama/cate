@@ -87,7 +87,7 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.mypy]
-exclude = [".venv", ".github", "data", "docs", "env", "outputs"]
+exclude = [".venv", ".github", "data", "docs", "env", "outputs", "poetry.lock"]
 python_version = "3.11"
 strict = true
 disallow_any_decorated = false
