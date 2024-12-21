@@ -5,7 +5,9 @@
 run mypy by daemon mode.
 
 ```bash
-dmypy run .
+uv sync
+source .venv/bin/activate
+ipython kernel install --user --name=cate
 ```
 
 ```bash
@@ -13,6 +15,7 @@ pytest
 ```
 
 ## commit
+
 | Type     | Emoji                 | code                    |
 |:---------|:----------------------|:------------------------|
 | feat     | :sparkles:            | `:sparkles:`            |
