@@ -2,10 +2,10 @@
 
 ## command
 
-run mypy by daemon mode.
-
 ```bash
-uv sync
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.local/bin/env
+uv sync --all-extras --dev
 source .venv/bin/activate
 ipython kernel install --user --name=cate
 ```
