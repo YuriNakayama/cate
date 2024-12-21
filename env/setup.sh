@@ -1,5 +1,5 @@
 # package install
-apt update && apt install htop vim unzip zip -y
+apt update && apt install htop vim unzip zip curl -y
 
 # git
 cp /workspace/env/tokens/.ssh/config /root/.ssh/config
@@ -26,14 +26,11 @@ mkdir -p /root/.mlflow
 cp /workspace/env/tokens/mlflow.env /root/.mlflow/credentials
 chmod 600 /root/.mlflow/credentials
 
-# poetry install & setting
-pip install poetry
-poetry config virtualenvs.path --unset
-poetry config virtualenvs.in-project true
-## activate poetry and install library
-poetry env use 3.11
-poetry install
-poetry shell
+# uv install & setting
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.local/bin/env
+uv sync --all-extras --dev
+source .venv/bin/activate
 ipython kernel install --user --name=cate
 
 # hugging face setup
