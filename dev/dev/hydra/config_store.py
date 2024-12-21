@@ -1,6 +1,7 @@
-from hydra.core.config_store import ConfigStore
 from dataclasses import dataclass
+
 import hydra
+from hydra.core.config_store import ConfigStore
 
 
 @dataclass

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib.figure import Figure
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
 class Ticks:

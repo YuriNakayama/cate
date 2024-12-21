@@ -5,9 +5,9 @@ import pandas as pd
 from matplotlib.figure import Figure
 
 from cate.base.metrics.evaluate import (
-    AbstractTableArtifact,
     AbstractImageArtifact,
     AbstractMetric,
+    AbstractTableArtifact,
 )
 
 

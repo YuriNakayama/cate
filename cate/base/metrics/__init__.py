@@ -1,9 +1,9 @@
 from .evaluate import (
     AbstractImageArtifact,
+    AbstractMetric,
     AbstractTableArtifact,
     Image,
     Table,
-    AbstractMetric,
     Value,
 )
 

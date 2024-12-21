@@ -1,13 +1,13 @@
 from .evaluate import (
-    UpliftByPercentile,
-    QiniByPercentile,
     Auuc,
-    Qini,
-    QiniCurve,
-    UpliftCurve,
     Outputs,
+    Qini,
+    QiniByPercentile,
+    QiniCurve,
+    UpliftByPercentile,
+    UpliftCurve,
 )
-from .metrics import Metrics, Artifacts
+from .metrics import Artifacts, Metrics
 
 __all__ = [
     "UpliftByPercentile",
