@@ -88,6 +88,9 @@ unfixable = []
 [tool.ruff.lint.mccabe]
 max-complexity = 5
 
+[tool.ruff.lint.per-file-ignores]
+"dev/*" = ["E", "F", "W", "B"]
+
 [tool.ruff.lint.isort]
 case-sensitive = true
 
@@ -171,3 +174,4 @@ typeCheckingMode = "basic"
 
 [tool.pylint]
 ignore-paths = [".venv", ".github", "data", "docs", "env", "outputs"]
+max-line-length = 88
