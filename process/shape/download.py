@@ -10,7 +10,7 @@ from sklift.datasets.datasets import (
 )
 
 # fetch_x5,
-from cate.utils import path_linker, send_messages
+from cate.utils import path_linker, send_message
 
 
 def download_from_kaggle(owner_slug: str, dataset_slug: str) -> pd.DataFrame:
@@ -68,4 +68,4 @@ df.to_csv(pathlinker.origin, index=False)
 # df = merge_Xyt(X, y, t)
 # df.to_csv(pathlinker.origin, index=False)
 
-send_messages(["download finished"])
+send_message("download finished")
