@@ -34,6 +34,9 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
       - name: Run Ruff (lint)
         run: uv run ruff check --output-format=github --exclude "dev" .
     
