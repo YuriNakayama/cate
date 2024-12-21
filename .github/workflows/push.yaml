@@ -5,7 +5,7 @@ on:
   pull_request: {}
 
 jobs:
-  install:
+  check:
     runs-on: ubuntu-latest
     env: 
       UV_CACHE_DIR: /tmp/.uv-cache
@@ -34,7 +34,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
 
-      - name: Run Ruff (lint)
+      - name: Run Ruff (format check)
         run: uv run ruff check --output-format=github --exclude "dev" .
     
       - name: Run Mypy (type check)
