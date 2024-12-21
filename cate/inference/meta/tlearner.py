@@ -36,7 +36,7 @@ class Tlearner(AbstractMetaLearner):
                 self.model_t = deepcopy(treatment_learner)
             else:
                 raise MetaLearnerException(
-                    "Either learner or control_learner and treatment_learner must be provided."
+                    "Either learner or control_learner and treatment_learner must be provided."  # noqa: E501
                 )
         else:
             self.model_c = deepcopy(learner)

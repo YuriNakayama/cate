@@ -16,7 +16,7 @@ def main(cfg: DictConfig) -> None:
         train(cfg, client, logger, pathlink, sample_ratio=sample_ratio, random_state=42)
 
     send_message(
-        f"Training Finished small_data {cfg.model.name}, {cfg.data.name}, {sample_ratio}"
+        f"Training Finished small_data {cfg.model.name}, {cfg.data.name}, {sample_ratio}"  # noqa: E501
     )
 
 

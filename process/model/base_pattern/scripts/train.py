@@ -50,7 +50,7 @@ def train(
             "sample_ratio": str(cfg.data.sample_ratio),
             "mlflow.parentRunId": parent_run_id,
         },
-        description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
+        description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
     )
     client.log_params(dict_flatten(cfg))
     _pred_dfs: list[pd.DataFrame] = []

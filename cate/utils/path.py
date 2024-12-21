@@ -11,19 +11,13 @@ class AbstractLink(ABC):
     output: Path
 
     def _make_paths(self) -> None:
-        for attr, path in asdict(self).items():
+        for _, path in asdict(self).items():
             if isinstance(path, Path):
-                try:
-                    if path.suffix:
-                        target_dir = path.parent
-                    else:
-                        target_dir = path
-                    target_dir.mkdir(exist_ok=True, parents=True)
-
-                except Exception as e:
-                    raise RuntimeError(
-                        f"Error creating directories for {attr} ({path}): {e}"
-                    )
+                if path.suffix:
+                    target_dir = path.parent
+                else:
+                    target_dir = path
+                target_dir.mkdir(exist_ok=True, parents=True)
 
     def __post_init__(self) -> None:
         self._make_paths()

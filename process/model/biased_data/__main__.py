@@ -21,7 +21,7 @@ def main(cfg: DictConfig) -> None:
         parent_run = client.start_run(
             run_name=f"{cfg.data.name}",
             tags=tags,
-            description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
+            description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
         )
         client.end_run()
         parent_run_id = parent_run.info.run_id

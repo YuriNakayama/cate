@@ -138,7 +138,8 @@ def split(
 
     Returns:
     tuple[Dataset, Dataset]: A tuple containing the training and testing datasets.
-    """
+    """  # noqa: E501
+
     if test_frac == 0 or test_n == 0:
         return ds, Dataset(
             pd.DataFrame(columns=ds.to_pandas().columns),

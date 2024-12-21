@@ -47,10 +47,12 @@ class ErrorBar:
 
 class LinePlot:
     def __init__(
-        self, *, x_ticks: Ticks = Ticks(), error_bar: ErrorBar = ErrorBar()
+        self, *, x_ticks: Ticks | None = None, error_bar: ErrorBar | None = None
     ) -> None:
-        self.x_ticks = x_ticks
-        self.error_bar = error_bar
+        if x_ticks is None:
+            self.x_ticks = Ticks()
+        if error_bar is None:
+            self.error_bar = ErrorBar()
 
     def __call__(
         self,

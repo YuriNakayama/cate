@@ -51,7 +51,7 @@ def train(
             "sample_ratio": str(sample_ratio),
             "random_state": str(random_state),
         },
-        description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",
+        description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
     )
     client.log_params(
         dict(cfg.training)

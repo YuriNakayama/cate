@@ -80,7 +80,7 @@ class Auuc(AbstractMetric):
     UpliftCurveとbaselineに囲まれた部分の面積を計算する.
     AUUC = \sum_{k=1}^n AUUC_{\pi}(k)
     AUUC_{\pi}(k) =  AUL_{\pi}^T(k) - AUL_{\pi}^C(k) = \sum_{i=1}^k (R_{\pi}^T(i) - R_{\pi}^C(i)) - \frac{k}{2}(\bar{R}^T(k) - \bar{R}^C(k))
-    """
+    """  # noqa: E501
 
     def __init__(self, bin_num: int = 100) -> None:
         self.bin_num = bin_num
@@ -134,8 +134,6 @@ class QiniCurve:
     https://www.jstage.jst.go.jp/article/pjsai/JSAI2020/0/JSAI2020_1H4OS12b02/_pdf
     """
 
-    pass
-
 
 class UpliftCurve(AbstractImageArtifact):
     """
@@ -148,7 +146,7 @@ class UpliftCurve(AbstractImageArtifact):
 
     Methods:
         _calculate(pred, y, w): Calculates the uplift curve and returns it as a matplotlib Figure.
-    """
+    """  # noqa: E501
 
     def __init__(self, bin_num: int = 100) -> None:
         self.bin_num = bin_num
@@ -230,7 +228,7 @@ class Outputs(AbstractTableArtifact):
     Methods:
         _calculate(pred, y, w): Creates a pandas DataFrame containing the predicted uplifts, actual
         conversions, and group assignments for each observation.
-    """
+    """  # noqa: E501
 
     @property
     def name(self) -> str:
