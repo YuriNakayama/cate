@@ -6,5 +6,5 @@ import slackweb
 def send_message(message: str) -> str:
     url_path = Path("/workspace/env/tokens/slack.env")
     slack = slackweb.Slack(url_path.read_text())
-    result: str = slack.notify(text=message)  # type: ignore
+    result: str = slack.notify(text=message)
     return result
