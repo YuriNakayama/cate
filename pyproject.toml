@@ -17,6 +17,7 @@ dependencies = [
     "scikit-learn>=1.6.0",
     "scikit-uplift>=0.5.1",
     "scipy>=1.14.1",
+    "torch>=2.5.1",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -34,7 +35,12 @@ lint = [
     "pytest>=8.3.4",
     "ruff>=0.8.4",
 ]
-env = ["boto3>=1.35.86", "ipykernel>=6.29.5", "line-bot-sdk>=3.14.2"]
+env = [
+    "boto3>=1.35.86",
+    "ipykernel>=6.29.5",
+    "line-bot-sdk>=3.14.2",
+    "slack-sdk>=3.34.0",
+]
 
 [tool.uv]
 default-groups = ["lint", "env"]
