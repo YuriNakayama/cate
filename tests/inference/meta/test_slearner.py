@@ -4,10 +4,8 @@ from typing import Any
 
 import numpy as np
 import numpy.typing as npt
-import pytest
 from lightgbm import LGBMClassifier
 
-from cate.base.inference.meta import MetaLearnerException
 from cate.dataset import synthetic_data
 from cate.inference.meta import Slearner
 
