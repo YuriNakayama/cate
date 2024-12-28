@@ -2,6 +2,8 @@
 
 ## command
 
+uvのセットアップ
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.local/bin/env
@@ -10,8 +12,10 @@ source .venv/bin/activate
 ipython kernel install --user --name=cate
 ```
 
+coverage reportの更新
+
 ```bash
-pytest 
+pytest --cov=cate --cov-report=xml:docs/coverage/coverage.xml
 ```
 
 ## commit
