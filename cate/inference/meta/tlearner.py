@@ -74,16 +74,15 @@ class Tlearner(AbstractMetaLearner):
 
         for group in self.t_groups:
             mask = (w == group) | (w == self.control_name)
-            w_filt = w[mask]
             X_filt = X[mask]
             y_filt = y[mask]
-            w = (w_filt == group).astype(int)
+            w_filt = (w[mask] == group).astype(int)
 
             self.models_c[group].fit(
-                X_filt[w == 0], y_filt[w == 0], eval_set=eval_set, **params
+                X_filt[w_filt == 0], y_filt[w_filt == 0], eval_set=eval_set, **params
             )
             self.models_t[group].fit(
-                X_filt[w == 1], y_filt[w == 1], eval_set=eval_set, **params
+                X_filt[w_filt == 1], y_filt[w_filt == 1], eval_set=eval_set, **params
             )
         return self
 
