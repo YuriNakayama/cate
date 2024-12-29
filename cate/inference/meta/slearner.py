@@ -42,6 +42,8 @@ class Slearner(AbstractMetaLearner):
         | None = None,
         params: dict[str, Any] | None = None,
     ) -> Slearner:
+        if params is None:
+            params = {}
         self.t_groups = np.unique(w[w != self.control_name])
         self.t_groups.sort()
         self._classes = {group: i for i, group in enumerate(self.t_groups)}
@@ -49,13 +51,12 @@ class Slearner(AbstractMetaLearner):
 
         for group in self.t_groups:
             mask = (w == group) | (w == self.control_name)
-            w_filt = w[mask]
             X_filt = X[mask]
             y_filt = y[mask]
+            w_filt = (w[mask] == group).astype(int)
 
-            w = (w_filt == group).astype(int)
-            X_new = np.hstack((w.reshape((-1, 1)), X_filt))
-            self.models[group].fit(X_new, y_filt)
+            X_new = np.hstack((w_filt.reshape((-1, 1)), X_filt))
+            self.models[group].fit(X_new, y_filt, eval_set=eval_set, **params)
         return self
 
     def predict(
@@ -70,11 +71,11 @@ class Slearner(AbstractMetaLearner):
 
             # set the treatment column to zero (the control group)
             X_new = np.hstack((np.zeros((X.shape[0], 1)), X))
-            yhat_cs[group] = model.predict_proba(X_new)
+            yhat_cs[group] = model.predict_proba(X_new)[:, 1]
 
             # set the treatment column to one (the treatment group)
             X_new[:, 0] = 1
-            yhat_ts[group] = model.predict_proba(X_new)
+            yhat_ts[group] = model.predict_proba(X_new)[:, 1]
 
         te = np.zeros((X.shape[0], self.t_groups.shape[0]))
         for i, group in enumerate(self.t_groups):
