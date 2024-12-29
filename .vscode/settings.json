@@ -137,5 +137,8 @@
             "type": "text",
             "multiline": true
         }
-    ]
+    ],
+    "github.copilot.enable": {
+        "markdown": true
+    }
 }
