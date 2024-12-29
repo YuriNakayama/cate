@@ -1,20 +1,15 @@
 *.csv
 *.jpeg
 *.jpg
-*.jpg
 *.log
 *.pdf
-*.pdf
 *.pickle
-*.png
-*.png
 *.pyc
 *.safetensor
 *.safetensors
 *.zip
 *.model
 *.npy
-
 
 .bash_history
 .bashrc
