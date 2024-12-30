@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils import get_logger, path_linker, send_message
-from process.model.base_pattern.scripts.train import train
+from process.model.pytorch_classification.scripts.train import train
 
 
 @hydra.main(config_name="config.yaml", version_base=None, config_path="conf")

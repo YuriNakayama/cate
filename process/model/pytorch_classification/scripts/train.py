@@ -1,4 +1,5 @@
 import random
+from logging import Logger
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -7,10 +8,14 @@ import polars as pl
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from omegaconf import DictConfig
 from sklearn.model_selection import StratifiedKFold
 from torch import Tensor
 from torch.utils.data import DataLoader, Subset
 from tqdm.notebook import tqdm
+
+from cate.infra.mlflow import MlflowClient
+from cate.utils.path import AbstractLink
 
 from .dataset import BinaryClassificationDataset, fix_seed, worker_init_fn
 from .model import FullConnectedModel
@@ -65,7 +70,13 @@ def train_model(
     return model, np.mean(train_batch_loss), np.mean(test_batch_loss)
 
 
-def train() -> None:
+def train(
+    cfg: DictConfig,
+    pathlink: AbstractLink,
+    client: MlflowClient,
+    logger: Logger,
+    parent_run_id: str,
+) -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     seed = 42
     fix_seed(seed)
