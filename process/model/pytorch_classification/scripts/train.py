@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 from sklearn.model_selection import StratifiedKFold
 from torch import Tensor
 from torch.utils.data import DataLoader, Subset
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils.path import AbstractLink
@@ -56,9 +56,9 @@ def train_model(
         train_batch_loss.append(loss.item())
 
     # Test(val) loop ----------------------------
-    model.eval()  # 学習モードをオフ
+    model.eval()
     test_batch_loss = []
-    with torch.no_grad():  # 勾配を計算なし
+    with torch.no_grad():
         for data, label in test_loader:
             data, label = data.to(device), label.to(device)
             output = model(data)
@@ -75,11 +75,14 @@ def train(
     logger: Logger,
     parent_run_id: str,
 ) -> None:
+    logger.info("Start training")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     seed = 42
     fix_seed(cfg.training.seed)
+    logger.info("Start dataset creation")
     dataset = create_dataset()
 
+    logger.info("Start model creation")
     model = FullConnectedModel(len(dataset.x_columns), 2).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=cfg.training.lr)
@@ -87,7 +90,7 @@ def train(
     # 訓練の実行
     train_loss = []
     test_loss = []
-
+    logger.info("Start training loop")
     for epoch in tqdm(range(cfg.training.epochs)):
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
         for train_index, valid_index in skf.split(range(len(dataset)), dataset.y):
@@ -117,10 +120,10 @@ def train(
             )
             train_loss.append(train_l)
             test_loss.append(test_l)
-            # 10エポックごとにロスを表示
-            if epoch % 10 == 0:
-                print(
-                    "Train loss: {a:.3f}, Test loss: {b:.3f}".format(
-                        a=train_loss[-1], b=test_loss[-1]
-                    )
+        # 10エポックごとにロスを表示
+        if epoch % 2 == 0:
+            logger.info(
+                "Train loss: {a:.3f}, Test loss: {b:.3f}".format(
+                    a=train_loss[-1], b=test_loss[-1]
                 )
+            )
