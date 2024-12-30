@@ -79,19 +79,18 @@ def train(
 ) -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     seed = 42
-    fix_seed(seed)
+    fix_seed(cfg.training.seed)
     dataset = create_dataset()
 
     model = FullConnectedModel(len(dataset.x_columns), 2).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
+    optimizer = optim.SGD(model.parameters(), lr=cfg.training.lr)
 
     # 訓練の実行
-    epochs = 3
     train_loss = []
     test_loss = []
 
-    for epoch in tqdm(range(epochs)):
+    for epoch in tqdm(range(cfg.training.epochs)):
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
         for train_index, valid_index in skf.split(range(len(dataset)), dataset.y):
             train_dataset = Subset(dataset, train_index)
@@ -100,7 +99,7 @@ def train(
             # データローダーの作成
             train_loader = DataLoader(
                 train_dataset,
-                batch_size=32,
+                batch_size=cfg.training.train_batch_size,
                 shuffle=True,
                 num_workers=2,
                 pin_memory=True,
@@ -108,7 +107,7 @@ def train(
             )
             valid_loader = DataLoader(
                 valid_dataset,
-                batch_size=16,
+                batch_size=cfg.training.valid_batch_size,
                 shuffle=False,
                 num_workers=2,
                 pin_memory=True,
