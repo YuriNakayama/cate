@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,19 +9,30 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.model_selection import StratifiedKFold
 from torch import Tensor
-from torch.utils.data import DataLoader, Dataset, Subset
+from torch.utils.data import DataLoader, Subset
 from tqdm.notebook import tqdm
 
+from .dataset import BinaryClassificationDataset, fix_seed, worker_init_fn
+from .model import FullConnectedModel
 
 
-# モデル・損失関数・最適化アルゴリスムの設定
-model = Mymodel(len(X_columns), 2).to(device)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+def create_dataset() -> BinaryClassificationDataset:
+    df = pl.read_csv("/workspace/data/origin/criteo.csv").head(100_000)
+    y_columns = ["visit"]
+    other_columns = ["treatment", "exposure", "conversion"]
+    X_columns = [col for col in df.columns if col not in y_columns + other_columns]
+    dataset = BinaryClassificationDataset(df, X_columns, y_columns)
+    return dataset
 
 
-# モデル訓練関数
-def train_model(model, train_loader, test_loader):
+def train_model(
+    model: nn.Module,
+    train_loader: DataLoader[tuple[Tensor, Tensor]],
+    test_loader: DataLoader[tuple[Tensor, Tensor]],
+    optimizer: optim.Optimizer,
+    criterion: nn.Module,
+    device: torch.device,
+) -> tuple[nn.Module, np.floating[Any], np.floating[Any]]:
     # Train loop ----------------------------
     model.train()  # 学習モードをオン
     train_batch_loss = []
@@ -52,13 +64,23 @@ def train_model(model, train_loader, test_loader):
 
     return model, np.mean(train_batch_loss), np.mean(test_batch_loss)
 
-def train()-> None:
+
+def train() -> None:
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    seed = 42
+    fix_seed(seed)
+    dataset = create_dataset()
+
+    model = FullConnectedModel(len(dataset.x_columns), 2).to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
+
     # 訓練の実行
-    epoch = 3
+    epochs = 3
     train_loss = []
     test_loss = []
 
-    for epoch in tqdm(range(epoch)):
+    for epoch in tqdm(range(epochs)):
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
         for train_index, valid_index in skf.split(range(len(dataset)), dataset.y):
             train_dataset = Subset(dataset, train_index)
@@ -82,7 +104,9 @@ def train()-> None:
                 worker_init_fn=worker_init_fn,
             )
 
-            model, train_l, test_l = train_model(model, train_loader, valid_loader)
+            model, train_l, test_l = train_model(
+                model, train_loader, valid_loader, optimizer, criterion, device
+            )
             train_loss.append(train_l)
             test_loss.append(test_l)
             # 10エポックごとにロスを表示
