@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils import get_logger, path_linker, send_message
-from process.model.pytorch_classification.scripts.train import train
+from process.model.biased_data.scripts.train import setup_dataset, train
 
 
 @hydra.main(config_name="config.yaml", version_base=None, config_path="conf")
@@ -28,7 +28,17 @@ def main(cfg: DictConfig) -> None:
     else:
         parent_run_id = run_ids[0]
 
-    train()
+    train_ds, test_ds, rank_df = setup_dataset(cfg, logger, pathlink)
+
+    train(
+        cfg,
+        client,
+        logger,
+        train_ds=train_ds,
+        test_ds=test_ds,
+        rank_df=rank_df,
+        parent_run_id=parent_run_id,
+    )
     send_message(
         f"Finished biased_data {cfg.model.name} {cfg.data.name} {cfg.data.random_ratio}"
     )
