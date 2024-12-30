@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
 from cate.infra.mlflow import MlflowClient
-from cate.utils.path import AbstractLink
+from cate.utils import AbstractLink, dict_flatten
 
 from .dataset import BinaryClassificationDataset, fix_seed, worker_init_fn
 from .model import FullConnectedModel
@@ -87,9 +87,21 @@ def train(
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=cfg.training.lr)
 
+    client.start_run(
+        run_name=f"{cfg.data.name}-{cfg.model.name}-rank_{cfg.data.rank}-random_ratio_{cfg.data.random_ratio}",
+        tags={
+            "model": cfg.model.name,
+            "dataset": cfg.data.name,
+            "package": "pytorch",
+            "mlflow.parentRunId": parent_run_id,
+        },
+        description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
+    )
+    client.log_params(
+        dict_flatten(cfg),
+    )
+
     # 訓練の実行
-    train_loss = []
-    test_loss = []
     logger.info("Start training loop")
     for epoch in tqdm(range(cfg.training.epochs)):
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
@@ -115,15 +127,14 @@ def train(
                 worker_init_fn=worker_init_fn,
             )
 
-            model, train_l, test_l = train_model(
+            model, train_loss, test_loss = train_model(
                 model, train_loader, valid_loader, optimizer, criterion, device
             )
-            train_loss.append(train_l)
-            test_loss.append(test_l)
+
         # 10エポックごとにロスを表示
         if epoch % 2 == 0:
             logger.info(
                 "Train loss: {a:.3f}, Test loss: {b:.3f}".format(
-                    a=train_loss[-1], b=test_loss[-1]
+                    a=train_loss, b=test_loss
                 )
             )
