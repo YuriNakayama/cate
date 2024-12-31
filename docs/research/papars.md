@@ -1,6 +1,6 @@
 # 因果推論の論文
 
-## [Deep Learning for Causal Inference]([file:///Users/yurinakayama/Downloads/Deep%20Learning%20for%20Causal%20Inference.pdf](https://arxiv.org/abs/2405.03130))
+## [Deep Learning for Causal Inference](https://arxiv.org/abs/2405.03130)
 
 ### Abstract
 
@@ -8,7 +8,26 @@ This primer systematizes the emerging literature on causal inference using deep 
 
 ### 概要
 
-機械学習を用いた因果推論モデルの実装や運用についての基本的な知識をまとめている.
+機械学習を用いた因果推論モデルの実装や運用についての基本的な知識をまとめている.  Bayesian Causal Forest algorithmをneural networkで実装したものを提案している. また, stressとsleepの関係についてのデータセットを用いて提案手法の有効性を示している.
+
+先行研究(Farrell)で次のようにモデル化されていたものを
+
+```math
+\begin{align}
+\mathbb{E}(Y|X=x, Z=z) &= G(\alpha(x)+\beta(x)z) \\
+\end{align}
+```
+
+![先行研究(Farrell)で実装されたモデル](image/farrell_shared_network.png)
+
+```math
+\begin{align}
+\mathbb{E}(Y|X=x, Z=z) &= G(\alpha(x, \hat{\pi}(x))+\beta(x)z) \\
+\end{align}
+```
+
+![BCF nnet architecture](image/bcf_nnet_architecture.png)
+へと変更した. ここで, $\hat{\pi}(x)$は傾向スコアの推定値を表している. このモデルは, $\alpha(\cdot)$と$\beta(\cdot)$を別のネットワークとすることにより, cateの推定精度を向上させることができる.
 
 ### 参考
 
