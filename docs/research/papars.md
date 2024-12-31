@@ -28,6 +28,12 @@ This primer systematizes the emerging literature on causal inference using deep 
 
 ![BCF nnet architecture](image/bcf_nnet_architecture.png)
 へと変更した. ここで, $\hat{\pi}(x)$は傾向スコアの推定値を表している. このモデルは, $\alpha(\cdot)$と$\beta(\cdot)$を別のネットワークとすることにより, cateの推定精度を向上させることができる.
+ここで, $Y$を目的変数として, mean squared errorを最小化するように学習を行う.
+```math
+\begin{align}
+\frac{1}{n}\sum_i[(y_i - G(\alpha(x_i, \hat{\pi}(x_i))+\beta(x_i)z_i))^2]
+\end{align}
+```
 
 ### 参考
 
