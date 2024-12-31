@@ -12,6 +12,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
+import cate.dataset as cds
 from cate.infra.mlflow import MlflowClient
 from cate.utils import AbstractLink, dict_flatten
 
@@ -19,12 +20,16 @@ from .dataset import BinaryClassificationDataset, fix_seed, worker_init_fn
 from .model import FullConnectedModel
 
 
-def create_dataset() -> BinaryClassificationDataset:
-    df = pl.read_csv("/workspace/data/origin/criteo.csv").head(100_000)
-    y_columns = ["visit"]
-    other_columns = ["treatment", "exposure", "conversion"]
-    X_columns = [col for col in df.columns if col not in y_columns + other_columns]
-    dataset = BinaryClassificationDataset(df, X_columns, y_columns)
+def create_dataset(
+    logger: Logger,
+    link: AbstractLink,
+) -> BinaryClassificationDataset:
+    logger.info("load dataset")
+    ds = cds.Dataset.load(link.base)
+
+    dataset = BinaryClassificationDataset(
+        pl.DataFrame(ds.to_pandas()), ds.x_columns, ds.y_columns
+    )
     return dataset
 
 
@@ -80,7 +85,7 @@ def train(
     seed = 42
     fix_seed(cfg.training.seed)
     logger.info("Start dataset creation")
-    dataset = create_dataset()
+    dataset = create_dataset(logger, pathlink)
 
     logger.info("Start model creation")
     model = FullConnectedModel(len(dataset.x_columns), 2).to(device)
