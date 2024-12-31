@@ -22,7 +22,7 @@ def fix_seed(seed) -> None:
     torch.backends.cudnn.benchmark = False
 
 
-def worker_init_fn(worker_id: str) -> None:
+def worker_init_fn(worker_id: int) -> None:
     np.random.seed(np.random.get_state()[1][0].item() + worker_id)
 
 
