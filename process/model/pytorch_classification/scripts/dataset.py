@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import random
 
 import numpy as np
@@ -5,6 +6,8 @@ import polars as pl
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
+
+mp.set_start_method("spawn", force=True)
 
 
 def fix_seed(seed) -> None:
@@ -27,7 +30,7 @@ class BinaryClassificationDataset(Dataset):
     def __init__(
         self, df: pl.DataFrame, x_columns: list[str], y_columns: list[str]
     ) -> None:
-        self._df = df
+        self._df = df.clone()
         self.x_columns = x_columns
         self.y_columns = y_columns
 
