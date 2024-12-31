@@ -6,17 +6,22 @@ from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+import polars as pl
 from sklearn.model_selection import train_test_split
 
 
 def to_rank(
-    primary_key: pd.Series, score: pd.Series, ascending: bool = True, k: int = 100
-) -> pd.Series:
-    df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
-        primary_key.name, drop=True
+    primary_key: pl.Series, score: pl.Series, descending: bool = False, k: int = 100
+) -> pl.Series:
+    df = pl.DataFrame({primary_key.name: primary_key, score.name: score})
+    df = df.sort(by=str(score.name), descending=descending)
+    df = df.with_columns(
+        pl.Series(
+            name="rank",
+            values=np.ceil(np.arange(1, len(df) + 1) / len(df) * k),
+            dtype=pl.Int64,
+        )
     )
-    df = df.sort_values(by=str(score.name), ascending=ascending)
-    df["rank"] = np.ceil(np.arange(1, len(df) + 1) / len(df) * k).astype(int)
     return df["rank"]
 
 
