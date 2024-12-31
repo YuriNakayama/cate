@@ -110,7 +110,7 @@ def train(
     logger.info("Start training loop")
     for epoch in tqdm(range(cfg.training.epochs)):
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
-        for train_index, valid_index in skf.split(range(len(dataset)), dataset.y):
+        for train_index, valid_index in skf.split(np.zeros(len(dataset)), dataset.y):
             train_dataset = Subset(dataset, train_index)
             valid_dataset = Subset(dataset, valid_index)
 
