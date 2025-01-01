@@ -4,6 +4,7 @@ from pathlib import Path
 import polars as pl
 import polars.testing as pt
 import pytest
+from numpy.testing import assert_array_equal
 
 import cate.dataset as cds
 
@@ -43,8 +44,8 @@ def test_dataset_init_valid_columns() -> None:
     assert dataset.y_columns == y_columns
     assert dataset.w_columns == w_columns
     assert dataset.X.shape == (3, 2)
-    assert dataset.y.shape == (3, 1)
-    assert dataset.w.shape == (3, 1)
+    assert dataset.y.shape == (3,)
+    assert dataset.w.shape == (3,)
 
 
 def test_dataset_init_invalid_columns() -> None:
@@ -118,9 +119,9 @@ def test_load_valid_dataset(sample_dataset: cds.Dataset, tmp_path: Path) -> None
 
     assert loaded_dataset.x_columns == sample_dataset.x_columns
     assert loaded_dataset.y_columns == sample_dataset.y_columns
-    pt.assert_frame_equal(loaded_dataset.X, sample_dataset.X)
-    pt.assert_frame_equal(loaded_dataset.y, sample_dataset.y)
-    pt.assert_frame_equal(loaded_dataset.w, sample_dataset.w)
+    assert_array_equal(loaded_dataset.X, sample_dataset.X)
+    assert_array_equal(loaded_dataset.y, sample_dataset.y)
+    assert_array_equal(loaded_dataset.w, sample_dataset.w)
 
 
 def test_load_missing_data_file(tmp_path: Path) -> None:
