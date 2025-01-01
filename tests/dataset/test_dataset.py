@@ -1,8 +1,8 @@
-import os
 import shelve
 from pathlib import Path
 
 import polars as pl
+import polars.testing as pt
 import pytest
 
 from cate.dataset import Dataset
@@ -108,3 +108,45 @@ def test_save_meta_content(sample_dataset: Dataset, tmp_path: Path) -> None:
         assert shelf["x_columns"] == sample_dataset.x_columns
         assert shelf["y_columns"] == sample_dataset.y_columns
         assert shelf["w_columns"] == sample_dataset.w_columns
+
+
+def test_load_valid_dataset(sample_dataset: Dataset, tmp_path: Path) -> None:
+    save_path = tmp_path / "dataset"
+    sample_dataset.save(save_path)
+
+    loaded_dataset = Dataset.load(save_path)
+
+    assert loaded_dataset.x_columns == sample_dataset.x_columns
+    assert loaded_dataset.y_columns == sample_dataset.y_columns
+    pt.assert_frame_equal(loaded_dataset.X, sample_dataset.X)
+    pt.assert_frame_equal(loaded_dataset.y, sample_dataset.y)
+    pt.assert_frame_equal(loaded_dataset.w, sample_dataset.w)
+
+
+def test_load_missing_data_file(tmp_path: Path) -> None:
+    save_path = tmp_path / "dataset"
+    save_path.mkdir()
+    with shelve.open(save_path / "meta") as shelf:
+        shelf["x_columns"] = ["feature1", "feature2"]
+        shelf["y_columns"] = ["target"]
+        shelf["w_columns"] = ["weight"]
+
+    with pytest.raises(FileNotFoundError):
+        Dataset.load(save_path)
+
+
+def test_load_missing_meta_file(tmp_path: Path) -> None:
+    save_path = tmp_path / "dataset"
+    save_path.mkdir()
+    df = pl.DataFrame(
+        {
+            "feature1": [1, 2, 3],
+            "feature2": [4, 5, 6],
+            "target": [0, 1, 0],
+            "weight": [0.1, 0.2, 0.3],
+        }
+    )
+    df.write_parquet(save_path / "data.parquet")
+
+    with pytest.raises(FileNotFoundError):
+        Dataset.load(save_path)
