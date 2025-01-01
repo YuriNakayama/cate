@@ -1,6 +1,3 @@
-import shelve
-from pathlib import Path
-
 import polars as pl
 import polars.testing as pt
 import pytest
