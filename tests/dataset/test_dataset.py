@@ -84,7 +84,7 @@ def test_save_creates_files(sample_dataset: cds.Dataset, tmp_path: Path) -> None
     sample_dataset.save(save_path)
 
     assert (save_path / "data.parquet").exists()
-    assert (save_path / "meta.db").exists(), save_path.glob("*")
+    assert (save_path / "meta.db").exists(), list(save_path.glob("*"))
 
 
 def test_save_overwrites_existing_directory(
