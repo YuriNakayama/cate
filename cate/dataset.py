@@ -115,9 +115,8 @@ def sample(
     ds: Dataset, n: int | None = None, frac: float | None = None, random_state: int = 42
 ) -> Dataset:
     if n == 0 or frac == 0:
-        _df = ds.to_frame()
         return Dataset(
-            pl.DataFrame(schema=_df.schema),
+            pl.DataFrame(schema=ds.to_frame().schema),
             ds.x_columns,
             ds.y_columns,
             ds.w_columns,
@@ -148,14 +147,14 @@ def split(
 
     if test_frac == 0 or test_n == 0:
         return ds, Dataset(
-            pd.DataFrame(columns=ds.to_pandas().columns),
+            pl.DataFrame(schema=ds.to_frame().schema),
             ds.x_columns,
             ds.y_columns,
             ds.w_columns,
         )
-    if test_frac == 1 or test_n == 1:
+    if test_frac == 1 or test_n == len(ds):
         return Dataset(
-            pd.DataFrame(columns=ds.to_pandas().columns),
+            pl.DataFrame(schema=ds.to_frame().schema),
             ds.x_columns,
             ds.y_columns,
             ds.w_columns,
@@ -163,7 +162,7 @@ def split(
 
     test_size = test_frac if test_frac is not None else test_n
     train_df, test_df = train_test_split(
-        ds.to_pandas(), test_size=test_size, random_state=random_state
+        ds.to_frame(), test_size=test_size, random_state=random_state
     )
     return (
         Dataset(train_df, ds.x_columns, ds.y_columns, ds.w_columns),
