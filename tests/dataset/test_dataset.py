@@ -8,6 +8,22 @@ import pytest
 from cate.dataset import Dataset
 
 
+@pytest.fixture
+def sample_dataset() -> Dataset:
+    df = pl.DataFrame(
+        {
+            "feature1": [1, 2, 3],
+            "feature2": [4, 5, 6],
+            "target": [0, 1, 0],
+            "weight": [0.1, 0.2, 0.3],
+        }
+    )
+    x_columns = ["feature1", "feature2"]
+    y_columns = ["target"]
+    w_columns = ["weight"]
+    return Dataset(df, x_columns, y_columns, w_columns)
+
+
 def test_dataset_init_valid_columns() -> None:
     df = pl.DataFrame(
         {
@@ -60,22 +76,6 @@ def test_dataset_init_invalid_columns() -> None:
 
     with pytest.raises(ValueError, match="x columns {'weight2'} do not exist in df."):
         Dataset(df, x_columns, y_columns, w_columns)
-
-
-@pytest.fixture
-def sample_dataset() -> Dataset:
-    df = pl.DataFrame(
-        {
-            "feature1": [1, 2, 3],
-            "feature2": [4, 5, 6],
-            "target": [0, 1, 0],
-            "weight": [0.1, 0.2, 0.3],
-        }
-    )
-    x_columns = ["feature1", "feature2"]
-    y_columns = ["target"]
-    w_columns = ["weight"]
-    return Dataset(df, x_columns, y_columns, w_columns)
 
 
 def test_save_creates_files(sample_dataset: Dataset, tmp_path: Path) -> None:
