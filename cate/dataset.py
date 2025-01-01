@@ -79,7 +79,7 @@ class Dataset:
             rmtree(path)
         path.mkdir(exist_ok=True, parents=True)
         self.__df.write_parquet(path / "data.parquet")
-        with shelve.open(path / "meta.shelve") as shelf:
+        with shelve.open(path / "meta") as shelf:
             shelf["x_columns"] = self.x_columns
             shelf["y_columns"] = self.y_columns
             shelf["w_columns"] = self.w_columns
@@ -87,12 +87,12 @@ class Dataset:
     @classmethod
     def load(cls, path: Path) -> Dataset:
         data_path = path / "data.parquet"
-        meta_path = path / "meta.json"
+        meta_path = path / "meta"
         if (not data_path.exists()) or (not meta_path.exists()):
             raise FileNotFoundError()
 
         df = pl.read_parquet(data_path)
-        meta = shelve.open(path / "meta.shelve")
+        meta = shelve.open(meta_path)
         return cls(df, **meta)
 
     def __len__(self) -> int:
