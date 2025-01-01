@@ -150,3 +150,18 @@ def test_load_missing_meta_file(tmp_path: Path) -> None:
 
     with pytest.raises(FileNotFoundError):
         Dataset.load(save_path)
+
+def test_dataset_len(sample_dataset: Dataset) -> None:
+    assert len(sample_dataset) == 3
+
+    empty_df = pl.DataFrame(
+        {
+            "feature1": [],
+            "feature2": [],
+            "target": [],
+            "weight": [],
+        }
+    )
+    empty_dataset = Dataset(empty_df, ["feature1", "feature2"], ["target"], ["weight"])
+    assert len(empty_dataset) == 0
+
