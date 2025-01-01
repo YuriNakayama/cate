@@ -28,6 +28,9 @@
     "coverage-gutters.showGutterCoverage": true,
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
+    "markdownlint.config": {
+        "MD024": false,
+    },
     "commit-message-editor.staticTemplate": [
         "feat: Short description",
         "",
@@ -137,5 +140,8 @@
             "type": "text",
             "multiline": true
         }
-    ]
+    ],
+    "github.copilot.enable": {
+        "markdown": true
+    }
 }
