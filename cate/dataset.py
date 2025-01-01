@@ -6,7 +6,6 @@ from shutil import rmtree
 
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
 import polars as pl
 from sklearn.model_selection import train_test_split
 
