@@ -107,7 +107,7 @@ def filter(ds: Dataset, flgs: list[pl.Series]) -> Dataset:
 
 
 def concat(ds_list: list[Dataset]) -> Dataset:
-    df = pd.concat([ds.to_pandas() for ds in ds_list])
+    df = pl.concat([ds.to_frame() for ds in ds_list])
     return Dataset(df, ds_list[0].x_columns, ds_list[0].y_columns, ds_list[0].w_columns)
 
 
