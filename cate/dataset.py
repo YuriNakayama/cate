@@ -86,12 +86,12 @@ class Dataset:
 
     @classmethod
     def load(cls, path: Path) -> Dataset:
-        if (not (path / "data.parquet").exists()) or (not (path / "meta.db").exists()):
+        if not (path / "data.parquet").exists() or not list(path.glob("meta.*")):
             raise FileNotFoundError("Data or meta file not found.")
 
         df = pl.read_parquet(path / "data.parquet")
-        meta = shelve.open(path / "meta")
-        return cls(df, **meta)
+        with shelve.open(path / "meta") as meta:
+            return cls(df, meta["x_columns"], meta["y_columns"], meta["w_columns"])
 
     def __len__(self) -> int:
         return len(self.__df)
