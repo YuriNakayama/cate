@@ -101,8 +101,8 @@ class Dataset:
 
 
 def filter(ds: Dataset, flgs: list[pd.Series[bool]]) -> Dataset:
-    flg = pd.concat(flgs, axis=1).all(axis=1)
-    df = ds.to_pandas().loc[flg]
+    flg = pl.all_horizontal(flgs)
+    df = ds.to_frame().filter(flg)
     return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
 
 
