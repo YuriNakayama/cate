@@ -2,7 +2,7 @@ from logging import Logger
 
 import lightgbm as lgb
 import numpy as np
-import pandas as pd
+import polars as pl
 from causalml.inference import meta
 from omegaconf import DictConfig
 from sklearn.model_selection import StratifiedKFold
@@ -53,17 +53,17 @@ def train(
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
     )
     client.log_params(dict_flatten(cfg))
-    _pred_dfs: list[pd.DataFrame] = []
+    pred_dfs: list[pl.DataFrame] = []
     for epoch, (train_idx, valid_idx) in tqdm(
         enumerate(skf.split(np.zeros(len(ds)), ds.y))
     ):
         logger.info(f"epoch {epoch}")
-        train_X = ds.X.iloc[train_idx]
-        train_y = ds.y.iloc[train_idx].to_numpy().reshape(-1)
-        train_w = ds.w.iloc[train_idx].to_numpy().reshape(-1)
-        valid_X = ds.X.iloc[valid_idx]
-        valid_y = ds.y.iloc[valid_idx].to_numpy().reshape(-1)
-        valid_w = ds.w.iloc[valid_idx].to_numpy().reshape(-1)
+        train_X = ds.X[train_idx]
+        train_y = ds.y[train_idx]
+        train_w = ds.w[train_idx]
+        valid_X = ds.X[valid_idx]
+        valid_y = ds.y[valid_idx]
+        valid_w = ds.w[valid_idx]
 
         model.fit(
             train_X,
@@ -84,22 +84,13 @@ def train(
         metrics(pred.reshape(-1), valid_y, valid_w)
         client.log_metrics(metrics, epoch)
 
-        _pred_dfs.append(
-            pd.DataFrame(
-                {"index": ds.y.index[valid_idx], "pred": pred.reshape(-1)}
-            ).set_index("index")
-        )
+        pred_dfs.append(pl.DataFrame({"pred": pred, "y": valid_y, "w": valid_w}))
 
-    pred_df = pd.concat(_pred_dfs, axis=0)
-    base_df = pd.merge(
-        ds.y.rename(columns={ds.y_columns[0]: "y"}),
-        ds.w.rename(columns={ds.w_columns[0]: "w"}),
-        left_index=True,
-        right_index=True,
-    )
-    output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
+    pred_df = pl.concat(pred_dfs)
 
     artifacts = Artifacts([evaluate.UpliftCurve(40), evaluate.Outputs()])
-    artifacts(output_df.pred.to_numpy(), output_df.y.to_numpy(), output_df.w.to_numpy())
+    artifacts(
+        pred_df["pred"].to_numpy(), pred_df["y"].to_numpy(), pred_df["w"].to_numpy()
+    )
     client.log_artifacts(artifacts)
     client.end_run()

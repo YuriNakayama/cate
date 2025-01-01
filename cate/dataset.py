@@ -1,29 +1,38 @@
 from __future__ import annotations
 
-import json
+import shelve
 from pathlib import Path
+from shutil import rmtree
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
+import polars as pl
 from sklearn.model_selection import train_test_split
 
 
 def to_rank(
-    primary_key: pd.Series, score: pd.Series, ascending: bool = True, k: int = 100
-) -> pd.Series:
-    df = pd.DataFrame({primary_key.name: primary_key, score.name: score}).set_index(
-        primary_key.name, drop=True
+    primary_key: pl.Series, score: pl.Series, descending: bool = False, k: int = 100
+) -> pl.Series:
+    df = pl.DataFrame(
+        {primary_key.name: primary_key.clone(), score.name: score.clone()}
     )
-    df = df.sort_values(by=str(score.name), ascending=ascending)
-    df["rank"] = np.ceil(np.arange(1, len(df) + 1) / len(df) * k).astype(int)
+    df = df.sort(by=str(score.name), descending=descending)
+    df = df.with_columns(
+        pl.Series(
+            name="rank",
+            values=np.ceil(np.arange(1, len(df) + 1) / len(df) * k),
+            dtype=pl.Int64,
+        )
+    )
+    df = primary_key.to_frame().join(df, on=primary_key.name, how="left")
     return df["rank"]
 
 
 class Dataset:
     def __init__(
         self,
-        df: pd.DataFrame,
+        df: pl.DataFrame,
         x_columns: list[str],
         y_columns: list[str],
         w_columns: list[str],
@@ -31,9 +40,9 @@ class Dataset:
         self.x_columns = x_columns
         self.y_columns = y_columns
         self.w_columns = w_columns
-        self.__df = df.copy()
+        self.__df = df.clone()
         self._validate(
-            self.__df.columns.to_list(), self.x_columns, self.y_columns, self.w_columns
+            self.__df.columns, self.x_columns, self.y_columns, self.w_columns
         )
 
     def _validate(
@@ -54,55 +63,51 @@ class Dataset:
             raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
 
     @property
-    def X(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.x_columns].copy()
+    def X(self) -> npt.NDArray[Any]:
+        return self.__df.select(self.x_columns).clone().to_numpy()
 
     @property
-    def y(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.y_columns].copy()
+    def y(self) -> npt.NDArray[np.float_ | np.int_]:
+        return self.__df.select(self.y_columns).clone().to_numpy().reshape(-1)
 
     @property
-    def w(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.w_columns].copy()
+    def w(self) -> npt.NDArray[np.int_]:
+        return self.__df.select(self.w_columns).clone().to_numpy().reshape(-1)
 
     def save(self, path: Path) -> None:
+        if path.exists():
+            rmtree(path)
         path.mkdir(exist_ok=True, parents=True)
-        self.__df.to_csv(path / "data.csv", index=False)
-        json.dump(
-            {
-                "x_columns": self.x_columns,
-                "y_columns": self.y_columns,
-                "w_columns": self.w_columns,
-            },
-            (path / "meta.json").open("w"),
-        )
+        self.__df.write_parquet(path / "data.parquet")
+        with shelve.open(path / "meta") as shelf:
+            shelf["x_columns"] = self.x_columns
+            shelf["y_columns"] = self.y_columns
+            shelf["w_columns"] = self.w_columns
 
     @classmethod
     def load(cls, path: Path) -> Dataset:
-        data_path = path / "data.csv"
-        meta_path = path / "meta.json"
-        if (not data_path.exists()) or (not meta_path.exists()):
-            raise FileNotFoundError()
+        if not (path / "data.parquet").exists() or not list(path.glob("meta*")):
+            raise FileNotFoundError("Data or meta file not found.")
 
-        df = pd.read_csv(data_path)
-        meta = json.load(meta_path.open(mode="r"))
-        return cls(df, **meta)
+        df = pl.read_parquet(path / "data.parquet")
+        with shelve.open(path / "meta") as meta:
+            return cls(df, meta["x_columns"], meta["y_columns"], meta["w_columns"])
 
     def __len__(self) -> int:
         return len(self.__df)
 
-    def to_pandas(self) -> pd.DataFrame:
-        return self.__df.copy()
+    def to_frame(self) -> pl.DataFrame:
+        return self.__df.clone()
 
 
-def filter(ds: Dataset, flgs: list[pd.Series[bool]]) -> Dataset:
-    flg = pd.concat(flgs, axis=1).all(axis=1)
-    df = ds.to_pandas().loc[flg]
+def filter(ds: Dataset, flgs: list[pl.Series]) -> Dataset:
+    flg = pl.all_horizontal(flgs)
+    df = ds.to_frame().filter(flg)
     return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
 
 
 def concat(ds_list: list[Dataset]) -> Dataset:
-    df = pd.concat([ds.to_pandas() for ds in ds_list])
+    df = pl.concat([ds.to_frame() for ds in ds_list])
     return Dataset(df, ds_list[0].x_columns, ds_list[0].y_columns, ds_list[0].w_columns)
 
 
@@ -111,13 +116,13 @@ def sample(
 ) -> Dataset:
     if n == 0 or frac == 0:
         return Dataset(
-            pd.DataFrame(ds.to_pandas().columns),
+            pl.DataFrame(schema=ds.to_frame().schema),
             ds.x_columns,
             ds.y_columns,
             ds.w_columns,
         )
 
-    df = ds.to_pandas().sample(n=n, frac=frac, random_state=random_state)
+    df = ds.to_frame().sample(n=n, fraction=frac, seed=random_state)
     return Dataset(df, ds.x_columns, ds.y_columns, ds.w_columns)
 
 
@@ -142,14 +147,14 @@ def split(
 
     if test_frac == 0 or test_n == 0:
         return ds, Dataset(
-            pd.DataFrame(columns=ds.to_pandas().columns),
+            pl.DataFrame(schema=ds.to_frame().schema),
             ds.x_columns,
             ds.y_columns,
             ds.w_columns,
         )
-    if test_frac == 1 or test_n == 1:
+    if test_frac == 1 or test_n == len(ds):
         return Dataset(
-            pd.DataFrame(columns=ds.to_pandas().columns),
+            pl.DataFrame(schema=ds.to_frame().schema),
             ds.x_columns,
             ds.y_columns,
             ds.w_columns,
@@ -157,7 +162,7 @@ def split(
 
     test_size = test_frac if test_frac is not None else test_n
     train_df, test_df = train_test_split(
-        ds.to_pandas(), test_size=test_size, random_state=random_state
+        ds.to_frame(), test_size=test_size, random_state=random_state
     )
     return (
         Dataset(train_df, ds.x_columns, ds.y_columns, ds.w_columns),
