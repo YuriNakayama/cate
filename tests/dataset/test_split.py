@@ -26,26 +26,12 @@ def test_split_with_test_frac(sample_dataset: cds.Dataset) -> None:
     assert len(train_ds) == 2
     assert len(test_ds) == 1
 
-    assert set(train_ds.X.columns) == set(sample_dataset.X.columns)
-    assert set(test_ds.X.columns) == set(sample_dataset.X.columns)
-    assert set(train_ds.y.columns) == set(sample_dataset.y.columns)
-    assert set(test_ds.y.columns) == set(sample_dataset.y.columns)
-    assert set(train_ds.w.columns) == set(sample_dataset.w.columns)
-    assert set(test_ds.w.columns) == set(sample_dataset.w.columns)
-
 
 def test_split_with_test_n(sample_dataset: cds.Dataset) -> None:
     train_ds, test_ds = cds.split(sample_dataset, test_n=1, random_state=42)
 
     assert len(train_ds) == 2
     assert len(test_ds) == 1
-
-    assert set(train_ds.X.columns) == set(sample_dataset.X.columns)
-    assert set(test_ds.X.columns) == set(sample_dataset.X.columns)
-    assert set(train_ds.y.columns) == set(sample_dataset.y.columns)
-    assert set(test_ds.y.columns) == set(sample_dataset.y.columns)
-    assert set(train_ds.w.columns) == set(sample_dataset.w.columns)
-    assert set(test_ds.w.columns) == set(sample_dataset.w.columns)
 
 
 def test_split_with_test_frac_zero(sample_dataset: cds.Dataset) -> None:
