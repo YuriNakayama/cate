@@ -86,7 +86,7 @@ class Dataset:
 
     @classmethod
     def load(cls, path: Path) -> Dataset:
-        if not (path / "data.parquet").exists() or not list(path.glob("meta.*")):
+        if not (path / "data.parquet").exists() or not list(path.glob("meta*")):
             raise FileNotFoundError("Data or meta file not found.")
 
         df = pl.read_parquet(path / "data.parquet")
