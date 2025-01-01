@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
+import shelve
 from pathlib import Path
+from shutil import rmtree
 
 import numpy as np
 import numpy.typing as npt
@@ -31,7 +32,7 @@ def to_rank(
 class Dataset:
     def __init__(
         self,
-        df: pd.DataFrame,
+        df: pl.DataFrame,
         x_columns: list[str],
         y_columns: list[str],
         w_columns: list[str],
@@ -39,9 +40,9 @@ class Dataset:
         self.x_columns = x_columns
         self.y_columns = y_columns
         self.w_columns = w_columns
-        self.__df = df.copy()
+        self.__df = df.clone()
         self._validate(
-            self.__df.columns.to_list(), self.x_columns, self.y_columns, self.w_columns
+            self.__df.columns, self.x_columns, self.y_columns, self.w_columns
         )
 
     def _validate(
@@ -62,45 +63,43 @@ class Dataset:
             raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
 
     @property
-    def X(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.x_columns].copy()
+    def X(self) -> pl.DataFrame:
+        return self.__df.select(self.x_columns).clone()
 
     @property
-    def y(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.y_columns].copy()
+    def y(self) -> pl.DataFrame:
+        return self.__df.select(self.y_columns).clone()
 
     @property
-    def w(self) -> pd.DataFrame:
-        return self.__df.loc[:, self.w_columns].copy()
+    def w(self) -> pl.DataFrame:
+        return self.__df.select(self.w_columns).clone()
 
     def save(self, path: Path) -> None:
+        if path.exists():
+            rmtree(path)
         path.mkdir(exist_ok=True, parents=True)
-        self.__df.to_csv(path / "data.csv", index=False)
-        json.dump(
-            {
-                "x_columns": self.x_columns,
-                "y_columns": self.y_columns,
-                "w_columns": self.w_columns,
-            },
-            (path / "meta.json").open("w"),
-        )
+        self.__df.write_parquet(path / "data.parquet")
+        with shelve.open(path / "meta.shelve") as shelf:
+            shelf["x_columns"] = self.x_columns
+            shelf["y_columns"] = self.y_columns
+            shelf["w_columns"] = self.w_columns
 
     @classmethod
     def load(cls, path: Path) -> Dataset:
-        data_path = path / "data.csv"
+        data_path = path / "data.parquet"
         meta_path = path / "meta.json"
         if (not data_path.exists()) or (not meta_path.exists()):
             raise FileNotFoundError()
 
-        df = pd.read_csv(data_path)
-        meta = json.load(meta_path.open(mode="r"))
+        df = pl.read_parquet(data_path)
+        meta = shelve.open(path / "meta.shelve")
         return cls(df, **meta)
 
     def __len__(self) -> int:
         return len(self.__df)
 
-    def to_pandas(self) -> pd.DataFrame:
-        return self.__df.copy()
+    def to_frame(self) -> pl.DataFrame:
+        return self.__df.clone()
 
 
 def filter(ds: Dataset, flgs: list[pd.Series[bool]]) -> Dataset:
