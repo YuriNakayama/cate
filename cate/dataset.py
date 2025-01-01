@@ -3,6 +3,7 @@ from __future__ import annotations
 import shelve
 from pathlib import Path
 from shutil import rmtree
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -62,16 +63,16 @@ class Dataset:
             raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
 
     @property
-    def X(self) -> pl.DataFrame:
-        return self.__df.select(self.x_columns).clone()
+    def X(self) -> npt.NDArray[Any]:
+        return self.__df.select(self.x_columns).clone().to_numpy()
 
     @property
-    def y(self) -> pl.DataFrame:
-        return self.__df.select(self.y_columns).clone()
+    def y(self) -> npt.NDArray[np.float_ | np.int_]:
+        return self.__df.select(self.y_columns).clone().to_numpy().reshape(-1)
 
     @property
-    def w(self) -> pl.DataFrame:
-        return self.__df.select(self.w_columns).clone()
+    def w(self) -> npt.NDArray[np.int_]:
+        return self.__df.select(self.w_columns).clone().to_numpy().reshape(-1)
 
     def save(self, path: Path) -> None:
         if path.exists():
