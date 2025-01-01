@@ -5,11 +5,11 @@ import polars as pl
 import polars.testing as pt
 import pytest
 
-from cate.dataset import Dataset
+import cate.dataset as cds
 
 
 @pytest.fixture
-def sample_dataset() -> Dataset:
+def sample_dataset() -> cds.Dataset:
     df = pl.DataFrame(
         {
             "feature1": [1, 2, 3],
@@ -21,7 +21,7 @@ def sample_dataset() -> Dataset:
     x_columns = ["feature1", "feature2"]
     y_columns = ["target"]
     w_columns = ["weight"]
-    return Dataset(df, x_columns, y_columns, w_columns)
+    return cds.Dataset(df, x_columns, y_columns, w_columns)
 
 
 def test_dataset_init_valid_columns() -> None:
@@ -37,7 +37,7 @@ def test_dataset_init_valid_columns() -> None:
     y_columns = ["target"]
     w_columns = ["weight"]
 
-    dataset = Dataset(df, x_columns, y_columns, w_columns)
+    dataset = cds.Dataset(df, x_columns, y_columns, w_columns)
 
     assert dataset.x_columns == x_columns
     assert dataset.y_columns == y_columns
@@ -61,24 +61,24 @@ def test_dataset_init_invalid_columns() -> None:
     w_columns = ["weight"]
 
     with pytest.raises(ValueError, match="x columns {'feature3'} do not exist in df."):
-        Dataset(df, x_columns, y_columns, w_columns)
+        cds.Dataset(df, x_columns, y_columns, w_columns)
 
     x_columns = ["feature1", "feature2"]
     y_columns = ["target2"]  # target2 does not exist
     w_columns = ["weight"]
 
     with pytest.raises(ValueError, match="x columns {'target2'} do not exist in df."):
-        Dataset(df, x_columns, y_columns, w_columns)
+        cds.Dataset(df, x_columns, y_columns, w_columns)
 
     x_columns = ["feature1", "feature2"]
     y_columns = ["target"]
     w_columns = ["weight2"]  # weight2 does not exist
 
     with pytest.raises(ValueError, match="x columns {'weight2'} do not exist in df."):
-        Dataset(df, x_columns, y_columns, w_columns)
+        cds.Dataset(df, x_columns, y_columns, w_columns)
 
 
-def test_save_creates_files(sample_dataset: Dataset, tmp_path: Path) -> None:
+def test_save_creates_files(sample_dataset: cds.Dataset, tmp_path: Path) -> None:
     save_path = tmp_path / "dataset"
     sample_dataset.save(save_path)
 
@@ -87,7 +87,7 @@ def test_save_creates_files(sample_dataset: Dataset, tmp_path: Path) -> None:
 
 
 def test_save_overwrites_existing_directory(
-    sample_dataset: Dataset, tmp_path: Path
+    sample_dataset: cds.Dataset, tmp_path: Path
 ) -> None:
     save_path = tmp_path / "dataset"
     save_path.mkdir()
@@ -100,7 +100,7 @@ def test_save_overwrites_existing_directory(
     assert (save_path / "meta.db").exists()
 
 
-def test_save_meta_content(sample_dataset: Dataset, tmp_path: Path) -> None:
+def test_save_meta_content(sample_dataset: cds.Dataset, tmp_path: Path) -> None:
     save_path = tmp_path / "dataset"
     sample_dataset.save(save_path)
 
@@ -110,11 +110,11 @@ def test_save_meta_content(sample_dataset: Dataset, tmp_path: Path) -> None:
         assert shelf["w_columns"] == sample_dataset.w_columns
 
 
-def test_load_valid_dataset(sample_dataset: Dataset, tmp_path: Path) -> None:
+def test_load_valid_dataset(sample_dataset: cds.Dataset, tmp_path: Path) -> None:
     save_path = tmp_path / "dataset"
     sample_dataset.save(save_path)
 
-    loaded_dataset = Dataset.load(save_path)
+    loaded_dataset = cds.Dataset.load(save_path)
 
     assert loaded_dataset.x_columns == sample_dataset.x_columns
     assert loaded_dataset.y_columns == sample_dataset.y_columns
@@ -132,7 +132,7 @@ def test_load_missing_data_file(tmp_path: Path) -> None:
         shelf["w_columns"] = ["weight"]
 
     with pytest.raises(FileNotFoundError):
-        Dataset.load(save_path)
+        cds.Dataset.load(save_path)
 
 
 def test_load_missing_meta_file(tmp_path: Path) -> None:
@@ -149,10 +149,10 @@ def test_load_missing_meta_file(tmp_path: Path) -> None:
     df.write_parquet(save_path / "data.parquet")
 
     with pytest.raises(FileNotFoundError):
-        Dataset.load(save_path)
+        cds.Dataset.load(save_path)
 
 
-def test_dataset_len(sample_dataset: Dataset) -> None:
+def test_dataset_len(sample_dataset: cds.Dataset) -> None:
     assert len(sample_dataset) == 3
 
     empty_df = pl.DataFrame(
@@ -163,11 +163,13 @@ def test_dataset_len(sample_dataset: Dataset) -> None:
             "weight": [],
         }
     )
-    empty_dataset = Dataset(empty_df, ["feature1", "feature2"], ["target"], ["weight"])
+    empty_dataset = cds.Dataset(
+        empty_df, ["feature1", "feature2"], ["target"], ["weight"]
+    )
     assert len(empty_dataset) == 0
 
 
-def test_to_frame(sample_dataset: Dataset) -> None:
+def test_to_frame(sample_dataset: cds.Dataset) -> None:
     df = sample_dataset.to_frame()
     expected_df = pl.DataFrame(
         {
