@@ -13,7 +13,9 @@ from sklearn.model_selection import train_test_split
 def to_rank(
     primary_key: pl.Series, score: pl.Series, descending: bool = False, k: int = 100
 ) -> pl.Series:
-    df = pl.DataFrame({primary_key.name: primary_key, score.name: score})
+    df = pl.DataFrame(
+        {primary_key.name: primary_key.clone(), score.name: score.clone()}
+    )
     df = df.sort(by=str(score.name), descending=descending)
     df = df.with_columns(
         pl.Series(
@@ -22,6 +24,7 @@ def to_rank(
             dtype=pl.Int64,
         )
     )
+    df = primary_key.to_frame().join(df, on=primary_key.name, how="left")
     return df["rank"]
 
 
