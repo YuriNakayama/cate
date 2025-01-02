@@ -229,7 +229,7 @@ def train(
 
     logger.info(f"strart prediction {cfg.model.name}")
     test_p = propensity_model.predict_proba(test_X)[:, 1]
-    pred = model.predict(test_X, p=test_p)
+    pred = model.predict(test_X, p=test_p).reshape(-1)
 
     metrics = Metrics(
         list(
@@ -238,7 +238,7 @@ def train(
             + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
         )
     )
-    metrics(pred.reshape(-1), test_y, test_w)
+    metrics(pred, test_y, test_w)
     client.log_metrics(metrics, cfg.data.rank)
 
     artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
