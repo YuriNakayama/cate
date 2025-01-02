@@ -77,7 +77,17 @@ def tg_cg_split(
     if random_ratio == 1:
         return cds.sample(ds, frac=random_ds_ratio, random_state=random_state)
 
+    ds = cds.Dataset(
+        ds.to_frame().with_row_index(), ds.x_columns, ds.y_columns, ds.w_columns
+    )
     _ds, random_ds = cds.split(ds, test_frac=random_ds_ratio, random_state=random_state)
+    rank_flg = (
+        rank_flg.to_frame()
+        .with_row_index()
+        .filter(pl.col("index").is_in(_ds.to_frame()["index"]))
+        .drop("index")
+        .to_series()
+    )
     biased_ds = get_biased_ds(_ds, rank_flg)
     return cds.sample(
         cds.concat([biased_ds, random_ds]), frac=1, random_state=random_state
