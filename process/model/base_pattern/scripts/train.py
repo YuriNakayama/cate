@@ -85,12 +85,13 @@ def train(
         client.log_metrics(metrics, epoch)
 
         pred_dfs.append(pl.DataFrame({"pred": pred, "y": valid_y, "w": valid_w}))
-
     pred_df = pl.concat(pred_dfs)
 
     artifacts = Artifacts([evaluate.UpliftCurve(40), evaluate.Outputs()])
     artifacts(
-        pred_df["pred"].to_numpy(), pred_df["y"].to_numpy(), pred_df["w"].to_numpy()
+        pred_df["pred"].to_numpy().reshape(-1),
+        pred_df["y"].to_numpy().reshape(-1),
+        pred_df["w"].to_numpy().reshape(-1),
     )
     client.log_artifacts(artifacts)
     client.end_run()
