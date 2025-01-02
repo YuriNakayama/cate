@@ -9,7 +9,6 @@ from sklift.datasets.datasets import (
     fetch_megafon,
 )
 
-# fetch_x5,
 from cate.utils import path_linker, send_message
 
 
