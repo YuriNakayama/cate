@@ -7,12 +7,6 @@ import pytest
 from cate.utils.path import PathLink, dataset_type, path_linker
 
 
-@pytest.fixture
-def path() -> Generator[Path, Any, None]:
-    yield Path("/workspace/pytest")
-    shutil.rmtree("/workspace/pytest")
-
-
 @pytest.mark.parametrize(
     "dataset",
     [
@@ -24,20 +18,20 @@ def path() -> Generator[Path, Any, None]:
         "test",
     ],
 )
-def test_path_linker(path: Path, dataset: dataset_type) -> None:
-    path_link = path_linker(dataset, path)
+def test_path_linker(tmp_path: Path, dataset: dataset_type) -> None:
+    path_link = path_linker(dataset, tmp_path)
 
     assert isinstance(path_link, PathLink)
     assert path_link.dataset == dataset
 
     if dataset == "test":
-        assert path_link.lake == path / "data/lake" / "criteo.parquet"
+        assert path_link.lake == tmp_path / "data/lake" / "criteo.parquet"
     else:
-        assert path_link.lake == path / "data/lake" / f"{dataset}.parquet"
-    assert path_link.cleansing == path / "data/processed" / dataset
-    assert path_link.mart == path / "data/mart" / dataset
-    assert path_link.prediction == path / "data/prediction" / dataset
-    assert path_link.output == path / "output" / dataset
+        assert path_link.lake == tmp_path / "data/lake" / f"{dataset}.parquet"
+    assert path_link.cleansing == tmp_path / "data/processed" / dataset
+    assert path_link.mart == tmp_path / "data/mart" / dataset
+    assert path_link.prediction == tmp_path / "data/prediction" / dataset
+    assert path_link.output == tmp_path / "output" / dataset
 
     # Check if the directories are created
     for _path in [
