@@ -1,8 +1,9 @@
 import click
 import pandas as pd
+import polars as pl
 
 from cate.dataset import Dataset
-from cate.utils import path_linker, send_messages
+from cate.utils import path_linker, send_message
 
 
 def onehot_encoding(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
@@ -26,32 +27,32 @@ def label_encoding(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
 
 def make_lenta() -> None:
     pathlinker = path_linker("lenta")
-    df = pd.read_csv(pathlinker.origin)
+    df = pd.read_parquet(pathlinker.lake)
     df = onehot_encoding(df, ["gender"])
     df = df.fillna(0)
     df["group"] = df["group"].apply(lambda x: {"test": 1, "control": 0}.get(x))
     y_columns = ["response_att"]
     w_columns = ["group"]
     x_columns = [column for column in df.columns if column not in y_columns + w_columns]
-    ds = Dataset(df, x_columns, y_columns, w_columns)
-    ds.save(pathlinker.base)
+    ds = Dataset(pl.DataFrame(df), x_columns, y_columns, w_columns)
+    ds.save(pathlinker.mart)
 
 
 def make_criteo() -> None:
     pathlinker = path_linker("criteo")
-    df = pd.read_csv(pathlinker.origin)
+    df = pd.read_parquet(pathlinker.lake)
     ds = Dataset(
-        df,
+        pl.DataFrame(df),
         ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11"],
         ["conversion"],
         ["treatment"],
     )
-    ds.save(pathlinker.base)
+    ds.save(pathlinker.mart)
 
 
 def make_hillstorm() -> None:
     pathlinker = path_linker("hillstorm")
-    df = pd.read_csv(pathlinker.origin)
+    df = pd.read_parquet(pathlinker.lake)
     df = label_encoding(df, ["history_segment"])
     df = onehot_encoding(df, ["zip_code", "channel"])
     df = df.fillna(0)
@@ -61,33 +62,33 @@ def make_hillstorm() -> None:
     y_columns = ["conversion"]
     w_columns = ["segment"]
     x_columns = [column for column in df.columns if column not in y_columns + w_columns]
-    ds = Dataset(df, x_columns, y_columns, w_columns)
-    ds.save(pathlinker.base)
+    ds = Dataset(pl.DataFrame(df), x_columns, y_columns, w_columns)
+    ds.save(pathlinker.mart)
 
 
 def make_megafon() -> None:
     pathlinker = path_linker("megafon")
-    df = pd.read_csv(pathlinker.origin)
+    df = pd.read_parquet(pathlinker.lake)
     df["treatment_group"] = df["treatment_group"].apply(
         lambda x: {"treatment": 1, "control": 0}.get(x)
     )
     y_columns = ["conversion"]
     w_columns = ["treatment_group"]
     x_columns = [column for column in df.columns if column not in y_columns + w_columns]
-    ds = Dataset(df, x_columns, y_columns, w_columns)
-    ds.save(pathlinker.base)
+    ds = Dataset(pl.DataFrame(df), x_columns, y_columns, w_columns)
+    ds.save(pathlinker.mart)
 
 
 def make_test() -> None:
     pathlinker = path_linker("test")
-    df = pd.read_csv(pathlinker.origin).sample(n=100_000, random_state=42)
+    df = pd.read_parquet(pathlinker.lake).sample(n=100_000, random_state=42)
     ds = Dataset(
-        df,
+        pl.DataFrame(df),
         ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11"],
         ["conversion"],
         ["treatment"],
     )
-    ds.save(pathlinker.base)
+    ds.save(pathlinker.mart)
 
 
 @click.command()
@@ -127,4 +128,4 @@ def main(name: str) -> None:
 
 if __name__ == "__main__":
     main()
-    send_messages(["dataset createds"])
+    send_message("dataset createds")
