@@ -17,19 +17,19 @@ from sklearn.model_selection import StratifiedKFold
 import cate.dataset as cds
 from cate.infra.mlflow import MlflowClient
 from cate.metrics import Artifacts, Metrics, evaluate
-from cate.utils.path import AbstractLink
+from cate.utils.path import PathLink
 
 
 def train(
     cfg: DictConfig,
     client: MlflowClient,
     logger: Logger,
-    link: AbstractLink,
+    link: PathLink,
     parent_run_id: str,
 ) -> None:
     logger.info(f"start train in {cfg.data.name} dataset with {cfg.model.name} model")
     logger.info("load dataset")
-    ds = cds.Dataset.load(link.base)
+    ds = cds.Dataset.load(link.mart)
 
     models = {"lightgbm": lgb.LGBMClassifier(**cfg.training.classifier)}
     model = models[cfg.model.name]
