@@ -2,7 +2,6 @@ from logging import Logger
 from typing import Any
 
 import numpy as np
-import polars as pl
 import torch
 import torch.nn as nn
 import torch.optim as optim
