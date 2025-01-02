@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 import cate.dataset as cds
 from cate.infra.mlflow import MlflowClient
-from cate.utils import AbstractLink, dict_flatten
+from cate.utils import PathLink, dict_flatten
 
 from .dataset import BinaryClassificationDataset, fix_seed, worker_init_fn
 from .model import FullConnectedModel
@@ -21,10 +21,10 @@ from .model import FullConnectedModel
 
 def create_dataset(
     logger: Logger,
-    link: AbstractLink,
+    link: PathLink,
 ) -> BinaryClassificationDataset:
     logger.info("load dataset")
-    ds = cds.Dataset.load(link.base)
+    ds = cds.Dataset.load(link.mart)
 
     dataset = BinaryClassificationDataset(ds.to_frame(), ds.x_columns, ds.y_columns)
     return dataset
@@ -72,7 +72,7 @@ def train_model(
 
 def train(
     cfg: DictConfig,
-    pathlink: AbstractLink,
+    pathlink: PathLink,
     client: MlflowClient,
     logger: Logger,
     parent_run_id: str,
