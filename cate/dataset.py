@@ -56,18 +56,18 @@ class Dataset:
         y_diff_columns = set(y_columns) - set(columns)
         w_diff_columns = set(w_columns) - set(columns)
         if x_diff_columns:
-            raise ValueError(f"x columns {x_diff_columns} do not exist in df.")
+            raise ValueError(f"X columns {x_diff_columns} do not exist in df.")
         if y_diff_columns:
-            raise ValueError(f"x columns {y_diff_columns} do not exist in df.")
+            raise ValueError(f"y columns {y_diff_columns} do not exist in df.")
         if w_diff_columns:
-            raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
+            raise ValueError(f"z columns {w_diff_columns} do not exist in df.")
 
     @property
     def X(self) -> npt.NDArray[Any]:
         return self.__df.select(self.x_columns).clone().to_numpy()
 
     @property
-    def y(self) -> npt.NDArray[np.float_ | np.int_]:
+    def y(self) -> npt.NDArray[np.int_]:
         return self.__df.select(self.y_columns).clone().to_numpy().reshape(-1)
 
     @property
