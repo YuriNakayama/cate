@@ -34,7 +34,10 @@ class PathLink:
             target_dir.mkdir(exist_ok=True, parents=True)
 
     def __post_init__(self) -> None:
-        self.lake = self._base / self._lake / f"{self.dataset}.parquet"
+        if self.dataset == "test":
+            self.lake = self._base / self._lake / "criteo.parquet"
+        else:
+            self.lake = self._base / self._lake / f"{self.dataset}.parquet"
         self.cleansing = self._base / self._cleansing / self.dataset
         self.mart = self._base / self._mart / self.dataset
         self.prediction = self._base / self._prediction / self.dataset
