@@ -33,4 +33,4 @@ class FullConnectedModel(nn.Module):
         x = self.fc1(x)
         x = self.fc2(x)
         x = self.fc3(x)
-        return self.output(x)
+        return self.output(x)  # type: ignore # TODO: remove type ignore

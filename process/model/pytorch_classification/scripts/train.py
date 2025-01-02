@@ -27,20 +27,18 @@ def create_dataset(
     logger.info("load dataset")
     ds = cds.Dataset.load(link.base)
 
-    dataset = BinaryClassificationDataset(
-        pl.DataFrame(ds.to_pandas()), ds.x_columns, ds.y_columns
-    )
+    dataset = BinaryClassificationDataset(ds.to_frame(), ds.x_columns, ds.y_columns)
     return dataset
 
 
 def train_model(
-    model: nn.Module,
+    model: Any,
     train_loader: DataLoader[tuple[Tensor, Tensor]],
     test_loader: DataLoader[tuple[Tensor, Tensor]],
     optimizer: optim.Optimizer,
-    criterion: nn.Module,
+    criterion: Any,
     device: torch.device,
-) -> tuple[nn.Module, np.floating[Any], np.floating[Any]]:
+) -> tuple[Any, np.floating[Any], np.floating[Any]]:
     # Train loop ----------------------------
     model.train()  # 学習モードをオン
     train_batch_loss = []
@@ -138,8 +136,4 @@ def train(
 
         # 10エポックごとにロスを表示
         if epoch % 2 == 0:
-            logger.info(
-                "Train loss: {a:.3f}, Test loss: {b:.3f}".format(
-                    a=train_loss, b=test_loss
-                )
-            )
+            logger.info(f"Train loss: {train_loss:.3f}, Test loss: {test_loss:.3f}")
