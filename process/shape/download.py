@@ -43,29 +43,29 @@ def merge_Xyt(
 pathlinker = path_linker("lenta")
 X, y, t = fetch_lenta(return_X_y_t=True)
 df = merge_Xyt(X, y, t)
-df.to_parquet(pathlinker.origin, index=False)
+df.to_parquet(pathlinker.lake, index=False)
 
 # criteo
 pathlinker = path_linker("criteo")
 df = download_from_kaggle("arashnic", "uplift-modeling")
-df.to_parquet(pathlinker.origin, index=False)
+df.to_parquet(pathlinker.lake, index=False)
 
 # hillstrom
 pathlinker = path_linker("hillstorm")
 X, y, t = fetch_hillstrom(target_col="conversion", return_X_y_t=True)
 df = merge_Xyt(X, y, t)
-df.to_parquet(pathlinker.origin, index=False)
+df.to_parquet(pathlinker.lake, index=False)
 
 # megafon
 pathlinker = path_linker("megafon")
 X, y, t = fetch_megafon(return_X_y_t=True)
 df = merge_Xyt(X, y, t)
-df.to_parquet(pathlinker.origin, index=False)
+df.to_parquet(pathlinker.lake, index=False)
 
 # x5
 # pathlinker = path_linker("x5")
 # X, y, t = fetch_x5(return_X_y_t=True)
 # df = merge_Xyt(X, y, t)
-# df.to_parquet(pathlinker.origin, index=False)
+# df.to_parquet(pathlinker.lake, index=False)
 
 send_message("download finished")
