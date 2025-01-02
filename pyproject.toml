@@ -120,6 +120,7 @@ plugins = ["numpy.typing.mypy_plugin"]
 addopts = ['--rootdir=tests', '--strict-config', '--cov=cate', '-ra']
 testpaths = ['tests']
 cache_dir = "tests/.pytest_cache"
+filterwarnings = ["ignore::pydantic.PydanticDeprecatedSince20"]
 
 [tool.coverage.run]
 branch = true

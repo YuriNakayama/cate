@@ -1,46 +1,45 @@
-import pandas as pd
+import polars as pl
+from polars.testing import assert_series_equal
 
 from cate.dataset import to_rank
 
 
 def test_to_rank_ascending() -> None:
-    primary_key = pd.Series([1, 2, 3, 4, 5], name="id")
-    score = pd.Series([10, 20, 30, 40, 50], name="score")
-    expected_ranks = pd.Series([1, 2, 3, 4, 5], name="rank", index=primary_key)
+    primary_key = pl.Series("id", [1, 2, 3, 4, 5])
+    score = pl.Series("score", [10, 20, 30, 40, 50])
+    expected_ranks = pl.Series("rank", [1, 2, 3, 4, 5])
 
-    ranks = to_rank(primary_key, score, ascending=True, k=5)
+    ranks = to_rank(primary_key, score, descending=False, k=5)
 
-    pd.testing.assert_series_equal(ranks, expected_ranks)
+    assert_series_equal(ranks, expected_ranks)
 
 
 def test_to_rank_descending() -> None:
-    primary_key = pd.Series([1, 2, 3, 4, 5], name="id")
-    score = pd.Series([10, 20, 30, 40, 50], name="score")
+    primary_key = pl.Series("id", [1, 2, 3, 4, 5])
+    score = pl.Series("score", [10, 20, 30, 40, 50])
     # TODO: Fix the expected ranks
-    expected_ranks = pd.Series(
-        [5, 4, 3, 2, 1], name="rank", index=primary_key
-    ).sort_index(ascending=False)
+    expected_ranks = pl.Series("rank", [5, 4, 3, 2, 1])
 
-    ranks = to_rank(primary_key, score, ascending=False, k=5)
+    ranks = to_rank(primary_key, score, descending=True, k=5)
 
-    pd.testing.assert_series_equal(ranks, expected_ranks)
+    assert_series_equal(ranks, expected_ranks)
 
 
 def test_to_rank_with_k() -> None:
-    primary_key = pd.Series([1, 2, 3, 4, 5], name="id")
-    score = pd.Series([10, 20, 30, 40, 50], name="score")
-    expected_ranks = pd.Series([20, 40, 60, 80, 100], name="rank", index=primary_key)
+    primary_key = pl.Series("id", [1, 2, 3, 4, 5])
+    score = pl.Series("score", [10, 20, 30, 40, 50])
+    expected_ranks = pl.Series("rank", [20, 40, 60, 80, 100])
 
-    ranks = to_rank(primary_key, score, ascending=True, k=100)
+    ranks = to_rank(primary_key, score, descending=False, k=100)
 
-    pd.testing.assert_series_equal(ranks, expected_ranks)
+    assert_series_equal(ranks, expected_ranks)
 
 
 def test_to_rank_with_ties() -> None:
-    primary_key = pd.Series([1, 2, 3, 4, 5], name="id")
-    score = pd.Series([10, 20, 20, 40, 50], name="score")
-    expected_ranks = pd.Series([1, 2, 3, 4, 5], name="rank", index=primary_key)
+    primary_key = pl.Series("id", [1, 2, 3, 4, 5])
+    score = pl.Series("score", [10, 20, 20, 40, 50])
+    expected_ranks = pl.Series("rank", [1, 2, 3, 4, 5])
 
-    ranks = to_rank(primary_key, score, ascending=True, k=5)
+    ranks = to_rank(primary_key, score, descending=False, k=5)
 
-    pd.testing.assert_series_equal(ranks, expected_ranks)
+    assert_series_equal(ranks, expected_ranks)

@@ -3,7 +3,7 @@ from logging import Logger
 import lightgbm as lgb
 import mlflow
 import numpy as np
-import pandas as pd
+import polars as pl
 from omegaconf import DictConfig
 from sklearn.metrics import (
     accuracy_score,
@@ -47,22 +47,15 @@ def train(
     )
     client.log_params(dict(cfg.training) | dict(cfg.model) | dict(cfg.data))
 
-    base_df = pd.merge(
-        ds.y.rename(columns={ds.y_columns[0]: "y"}),
-        ds.w.rename(columns={ds.w_columns[0]: "w"}),
-        left_index=True,
-        right_index=True,
-    )
-
-    base_dfs: list[pd.DataFrame] = []
+    base_dfs: list[pl.DataFrame] = []
     skf = StratifiedKFold(5, shuffle=True, random_state=42)
     for epoch, (train_idx, valid_idx) in enumerate(skf.split(np.zeros(len(ds)), ds.y)):
         logger.info(f"start {epoch} fold")
-        train_X = ds.X.iloc[train_idx]
-        train_y = ds.y.iloc[train_idx].to_numpy().reshape(-1)
-        valid_X = ds.X.iloc[valid_idx]
-        valid_w = ds.w.iloc[valid_idx].to_numpy().reshape(-1)
-        valid_y = ds.y.iloc[valid_idx].to_numpy().reshape(-1)
+        train_X = ds.X[train_idx]
+        train_y = ds.y[train_idx]
+        valid_X = ds.X[valid_idx]
+        valid_w = ds.w[valid_idx]
+        valid_y = ds.y[valid_idx]
 
         model.fit(train_X, train_y)
         pred = np.array(model.predict_proba(valid_X))[:, 1].reshape(-1)
@@ -76,26 +69,14 @@ def train(
         )
         metrics(pred, valid_y, valid_w)
         client.log_metrics(metrics, epoch)
-
-        pred_df = pd.DataFrame(
-            {"index": ds.y.index[valid_idx], "pred": pred}
-        ).set_index("index")
-        base_dfs.append(
-            pd.merge(
-                pred_df,
-                base_df,
-                left_index=True,
-                right_index=True,
-            )
-        )
-
-    base_df = pd.concat(base_dfs)
+        base_dfs.append(pl.DataFrame({"pred": pred, "y": valid_y, "w": valid_w}))
+    base_df = pl.concat(base_dfs)
     _metrics = {
-        "roc_auc": roc_auc_score(base_df.y, base_df.pred),
-        "accuracy": accuracy_score(base_df.y, base_df.pred > 0.5),
-        "precision": precision_score(base_df.y, base_df.pred > 0.5),
-        "recall": recall_score(base_df.y, base_df.pred > 0.5),
-        "f1": f1_score(base_df.y, base_df.pred > 0.5),
+        "roc_auc": roc_auc_score(base_df["y"], base_df["pred"]),
+        "accuracy": accuracy_score(base_df["y"], base_df["pred"] > 0.5),
+        "precision": precision_score(base_df["y"], base_df["pred"] > 0.5),
+        "recall": recall_score(base_df["y"], base_df["pred"] > 0.5),
+        "f1": f1_score(base_df["y"], base_df["pred"] > 0.5),
         # "confusion_matrix": confusion_matrix(ds.y, base_df.pred > 0.5),
         # "classification_report": classification_report(ds.y, base_df.pred > 0.5),
     }
@@ -103,7 +84,9 @@ def train(
     mlflow.log_metrics(_metrics)
 
     artifacts = Artifacts([evaluate.UpliftCurve(10), evaluate.Outputs()])
-    artifacts(base_df.pred.to_numpy(), base_df.y.to_numpy(), base_df.w.to_numpy())
+    artifacts(
+        base_df["pred"].to_numpy(), base_df["y"].to_numpy(), base_df["w"].to_numpy()
+    )
     client.log_artifacts(artifacts)
 
     client.end_run()
