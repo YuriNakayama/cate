@@ -1,35 +1,50 @@
+import shutil
 from pathlib import Path
+from typing import Any, Generator
 
 import pytest
 
 from cate.utils.path import PathLink, dataset_type, path_linker
 
 
+@pytest.fixture
+def path() -> Generator[Path, Any, None]:
+    yield Path("/workspace/pytest")
+    shutil.rmtree("/workspace/pytest")
+
+
 @pytest.mark.parametrize(
-    "dataset", ["lenta", "criteo", "hillstorm", "megafon", "x5", "test"]
+    "dataset",
+    [
+        "lenta",
+        "criteo",
+        "hillstorm",
+        "megafon",
+        "x5",
+        "test",
+    ],
 )
-def test_path_linker(dataset: dataset_type) -> None:
-    path_link = path_linker(dataset)
+def test_path_linker(path: Path, dataset: dataset_type) -> None:
+    path_link = path_linker(dataset, path)
 
     assert isinstance(path_link, PathLink)
     assert path_link.dataset == dataset
 
-    base_path = Path("/workspace")
-    assert path_link.lake == base_path / "data/lake" / f"{dataset}.parquet"
-    assert path_link.cleansing == base_path / "data/processed" / dataset
-    assert path_link.mart == base_path / "data/mart" / dataset
-    assert path_link.prediction == base_path / "data/prediction" / dataset
-    assert path_link.output == base_path / "output" / dataset
+    assert path_link.lake == path / "data/lake" / f"{dataset}.parquet"
+    assert path_link.cleansing == path / "data/processed" / dataset
+    assert path_link.mart == path / "data/mart" / dataset
+    assert path_link.prediction == path / "data/prediction" / dataset
+    assert path_link.output == path / "output" / dataset
 
     # Check if the directories are created
-    for path in [
+    for _path in [
         path_link.cleansing,
         path_link.mart,
         path_link.prediction,
         path_link.output,
     ]:
-        assert path.exists()
-        assert path.is_dir()
+        assert _path.exists()
+        assert _path.is_dir()
 
     # Check if the lake file is created
     assert path_link.lake.exists()
