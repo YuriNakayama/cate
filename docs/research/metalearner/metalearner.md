@@ -63,11 +63,26 @@ TGCGデータの生成過程が等しい場合とCATEが多くの場所で0で�
 CATEに構造的な仮定がある場合や，TGもしくはCGのデータ量が他方のよりもはるかに大きい場合に特に優れた性能を発揮する。
 真のCATEに0の部分がある場合、通常はS-learnerほどではないが、T-learnerよりは良い推定ができる。CATEが非常に複雑な構造である場合には、S-learnerやT-learnerよりも良い推定ができる。
 
-### R-learner
+## R-learner
+
+### アルゴリズム
 
 ```math
 ```
 
+### 概要
+
+## DR-learner
+
+### アルゴリズム
+
+```math
+```
+
+### 概要
+
 ## 参考
 
 - [Meta-learners for Estimating Heterogeneous Treatment Effects using Machine Learning](https://arxiv.org/pdf/1706.03461)
+- [Quasi-oracle estimation of heterogeneous treatment effects](https://par.nsf.gov/servlets/purl/10311702)
+- [METALEARNERS FOR RANKING TREATMENT EFFECTS](https://arxiv.org/pdf/2405.02183)
