@@ -10,8 +10,7 @@ dataset_type = Literal["lenta", "criteo", "hillstorm", "megafon", "x5", "test"]
 @dataclass
 class PathLink:
     dataset: dataset_type
-
-    _base: Path = Path("/workspace")
+    _base: Path
 
     _lake: Path = Path("data/lake")
     _cleansing: Path = Path("data/processed")
@@ -51,6 +50,7 @@ class PathLink:
             self._make_path(path)
 
 
-def path_linker(dataset: dataset_type) -> PathLink:
-    path_link = PathLink(dataset)
-    return path_link
+def path_linker(dataset: dataset_type, base: Path | None = None) -> PathLink:
+    if base is None:
+        return PathLink(dataset, Path("/workspace"))
+    return PathLink(dataset, base)
