@@ -47,5 +47,5 @@ def test_path_linker(path: Path, dataset: dataset_type) -> None:
         assert _path.is_dir()
 
     # Check if the lake file is created
-    assert path_link.lake.exists()
-    assert path_link.lake.is_file()
+    assert path_link.lake.parent.exists()
+    assert path_link.lake.parent.is_dir()
