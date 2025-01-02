@@ -1,7 +1,6 @@
 {
     "editor.fontLigatures": "'calt', 'liga', 'dlig'",
     "files.autoSave": "onFocusChange",
-    "editor.fontFamily": "'HackGen'",
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
