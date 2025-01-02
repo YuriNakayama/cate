@@ -28,7 +28,7 @@ def main(cfg: DictConfig) -> None:
     else:
         parent_run_id = run_ids[0]
 
-    train_ds, test_ds, rank_df = setup_dataset(cfg, logger, pathlink)
+    train_ds, test_ds, rank = setup_dataset(cfg, logger, pathlink)
 
     train(
         cfg,
@@ -36,7 +36,7 @@ def main(cfg: DictConfig) -> None:
         logger,
         train_ds=train_ds,
         test_ds=test_ds,
-        rank_df=rank_df,
+        rank=rank,
         parent_run_id=parent_run_id,
     )
     send_message(
