@@ -61,21 +61,21 @@ def test_dataset_init_invalid_columns() -> None:
     y_columns = ["target"]
     w_columns = ["weight"]
 
-    with pytest.raises(ValueError, match="x columns {'feature3'} do not exist in df."):
+    with pytest.raises(ValueError, match="X columns {'feature3'} do not exist in df."):
         cds.Dataset(df, x_columns, y_columns, w_columns)
 
     x_columns = ["feature1", "feature2"]
     y_columns = ["target2"]  # target2 does not exist
     w_columns = ["weight"]
 
-    with pytest.raises(ValueError, match="x columns {'target2'} do not exist in df."):
+    with pytest.raises(ValueError, match="y columns {'target2'} do not exist in df."):
         cds.Dataset(df, x_columns, y_columns, w_columns)
 
     x_columns = ["feature1", "feature2"]
     y_columns = ["target"]
     w_columns = ["weight2"]  # weight2 does not exist
 
-    with pytest.raises(ValueError, match="x columns {'weight2'} do not exist in df."):
+    with pytest.raises(ValueError, match="z columns {'weight2'} do not exist in df."):
         cds.Dataset(df, x_columns, y_columns, w_columns)
 
 

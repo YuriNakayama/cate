@@ -11,19 +11,19 @@ from tqdm import tqdm
 from cate.dataset import Dataset, sample
 from cate.infra.mlflow import MlflowClient
 from cate.metrics import Artifacts, Metrics, evaluate
-from cate.utils import AbstractLink, dict_flatten
+from cate.utils import PathLink, dict_flatten
 
 
 def train(
     cfg: DictConfig,
-    pathlink: AbstractLink,
+    pathlink: PathLink,
     client: MlflowClient,
     logger: Logger,
     parent_run_id: str,
 ) -> None:
     logger.info("start train")
     logger.info("load dataset")
-    ds = Dataset.load(pathlink.base)
+    ds = Dataset.load(pathlink.mart)
     ds = sample(ds, frac=cfg.data.sample_ratio, random_state=42)
     base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
     base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
@@ -85,12 +85,13 @@ def train(
         client.log_metrics(metrics, epoch)
 
         pred_dfs.append(pl.DataFrame({"pred": pred, "y": valid_y, "w": valid_w}))
-
     pred_df = pl.concat(pred_dfs)
 
     artifacts = Artifacts([evaluate.UpliftCurve(40), evaluate.Outputs()])
     artifacts(
-        pred_df["pred"].to_numpy(), pred_df["y"].to_numpy(), pred_df["w"].to_numpy()
+        pred_df["pred"].to_numpy().reshape(-1),
+        pred_df["y"].to_numpy().reshape(-1),
+        pred_df["w"].to_numpy().reshape(-1),
     )
     client.log_artifacts(artifacts)
     client.end_run()

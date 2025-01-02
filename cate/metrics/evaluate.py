@@ -11,6 +11,32 @@ from cate.base.metrics.evaluate import (
 )
 
 
+class Rocauc(AbstractMetric):
+    """
+    Calculate the area under the receiver operating characteristic curve (ROC AUC).
+
+    Attributes:
+        None
+
+    Methods:
+        _calculate(pred, y, w): Calculates the ROC AUC and returns it as a float.
+    """  # noqa: E501
+
+    @property
+    def name(self) -> str:
+        return "rocauc"
+
+    def _calculate(
+        self,
+        pred: npt.NDArray[np.float_],
+        y: npt.NDArray[np.float_ | np.int_],
+        w: npt.NDArray[np.float_ | np.int_],
+    ) -> float:
+        from sklearn.metrics import roc_auc_score
+
+        return roc_auc_score(y, pred)  # type: ignore
+
+
 class UpliftByPercentile(AbstractMetric):
     """
     https://note.com/dd_techblog/n/nb1ae45e79148
