@@ -134,7 +134,7 @@ def setup_dataset(
         _pred_df = pl.concat(
             [
                 _pred_df,
-                train_ds.to_frame()[train_ds.x_columns],
+                pl.from_numpy(valid_X, schema=train_ds.x_columns),
             ],
             how="horizontal",
         )
@@ -197,9 +197,7 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
     )
-    client.log_params(
-        dict_flatten(cfg),
-    )
+    client.log_params(dict_flatten(cfg))
 
     logger.info("split dataseet")
     rank_flg = rank <= cfg.data.rank
