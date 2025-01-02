@@ -30,7 +30,10 @@ def test_path_linker(path: Path, dataset: dataset_type) -> None:
     assert isinstance(path_link, PathLink)
     assert path_link.dataset == dataset
 
-    assert path_link.lake == path / "data/lake" / f"{dataset}.parquet"
+    if dataset == "test":
+        assert path_link.lake == path / "data/lake" / "criteo.parquet"
+    else:
+        assert path_link.lake == path / "data/lake" / f"{dataset}.parquet"
     assert path_link.cleansing == path / "data/processed" / dataset
     assert path_link.mart == path / "data/mart" / dataset
     assert path_link.prediction == path / "data/prediction" / dataset
