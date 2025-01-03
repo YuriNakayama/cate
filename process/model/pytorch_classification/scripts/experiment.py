@@ -20,32 +20,6 @@ from .dataset import BinaryClassificationDataset, fix_seed, worker_init_fn
 from .model import FullConnectedModel
 
 
-class Experiment:
-    def __init__(
-        self,
-        cfg: DictConfig,
-        link: PathLink,
-        client: MlflowClient,
-        logger: Logger,
-        parent_run_id: str,
-    ) -> None:
-        self.cfg = cfg
-        self.link = link
-        self.client = client
-        self.logger = logger
-        self.parent_run_id = parent_run_id
-        self.dataset_generator = DatasetGenerator(link, logger)
-        self.model_fetcher = ModelFetcher()
-        self.trainer = Trainer(client, logger, optimizer, criterion, device)
-
-    def __call__(self) -> None:
-        for train_ds, test_ds in self.dataset_generator(self.cfg.training):
-            model = self.model_fetcher("model_name")
-            model = self.trainer(model, train_ds, cfg.train)
-            y_pred = model.predict(test_ds.X)
-            metrics(y_pred, test_ds.y, test_ds.w)
-
-
 class DatasetGenerator:
     def __init__(self, link: PathLink, logger: Logger) -> None:
         self.link = link
@@ -78,9 +52,53 @@ class DatasetGenerator:
             yield train_loader, valid_loader
 
 
-class ModelFetcher:
-    def __call__(name: str) -> Classifier:
-        pass
+class Experiment:
+    def __init__(
+        self,
+        cfg: DictConfig,
+        link: PathLink,
+        client: MlflowClient,
+        logger: Logger,
+        parent_run_id: str,
+    ) -> None:
+        self.cfg = cfg
+        self.link = link
+        self.client = client
+        self.logger = logger
+        self.parent_run_id = parent_run_id
+
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.seed = 42
+        fix_seed(self.cfg.training.seed)
+
+        self.dataset_generator = DatasetGenerator(self.link, self.logger)
+        self.trainer = Trainer(self.client, self.logger, self.device)
+
+    def __call__(self) -> None:
+        self.logger.info("Start training")
+
+        self.client.start_run(
+            run_name=f"{self.cfg.data.name}-{self.cfg.model.name}",
+            tags={
+                "model": self.cfg.model.name,
+                "dataset": self.cfg.data.name,
+                "package": "pytorch",
+                "mlflow.parentRunId": self.parent_run_id,
+            },
+            description=f"base_pattern: {self.cfg.model.name} training and evaluation using {self.cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
+        )
+        self.client.log_params(dict_flatten(self.cfg))
+        for fold, (train_ds, test_ds) in enumerate(
+            self.dataset_generator(self.cfg.training)
+        ):
+            self.logger.info(f"Start model creation (fold: {fold})")
+            model = FullConnectedModel(train_ds.X.shape[1], 2).to(self.device)
+            criterion = nn.CrossEntropyLoss()
+            optimizer = optim.SGD(model.parameters(), lr=self.cfg.training.lr)
+
+            model = self.trainer(model, train_ds, cfg.train)
+            y_pred = model.predict(test_ds.X)
+            metrics(y_pred, test_ds.y, test_ds.w)
 
 
 class Trainer:
