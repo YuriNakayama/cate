@@ -1,6 +1,7 @@
 from logging import Logger
 from typing import Any
 
+import mlflow
 import numpy as np
 import torch
 import torch.nn as nn
@@ -25,7 +26,6 @@ def create_dataset(
 ) -> BinaryClassificationDataset:
     logger.info("load dataset")
     ds = cds.Dataset.load(link.mart)
-
     dataset = BinaryClassificationDataset(ds.to_frame(), ds.x_columns, ds.y_columns)
     return dataset
 
@@ -39,24 +39,16 @@ def train_model(
     device: torch.device,
 ) -> tuple[Any, np.floating[Any], np.floating[Any]]:
     # Train loop ----------------------------
-    model.train()  # 学習モードをオン
+    model.train()
     train_batch_loss = []
     for data, label in train_loader:
-        # GPUへの転送
         data, label = data.to(device), label.to(device)
-        # 1. 勾配リセット
         optimizer.zero_grad()
-        # 2. 推論
         output = model(data)
-        # 3. 誤差計算
         loss = criterion(output, label.squeeze().to(torch.int64))
-        # 4. 誤差逆伝播
         loss.backward()
-        # 5. パラメータ更新
         optimizer.step()
-        # train_lossの取得
         train_batch_loss.append(loss.item())
-
     # Test(val) loop ----------------------------
     model.eval()
     test_batch_loss = []
@@ -124,7 +116,11 @@ def train(
             model, train_loss, test_loss = train_model(
                 model, train_loader, valid_loader, optimizer, criterion, device
             )
+            mlflow.log_metrics(
+                {"train_loss": float(train_loss), "test_loss": float(test_loss)},
+                step=epoch,
+            )
 
-        # 10エポックごとにロスを表示
-        if epoch % 2 == 0:
+        # 1エポックごとにロスを表示
+        if epoch % 1 == 0:
             logger.info(f"Train loss: {train_loss:.3f}, Test loss: {test_loss:.3f}")
