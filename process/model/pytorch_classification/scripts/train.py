@@ -90,7 +90,7 @@ def train(
     optimizer = optim.SGD(model.parameters(), lr=cfg.training.lr)
 
     client.start_run(
-        run_name=f"{cfg.data.name}-{cfg.model.name}-rank_{cfg.data.rank}-random_ratio_{cfg.data.random_ratio}",
+        run_name=f"{cfg.data.name}-{cfg.model.name}",
         tags={
             "model": cfg.model.name,
             "dataset": cfg.data.name,
@@ -99,9 +99,7 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
     )
-    client.log_params(
-        dict_flatten(cfg),
-    )
+    client.log_params(dict_flatten(cfg))
 
     # 訓練の実行
     logger.info("Start training loop")
@@ -114,18 +112,12 @@ def train(
             # データローダーの作成
             train_loader = DataLoader(
                 train_dataset,
-                batch_size=cfg.training.train_batch_size,
-                shuffle=True,
-                num_workers=2,
-                pin_memory=True,
+                **cfg.training.train_loader,
                 worker_init_fn=worker_init_fn,
             )
             valid_loader = DataLoader(
                 valid_dataset,
-                batch_size=cfg.training.valid_batch_size,
-                shuffle=False,
-                num_workers=2,
-                pin_memory=True,
+                **cfg.training.valid_loader,
                 worker_init_fn=worker_init_fn,
             )
 
