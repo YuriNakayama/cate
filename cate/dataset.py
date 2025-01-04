@@ -102,7 +102,10 @@ class Dataset:
     def __getitem__(self, item: list[int] | npt.NDArray[np.int_]) -> Dataset:
         idx = pl.DataFrame({"index": item})
         return Dataset(
-            self.__df.clone().with_row_index().join(idx, on="index", how="inner"),
+            self.__df.clone()
+            .with_row_index()
+            .join(idx, on="index", how="inner")
+            .drop("index"),
             self.x_columns,
             self.y_columns,
             self.w_columns,
