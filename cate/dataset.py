@@ -96,6 +96,28 @@ class Dataset:
     def __len__(self) -> int:
         return len(self.__df)
 
+    def __repr__(self) -> str:
+        return f"Dataset(n={len(self)}, x_columns={self.x_columns}, y_columns={self.y_columns}, w_columns={self.w_columns})"  # noqa: E501
+
+    def __getitem__(self, item: list[int] | npt.NDArray[np.int_]) -> Dataset:
+        if len(item) == 0:
+            return Dataset(
+                pl.DataFrame(schema=self.__df.schema),
+                self.x_columns,
+                self.y_columns,
+                self.w_columns,
+            )
+        idx = pl.DataFrame({"index": item})
+        return Dataset(
+            self.__df.clone()
+            .with_row_index()
+            .join(idx, on="index", how="inner")
+            .drop("index"),
+            self.x_columns,
+            self.y_columns,
+            self.w_columns,
+        )
+
     def to_frame(self) -> pl.DataFrame:
         return self.__df.clone()
 
