@@ -100,6 +100,13 @@ class Dataset:
         return f"Dataset(n={len(self)}, x_columns={self.x_columns}, y_columns={self.y_columns}, w_columns={self.w_columns})"  # noqa: E501
 
     def __getitem__(self, item: list[int] | npt.NDArray[np.int_]) -> Dataset:
+        if len(item) == 0:
+            return Dataset(
+                pl.DataFrame(schema=self.__df.schema),
+                self.x_columns,
+                self.y_columns,
+                self.w_columns,
+            )
         idx = pl.DataFrame({"index": item})
         return Dataset(
             self.__df.clone()

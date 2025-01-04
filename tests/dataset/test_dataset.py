@@ -1,6 +1,7 @@
 import shelve
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 import polars.testing as pt
 import pytest
@@ -183,9 +184,8 @@ def test_to_frame(sample_dataset: cds.Dataset) -> None:
     pt.assert_frame_equal(df, expected_df)
 
 
-def test_getitem_with_list(sample_dataset: cds.Dataset) -> None:
+def test_getitem_with_valid_indices(sample_dataset: cds.Dataset) -> None:
     subset = sample_dataset[[0, 2]]
-
     expected_df = pl.DataFrame(
         {
             "feature1": [1, 3],
@@ -194,62 +194,41 @@ def test_getitem_with_list(sample_dataset: cds.Dataset) -> None:
             "weight": [0.1, 0.3],
         }
     )
-    expected_dataset = cds.Dataset(
-        expected_df,
-        sample_dataset.x_columns,
-        sample_dataset.y_columns,
-        sample_dataset.w_columns,
-    )
-
-    pt.assert_frame_equal(subset.to_frame(), expected_dataset.to_frame())
-    assert subset.x_columns == expected_dataset.x_columns
-    assert subset.y_columns == expected_dataset.y_columns
-    assert subset.w_columns == expected_dataset.w_columns
+    pt.assert_frame_equal(subset.to_frame(), expected_df)
+    assert subset.x_columns == sample_dataset.x_columns
+    assert subset.y_columns == sample_dataset.y_columns
+    assert subset.w_columns == sample_dataset.w_columns
 
 
-def test_getitem_with_ndarray(sample_dataset: cds.Dataset) -> None:
-    subset = sample_dataset[np.array([1, 2])]
-
-    expected_df = pl.DataFrame(
-        {
-            "feature1": [2, 3],
-            "feature2": [5, 6],
-            "target": [1, 0],
-            "weight": [0.2, 0.3],
-        }
-    )
-    expected_dataset = cds.Dataset(
-        expected_df,
-        sample_dataset.x_columns,
-        sample_dataset.y_columns,
-        sample_dataset.w_columns,
-    )
-
-    pt.assert_frame_equal(subset.to_frame(), expected_dataset.to_frame())
-    assert subset.x_columns == expected_dataset.x_columns
-    assert subset.y_columns == expected_dataset.y_columns
-    assert subset.w_columns == expected_dataset.w_columns
-
-
-def test_getitem_with_empty_list(sample_dataset: cds.Dataset) -> None:
+def test_getitem_with_empty_indices(sample_dataset: cds.Dataset) -> None:
     subset = sample_dataset[[]]
-
     expected_df = pl.DataFrame(
         {
             "feature1": [],
             "feature2": [],
             "target": [],
             "weight": [],
+        },
+        schema=sample_dataset.to_frame().schema,
+    )
+    pt.assert_frame_equal(subset.to_frame(), expected_df)
+    assert subset.x_columns == sample_dataset.x_columns
+    assert subset.y_columns == sample_dataset.y_columns
+    assert subset.w_columns == sample_dataset.w_columns
+
+
+def test_getitem_with_numpy_array(sample_dataset: cds.Dataset) -> None:
+    indices = np.array([1])
+    subset = sample_dataset[indices]
+    expected_df = pl.DataFrame(
+        {
+            "feature1": [2],
+            "feature2": [5],
+            "target": [1],
+            "weight": [0.2],
         }
     )
-    expected_dataset = cds.Dataset(
-        expected_df,
-        sample_dataset.x_columns,
-        sample_dataset.y_columns,
-        sample_dataset.w_columns,
-    )
-
-    pt.assert_frame_equal(subset.to_frame(), expected_dataset.to_frame())
-    assert subset.x_columns == expected_dataset.x_columns
-    assert subset.y_columns == expected_dataset.y_columns
-    assert subset.w_columns == expected_dataset.w_columns
+    pt.assert_frame_equal(subset.to_frame(), expected_df)
+    assert subset.x_columns == sample_dataset.x_columns
+    assert subset.y_columns == sample_dataset.y_columns
+    assert subset.w_columns == sample_dataset.w_columns
