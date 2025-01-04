@@ -96,6 +96,9 @@ class Dataset:
     def __len__(self) -> int:
         return len(self.__df)
 
+    def __repr__(self) -> str:
+        return f"Dataset(n={len(self)}, x_columns={self.x_columns}, y_columns={self.y_columns}, w_columns={self.w_columns})"  # noqa: E501
+
     def to_frame(self) -> pl.DataFrame:
         return self.__df.clone()
 
