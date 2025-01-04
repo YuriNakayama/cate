@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 mp.set_start_method("spawn", force=True)
 
 
-def fix_seed(seed) -> None:
+def fix_seed(seed: int) -> None:
     # random
     random.seed(seed)
     # numpy
