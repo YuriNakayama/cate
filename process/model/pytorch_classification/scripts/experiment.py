@@ -9,7 +9,7 @@ import torch.optim as optim
 from omegaconf import DictConfig
 from sklearn.model_selection import StratifiedKFold
 from torch import Tensor
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Dataset, Subset
 from tqdm import tqdm
 
 import cate.dataset as cds
@@ -31,25 +31,15 @@ class DatasetGenerator:
         )
 
     def __call__(
-        self, config: DictConfig, seed: int = 42
-    ) -> Generator[tuple[DataLoader[Any], DataLoader[Any]], Any, None]:
+        self, seed: int = 42
+    ) -> Generator[tuple[Subset[Any], Subset[Any]], Any, None]:
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
         for train_index, valid_index in skf.split(
             np.zeros(len(self.dataset)), self.dataset.y
         ):
             train_dataset = Subset(self.dataset, train_index)
             valid_dataset = Subset(self.dataset, valid_index)
-            train_loader = DataLoader(
-                train_dataset,
-                **config.train_loader,
-                worker_init_fn=worker_init_fn,
-            )
-            valid_loader = DataLoader(
-                valid_dataset,
-                **config.valid_loader,
-                worker_init_fn=worker_init_fn,
-            )
-            yield train_loader, valid_loader
+            yield train_dataset, valid_dataset
 
 
 class Experiment:
@@ -72,7 +62,7 @@ class Experiment:
         fix_seed(self.cfg.training.seed)
 
         self.dataset_generator = DatasetGenerator(self.link, self.logger)
-        self.trainer = Trainer(self.client, self.logger, self.device)
+        self.trainer = Trainer(self.client, self.logger, self.cfg.train, self.device)
 
     def __call__(self) -> None:
         self.logger.info("Start training")
@@ -88,41 +78,99 @@ class Experiment:
             description=f"base_pattern: {self.cfg.model.name} training and evaluation using {self.cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
         )
         self.client.log_params(dict_flatten(self.cfg))
-        for fold, (train_ds, test_ds) in enumerate(
-            self.dataset_generator(self.cfg.training)
-        ):
+        for fold, (train_ds, test_ds) in enumerate(self.dataset_generator()):
             self.logger.info(f"Start model creation (fold: {fold})")
-            model = FullConnectedModel(train_ds.X.shape[1], 2).to(self.device)
+            model = FullConnectedModel(len(train_ds), 2).to(self.device)
             criterion = nn.CrossEntropyLoss()
             optimizer = optim.SGD(model.parameters(), lr=self.cfg.training.lr)
 
-            model = self.trainer(model, train_ds, cfg.train)
-            y_pred = model.predict(test_ds.X)
+            model = self.trainer(model, criterion, optimizer, train_ds)
+            y_pred = model.predict(test_ds)
             metrics(y_pred, test_ds.y, test_ds.w)
 
 
 class Trainer:
     def __init__(
         self,
-        optimizer: optim.Optimizer,
-        criterion: Any,
-        device: torch.device,
         client: MlflowClient,
         logger: Logger,
+        cfg: DictConfig,
+        device: torch.device,
     ) -> None:
-        self.optimizer = optimizer
-        self.criterion = criterion
-        self.device = device
         self.client = client
         self.logger = logger
+        self.cfg = cfg
+        self.device = device
 
     def _train(
         self,
         model: Any,
         train_loader: DataLoader[tuple[Tensor, Tensor]],
-        test_loader: DataLoader[tuple[Tensor, Tensor]],
-    ):
-        pass
+        valid_loader: DataLoader[tuple[Tensor, Tensor]],
+        optimizer: optim.Optimizer,
+        criterion: Any,
+    ) -> Any:
+        # Train loop ----------------------------
+        model.train()
+        train_batch_loss = []
+        for data, label in train_loader:
+            data, label = data.to(self.device), label.to(self.device)
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, label.squeeze().to(torch.int64))
+            loss.backward()
+            optimizer.step()
+            train_batch_loss.append(loss.item())
+        # Test(val) loop ----------------------------
+        model.eval()
+        valid_batch_loss = []
+        with torch.no_grad():
+            for data, label in valid_loader:
+                data, label = data.to(self.device), label.to(self.device)
+                output = model(data)
+                loss = criterion(output, label.squeeze().to(torch.int64))
+                valid_batch_loss.append(loss.item())
 
-    def __call__(model: Classifier, ds: Dataset, client: MlflowClient) -> Classifier:
-        pass
+        return model
+
+    def __call__(
+        self,
+        model: Any,
+        criterion: Any,
+        optimizer: optim.Optimizer,
+        ds: BinaryClassificationDataset,
+        seed: int = 42,
+    ) -> Any:
+        self.logger.info("Start training loop")
+
+        for epoch in tqdm(range(self.cfg.training.epochs)):
+            skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+            for train_index, valid_index in skf.split(np.zeros(len(ds)), ds.y):
+                train_dataset = Subset(ds, train_index)
+                valid_dataset = Subset(ds, valid_index)
+
+                # データローダーの作成
+                train_loader = DataLoader(
+                    train_dataset,
+                    **self.cfg.training.train_loader,
+                    worker_init_fn=worker_init_fn,
+                )
+                valid_loader = DataLoader(
+                    valid_dataset,
+                    **self.cfg.training.valid_loader,
+                    worker_init_fn=worker_init_fn,
+                )
+
+                model, train_loss, test_loss = self._train(
+                    model, train_loader, valid_loader, optimizer, criterion
+                )
+                mlflow.log_metrics(
+                    {"train_loss": float(train_loss), "test_loss": float(test_loss)},
+                    step=epoch,
+                )
+
+            # 1エポックごとにロスを表示
+            if epoch % 1 == 0:
+                self.logger.info(
+                    f"Train loss: {train_loss:.3f}, Test loss: {test_loss:.3f}"
+                )
