@@ -181,3 +181,75 @@ def test_to_frame(sample_dataset: cds.Dataset) -> None:
         }
     )
     pt.assert_frame_equal(df, expected_df)
+
+
+def test_getitem_with_list(sample_dataset: cds.Dataset) -> None:
+    subset = sample_dataset[[0, 2]]
+
+    expected_df = pl.DataFrame(
+        {
+            "feature1": [1, 3],
+            "feature2": [4, 6],
+            "target": [0, 0],
+            "weight": [0.1, 0.3],
+        }
+    )
+    expected_dataset = cds.Dataset(
+        expected_df,
+        sample_dataset.x_columns,
+        sample_dataset.y_columns,
+        sample_dataset.w_columns,
+    )
+
+    pt.assert_frame_equal(subset.to_frame(), expected_dataset.to_frame())
+    assert subset.x_columns == expected_dataset.x_columns
+    assert subset.y_columns == expected_dataset.y_columns
+    assert subset.w_columns == expected_dataset.w_columns
+
+
+def test_getitem_with_ndarray(sample_dataset: cds.Dataset) -> None:
+    subset = sample_dataset[np.array([1, 2])]
+
+    expected_df = pl.DataFrame(
+        {
+            "feature1": [2, 3],
+            "feature2": [5, 6],
+            "target": [1, 0],
+            "weight": [0.2, 0.3],
+        }
+    )
+    expected_dataset = cds.Dataset(
+        expected_df,
+        sample_dataset.x_columns,
+        sample_dataset.y_columns,
+        sample_dataset.w_columns,
+    )
+
+    pt.assert_frame_equal(subset.to_frame(), expected_dataset.to_frame())
+    assert subset.x_columns == expected_dataset.x_columns
+    assert subset.y_columns == expected_dataset.y_columns
+    assert subset.w_columns == expected_dataset.w_columns
+
+
+def test_getitem_with_empty_list(sample_dataset: cds.Dataset) -> None:
+    subset = sample_dataset[[]]
+
+    expected_df = pl.DataFrame(
+        {
+            "feature1": [],
+            "feature2": [],
+            "target": [],
+            "weight": [],
+        }
+    )
+    expected_dataset = cds.Dataset(
+        expected_df,
+        sample_dataset.x_columns,
+        sample_dataset.y_columns,
+        sample_dataset.w_columns,
+    )
+
+    pt.assert_frame_equal(subset.to_frame(), expected_dataset.to_frame())
+    assert subset.x_columns == expected_dataset.x_columns
+    assert subset.y_columns == expected_dataset.y_columns
+    assert subset.w_columns == expected_dataset.w_columns
