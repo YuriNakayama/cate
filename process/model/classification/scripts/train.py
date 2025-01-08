@@ -4,7 +4,6 @@ import lightgbm as lgb
 import mlflow
 import numpy as np
 import polars as pl
-import xgboost as xgb
 from omegaconf import DictConfig
 from sklearn.metrics import (
     accuracy_score,
