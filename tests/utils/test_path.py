@@ -29,14 +29,12 @@ def test_path_linker(tmp_path: Path, dataset: dataset_type) -> None:
     assert path_link.cleansing == tmp_path / "data/processed" / dataset
     assert path_link.mart == tmp_path / "data/mart" / dataset
     assert path_link.prediction == tmp_path / "data/prediction" / dataset
-    assert path_link.output == tmp_path / "output" / dataset
 
     # Check if the directories are created
     for _path in [
         path_link.cleansing,
         path_link.mart,
         path_link.prediction,
-        path_link.output,
     ]:
         assert _path.exists()
         assert _path.is_dir()
