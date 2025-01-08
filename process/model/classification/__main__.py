@@ -18,7 +18,7 @@ def main(cfg: DictConfig) -> None:
     tags = {
         "model": cfg.model.name,
         "dataset": cfg.data.name,
-        "package": "causalml",
+        "package": "lightgbm",
         "layer": "parent",
     }
     run_ids = client.search_runs_by_tags(tags)
