@@ -256,6 +256,10 @@ class Outputs(AbstractTableArtifact):
         conversions, and group assignments for each observation.
     """  # noqa: E501
 
+    def __init__(self, n: int | None = None, shuffle: bool = False) -> None:
+        self.n = n
+        self.shuffle = shuffle
+
     @property
     def name(self) -> str:
         return "outputs"
@@ -266,10 +270,16 @@ class Outputs(AbstractTableArtifact):
         y: npt.NDArray[np.float_ | np.int_],
         w: npt.NDArray[np.float_ | np.int_],
     ) -> pd.DataFrame:
-        return pd.DataFrame(
+        df = pd.DataFrame(
             {
                 "pred": pred,
                 "conversion": y,
                 "group": w,
             }
         )
+        if self.shuffle:
+            df = df.sample(frac=1, random_state=42)
+
+        if self.n is not None:
+            return df.head(self.n)
+        return df
