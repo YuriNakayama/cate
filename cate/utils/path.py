@@ -22,7 +22,6 @@ class PathLink:
     cleansing: Path = field(init=False)
     mart: Path = field(init=False)
     prediction: Path = field(init=False)
-    output: Path = field(init=False)
 
     @staticmethod
     def _make_path(path: Path) -> None:
@@ -41,14 +40,12 @@ class PathLink:
         self.cleansing = self._base / self._cleansing / self.dataset
         self.mart = self._base / self._mart / self.dataset
         self.prediction = self._base / self._prediction / self.dataset
-        self.output = self._base / self._output / self.dataset
 
         for path in (
             self.lake,
             self.cleansing,
             self.mart,
             self.prediction,
-            self.output,
         ):
             self._make_path(path)
 
