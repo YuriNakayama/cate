@@ -68,10 +68,24 @@ CATEに構造的な仮定がある場合や，TGもしくはCGのデータ量が
 ### アルゴリズム
 
 ```math
-L_n(\tau) = \frac{1}{n} \sum_{i=1}^{n} \left( Y_i - \mu(X_i) - \tau W_i \right)^2
+\begin{array}{llr}
+\rm{procedure} & \rm{R-LEARNER(X, Y, W)} \\
+& \\
+&\hat{\mu} = M_{\mu}(Y \sim X) & CVを予測するモデルを学習\\
+&\hat{e} = M_e(W \sim X) & 傾向スコアを予測するモデルを学習\\
+& \\
+& \hat{L}_n(\tau) = \frac{1}{n} \sum_{i=1}^N \{Y_i - \hat{m}(X_i) - (W_i - \hat{e}(X_i))\tau(X_i) \}^2 & \\
+& \hat{\tau} = \arg \min_{\tau} \hat{L}_n(\tau) & \rm{Robinson Loss}を最小化する\tauを学習\\
+\end{array}
 ```
 
 ### 概要
+
+ロビンソン分解(Robinson decomposition)を利用したモデル.
+
+```math
+Y_i - m(X_i) = (W_i - e(X_i))\tau(X_i) + \epsilon_i
+```
 
 ## DR-learner
 
