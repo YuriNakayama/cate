@@ -68,6 +68,7 @@ CATEに構造的な仮定がある場合や，TGもしくはCGのデータ量が
 ### アルゴリズム
 
 ```math
+L_n(\tau) = \frac{1}{n} \sum_{i=1}^{n} \left( Y_i - \mu(X_i) - \tau W_i \right)^2
 ```
 
 ### 概要
