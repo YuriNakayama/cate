@@ -1,9 +1,13 @@
+import warnings
+
 import hydra
 from omegaconf import DictConfig
 
 from cate.infra.mlflow import MlflowClient
 from cate.utils import get_logger, path_linker, send_message
 from process.model.classification.scripts.train import train
+
+warnings.filterwarnings("ignore")
 
 
 @hydra.main(config_name="config.yaml", version_base=None, config_path="conf")
@@ -14,7 +18,7 @@ def main(cfg: DictConfig) -> None:
     tags = {
         "model": cfg.model.name,
         "dataset": cfg.data.name,
-        "package": "causalml",
+        "package": "lightgbm",
         "layer": "parent",
     }
     run_ids = client.search_runs_by_tags(tags)

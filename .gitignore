@@ -69,3 +69,4 @@ models/*
 !data/README.md
 !models/README.md
 !requirements.txt
+!/output/**/*.csv

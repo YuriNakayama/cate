@@ -7,7 +7,7 @@ from typing import Any
 import lightgbm as lgb
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
+import polars as pl
 from causalml.inference import meta
 from omegaconf import DictConfig
 from sklearn.calibration import CalibratedClassifierCV
@@ -16,14 +16,14 @@ from sklearn.model_selection import StratifiedKFold
 import cate.dataset as cds
 from cate.infra.mlflow import MlflowClient
 from cate.metrics import Artifacts, Metrics, evaluate
-from cate.utils import AbstractLink, dict_flatten
+from cate.utils import PathLink, dict_flatten
 
 
 class BaggingModel:
     def __init__(self, classifiers: list[Any]) -> None:
         self.classifiers = classifiers
 
-    def fit(self, X: npt.NDArray, y: npt.NDArray[np.int_]) -> BaggingModel:
+    def fit(self, X: npt.NDArray[Any], y: npt.NDArray[np.int_]) -> BaggingModel:
         for classifier in self.classifiers:
             classifier.fit(X, y)
         return self
@@ -35,7 +35,7 @@ class BaggingModel:
 
 
 def create_cv_models(
-    X: npt.NDArray,
+    X: npt.NDArray[Any],
     y: npt.NDArray[np.int_],
     base_classifier: Any,
     random_state: int = 42,
@@ -53,9 +53,9 @@ def create_cv_models(
 
 def get_biased_ds(
     ds: cds.Dataset,
-    rank_flg: pd.Series[bool],
+    rank_flg: pl.Series,
 ) -> cds.Dataset:
-    tg_flg = (ds.w == 1)[ds.w.columns[0]]
+    tg_flg = pl.Series("group", ds.w) == 1
     tg_ds = cds.filter(ds, [tg_flg, rank_flg])
     cg_ds = cds.filter(ds, [~tg_flg, ~rank_flg])
     biased_ds = cds.concat([tg_ds, cg_ds])
@@ -64,7 +64,7 @@ def get_biased_ds(
 
 def tg_cg_split(
     ds: cds.Dataset,
-    rank_flg: pd.Series[bool],
+    rank_flg: pl.Series,
     random_ratio: float = 0.0,
     random_state: int = 42,
 ) -> cds.Dataset:
@@ -77,7 +77,17 @@ def tg_cg_split(
     if random_ratio == 1:
         return cds.sample(ds, frac=random_ds_ratio, random_state=random_state)
 
+    ds = cds.Dataset(
+        ds.to_frame().with_row_index(), ds.x_columns, ds.y_columns, ds.w_columns
+    )
     _ds, random_ds = cds.split(ds, test_frac=random_ds_ratio, random_state=random_state)
+    rank_flg = (
+        rank_flg.to_frame()
+        .with_row_index()
+        .filter(pl.col("index").is_in(_ds.to_frame()["index"]))
+        .drop("index")
+        .to_series()
+    )
     biased_ds = get_biased_ds(_ds, rank_flg)
     return cds.sample(
         cds.concat([biased_ds, random_ds]), frac=1, random_state=random_state
@@ -85,23 +95,25 @@ def tg_cg_split(
 
 
 def setup_dataset(
-    cfg: DictConfig, logger: Logger, link: AbstractLink
-) -> tuple[cds.Dataset, cds.Dataset, pd.DataFrame]:
+    cfg: DictConfig, logger: Logger, link: PathLink
+) -> tuple[cds.Dataset, cds.Dataset, pl.Series]:
     logger.info("load dataset")
-    ds = cds.Dataset.load(link.base)
+    ds = cds.Dataset.load(link.mart)
     train_ds, test_ds = cds.split(ds, 1 / 3, random_state=42)
 
     # Add Bias To Train Dataset Using LightGBM
     logger.info("start training bias model")
-    _pred_dfs = []
+    pred_dfs: list[pl.DataFrame] = []
     skf = StratifiedKFold(5, shuffle=True, random_state=42)
     for i, (train_idx, valid_idx) in enumerate(
         skf.split(np.zeros(len(train_ds)), train_ds.y)
     ):
         logger.info(f"start {i} fold")
-        train_X = train_ds.X.iloc[train_idx]
-        train_y = train_ds.y.iloc[train_idx].to_numpy().reshape(-1)
-        valid_X = train_ds.X.iloc[valid_idx]
+        train_X = train_ds.X[train_idx]
+        train_y = train_ds.y[train_idx]
+        valid_X = train_ds.X[valid_idx]
+        valid_y = train_ds.y[valid_idx]
+        valid_w = train_ds.w[valid_idx]
 
         base_classifier = lgb.LGBMClassifier(
             verbosity=-1,
@@ -112,22 +124,29 @@ def setup_dataset(
         )
         base_classifier.fit(train_X, train_y)
         pred = np.array(base_classifier.predict_proba(valid_X))
-
-        _pred_dfs.append(
-            pd.DataFrame(
-                {"index": train_ds.y.index[valid_idx], "pred": pred[:, 1].reshape(-1)}
-            ).set_index("index")
+        _pred_df = pl.DataFrame(
+            {
+                "pred": pred[:, 1].reshape(-1),
+                train_ds.y_columns[0]: valid_y,
+                train_ds.w_columns[0]: valid_w,
+            }
         )
-
-    pred_df = pd.concat(_pred_dfs)
+        _pred_df = pl.concat(
+            [
+                _pred_df,
+                pl.from_numpy(valid_X, schema=train_ds.x_columns),
+            ],
+            how="horizontal",
+        )
+        pred_dfs.append(_pred_df)
+    pred_df = pl.concat(pred_dfs)
     rank = cds.to_rank(
-        pred_df.index.to_series(), pred_df["pred"], k=cfg.model.num_rank
-    ).to_frame()
-    train_df = pd.merge(train_ds.to_pandas(), rank, left_index=True, right_index=True)
+        pl.Series("index", range(len(pred_df))), pred_df["pred"], k=cfg.model.num_rank
+    )
 
     return (
         cds.Dataset(
-            train_df,
+            pred_df,
             train_ds.x_columns,
             train_ds.y_columns,
             train_ds.w_columns,
@@ -144,7 +163,7 @@ def train(
     *,
     train_ds: cds.Dataset,
     test_ds: cds.Dataset,
-    rank_df: pd.DataFrame,
+    rank: pl.Series,
     parent_run_id: str | None = None,
 ) -> None:
     logger.info(
@@ -178,23 +197,21 @@ def train(
         },
         description=f"base_pattern: {cfg.model.name} training and evaluation using {cfg.data.name} dataset with causalml package and lightgbm model with 5-fold cross validation and stratified sampling.",  # noqa: E501
     )
-    client.log_params(
-        dict_flatten(cfg),
-    )
+    client.log_params(dict_flatten(cfg))
 
     logger.info("split dataseet")
-    rank_flg = rank_df <= cfg.data.rank
+    rank_flg = rank <= cfg.data.rank
     train_ds = tg_cg_split(
-        train_ds, rank_flg["rank"], random_ratio=cfg.data.random_ratio, random_state=42
+        train_ds, rank_flg, random_ratio=cfg.data.random_ratio, random_state=42
     )
     train_ds = cds.sample(train_ds, frac=cfg.data.sample_ratio, random_state=42)
 
-    train_X = train_ds.X.to_numpy()
-    train_y = train_ds.y.to_numpy().reshape(-1)
-    train_w = train_ds.w.to_numpy().reshape(-1)
-    test_X = test_ds.X.to_numpy()
-    test_y = test_ds.y.to_numpy().reshape(-1)
-    test_w = test_ds.w.to_numpy().reshape(-1)
+    train_X = train_ds.X
+    train_y = train_ds.y
+    train_w = train_ds.w
+    test_X = test_ds.X
+    test_y = test_ds.y
+    test_w = test_ds.w
     logger.info(f"train X shape{train_X.shape}, test X shape{test_X.shape}")
     del train_ds
 
@@ -212,7 +229,7 @@ def train(
 
     logger.info(f"strart prediction {cfg.model.name}")
     test_p = propensity_model.predict_proba(test_X)[:, 1]
-    pred = model.predict(test_X, p=test_p)
+    pred = model.predict(test_X, p=test_p).reshape(-1)
 
     metrics = Metrics(
         list(
@@ -221,25 +238,14 @@ def train(
             + [evaluate.QiniByPercentile(k) for k in np.arange(0, 1, 0.1)]
         )
     )
-    metrics(pred.reshape(-1), test_y, test_w)
+    metrics(pred, test_y, test_w)
     client.log_metrics(metrics, cfg.data.rank)
-
-    pred_df = pd.DataFrame(
-        {"index": test_ds.y.index, "pred": pred.reshape(-1)}
-    ).set_index("index")
-    base_df = pd.merge(
-        test_ds.y.rename(columns={test_ds.y_columns[0]: "y"}),
-        test_ds.w.rename(columns={test_ds.w_columns[0]: "w"}),
-        left_index=True,
-        right_index=True,
-    )
-    output_df = pd.merge(base_df, pred_df, left_index=True, right_index=True)
 
     artifacts = Artifacts([evaluate.UpliftCurve(), evaluate.Outputs()])
     artifacts(
-        output_df.pred.to_numpy(),
-        output_df.y.to_numpy(),
-        output_df.w.to_numpy(),
+        pred,
+        test_ds.y,
+        test_ds.w,
     )
     client.log_artifacts(artifacts)
     client.end_run()

@@ -56,18 +56,18 @@ class Dataset:
         y_diff_columns = set(y_columns) - set(columns)
         w_diff_columns = set(w_columns) - set(columns)
         if x_diff_columns:
-            raise ValueError(f"x columns {x_diff_columns} do not exist in df.")
+            raise ValueError(f"X columns {x_diff_columns} do not exist in df.")
         if y_diff_columns:
-            raise ValueError(f"x columns {y_diff_columns} do not exist in df.")
+            raise ValueError(f"y columns {y_diff_columns} do not exist in df.")
         if w_diff_columns:
-            raise ValueError(f"x columns {w_diff_columns} do not exist in df.")
+            raise ValueError(f"z columns {w_diff_columns} do not exist in df.")
 
     @property
     def X(self) -> npt.NDArray[Any]:
         return self.__df.select(self.x_columns).clone().to_numpy()
 
     @property
-    def y(self) -> npt.NDArray[np.float_ | np.int_]:
+    def y(self) -> npt.NDArray[np.int_]:
         return self.__df.select(self.y_columns).clone().to_numpy().reshape(-1)
 
     @property
@@ -95,6 +95,28 @@ class Dataset:
 
     def __len__(self) -> int:
         return len(self.__df)
+
+    def __repr__(self) -> str:
+        return f"Dataset(n={len(self)}, x_columns={self.x_columns}, y_columns={self.y_columns}, w_columns={self.w_columns})"  # noqa: E501
+
+    def __getitem__(self, item: list[int] | npt.NDArray[np.int_]) -> Dataset:
+        if len(item) == 0:
+            return Dataset(
+                pl.DataFrame(schema=self.__df.schema),
+                self.x_columns,
+                self.y_columns,
+                self.w_columns,
+            )
+        idx = pl.DataFrame({"index": item})
+        return Dataset(
+            self.__df.clone()
+            .with_row_index()
+            .join(idx, on="index", how="inner")
+            .drop("index"),
+            self.x_columns,
+            self.y_columns,
+            self.w_columns,
+        )
 
     def to_frame(self) -> pl.DataFrame:
         return self.__df.clone()

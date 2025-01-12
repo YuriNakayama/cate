@@ -19,6 +19,7 @@ dependencies = [
     "scikit-learn>=1.6.0",
     "scikit-uplift>=0.5.1",
     "scipy>=1.14.1",
+    "slackweb>=1.0.5",
     "torch>=2.5.1",
 ]
 

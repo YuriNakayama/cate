@@ -1,0 +1,27 @@
+hydra:
+  run:
+    dir: process/outputs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}_${model.name}
+  sweep:
+    dir: process/outputs/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+data:
+  name: "test"
+  random_ratio: 0.5
+  sample_ratio: 1.0
+  rank: 5
+
+model:
+  name: "pytorch_classification"
+  num_rank: 10
+
+training:
+  seed: 42
+  train_batch_size: 32
+  valid_batch_size: 16
+  epochs: 8
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.001
+
+mlflow:
+  experiment_name: "classification"
