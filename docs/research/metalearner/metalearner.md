@@ -83,15 +83,30 @@ CATEに構造的な仮定がある場合や，TGもしくはCGのデータ量が
 
 ロビンソン分解(Robinson decomposition)を利用したモデル.
 
+$m(X_i) = E[Y_i | X_i], \hspace{0.1cm} e(X_i) = E[W_i | X_i] $
+$\tau(X_i) = \mathbb{E}[Y_i(W=1) - Y_i(W=0)|X_i]$とすると
+
 ```math
-Y_i - m(X_i) = (W_i - e(X_i))\tau(X_i) + \epsilon_i
+\begin{align*}
+\epsilon_i &= Y_i - \mathbb{E}[Y_i | X_i] - (W_i - \mathbb{E}[W_i | X_i])\tau(X_i) \\
+&= Y_i - m(X_i) - (W_i - e(X_i))\tau(X_i)
+\end{align*}
 ```
+
+であり
+
+```math
+\mathbb{E}[\epsilon_i | X_i, W] = 0
+```
+
+である.
 
 ## DR-learner
 
 ### アルゴリズム
 
 ```math
+
 ```
 
 ### 概要
