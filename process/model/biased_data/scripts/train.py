@@ -38,7 +38,7 @@ def create_cv_models(
     X: npt.NDArray[Any],
     y: npt.NDArray[np.int_],
     base_classifier: Any,
-    random_state: int = 42,
+    random_state: int,
 ) -> tuple[BaggingModel, npt.NDArray[np.float_]]:
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_state)
     models = []
@@ -65,8 +65,8 @@ def get_biased_ds(
 def tg_cg_split(
     ds: cds.Dataset,
     rank_flg: pl.Series,
-    random_ratio: float = 0.0,
-    random_state: int = 42,
+    random_ratio: float,
+    random_state: int,
 ) -> cds.Dataset:
     if random_ratio == 0:
         return get_biased_ds(ds, rank_flg)
@@ -99,12 +99,12 @@ def setup_dataset(
 ) -> tuple[cds.Dataset, cds.Dataset, pl.Series]:
     logger.info("load dataset")
     ds = cds.Dataset.load(link.mart)
-    train_ds, test_ds = cds.split(ds, 1 / 3, random_state=42)
+    train_ds, test_ds = cds.split(ds, 1 / 3, random_state=cfg.random_state)
 
     # Add Bias To Train Dataset Using LightGBM
     logger.info("start training bias model")
     pred_dfs: list[pl.DataFrame] = []
-    skf = StratifiedKFold(5, shuffle=True, random_state=42)
+    skf = StratifiedKFold(5, shuffle=True, random_state=cfg.random_state)
     for i, (train_idx, valid_idx) in enumerate(
         skf.split(np.zeros(len(train_ds)), train_ds.y)
     ):
@@ -120,7 +120,7 @@ def setup_dataset(
             n_jobs=-1,
             importance_type="gain",
             force_col_wise=True,
-            random_state=42,
+            random_state=cfg.random_state,
         )
         base_classifier.fit(train_X, train_y)
         pred = np.array(base_classifier.predict_proba(valid_X))
@@ -170,8 +170,12 @@ def train(
         f"start train in rank {cfg.data.rank}, random_ratio {cfg.data.random_ratio}"
     )
     # Fit Metalearner
-    base_classifier = lgb.LGBMClassifier(**cfg.training.classifier)
-    base_regressor = lgb.LGBMRegressor(**cfg.training.regressor)
+    base_classifier = lgb.LGBMClassifier(
+        **cfg.training.classifier, random_state=cfg.random_state
+    )
+    base_regressor = lgb.LGBMRegressor(
+        **cfg.training.regressor, random_state=cfg.random_state
+    )
 
     models = {
         "drlearner": meta.BaseDRLearner(base_regressor),
