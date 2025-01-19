@@ -106,10 +106,22 @@ $\tau(X_i) = \mathbb{E}[Y_i(W=1) - Y_i(W=0)|X_i]$とすると
 ### アルゴリズム
 
 ```math
+\begin{array}{llr}
+\rm{procedure} & \rm{T-LEARNER(X, Y, W)} \\
+& \\
+&\hat{\mu}_0 = M_0(Y^0 \sim X^0) & TG/CGのデータでモデルを学習\\
+&\hat{\mu}_1 = M_1(Y^1 \sim X^1) &\\
+& \hat{e} = M_e(W \sim X) & 傾向スコアを予測するモデルを学習\\
+&\\
+& \phi = \frac{W - \hat{e}(X)}{\hat{e}(X)(1 - \hat{e}(X))} (Y - \hat{m}_W(X)) \hat{m}_1(X) - \hat{m}_0(X)& CATEのDR推定量を計算 \\
+& \hat{\tau} = M_{\tau}(\phi \sim X) & DR推定量を予測するモデルを学習\\
 
+\end{array}
 ```
 
 ### 概要
+
+![dr_learner_cross_fitting](image/dr_learner_cross_fitting.png)
 
 ## 参考
 
