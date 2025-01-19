@@ -68,18 +68,61 @@ CATEに構造的な仮定がある場合や，TGもしくはCGのデータ量が
 ### アルゴリズム
 
 ```math
+\begin{array}{llr}
+\rm{procedure} & \rm{R-LEARNER(X, Y, W)} \\
+& \\
+&\hat{\mu} = M_{\mu}(Y \sim X) & CVを予測するモデルを学習\\
+&\hat{e} = M_e(W \sim X) & 傾向スコアを予測するモデルを学習\\
+& \\
+& \hat{L}_n(\tau) = \frac{1}{n} \sum_{i=1}^N \{Y_i - \hat{m}(X_i) - (W_i - \hat{e}(X_i))\tau(X_i) \}^2 & \\
+& \hat{\tau} = \arg \min_{\tau} \hat{L}_n(\tau) & \rm{Robinson Loss}を最小化する\tauを学習\\
+\end{array}
 ```
 
 ### 概要
+
+ロビンソン分解(Robinson decomposition)を利用したモデル.
+
+$m(X_i) = E[Y_i | X_i], \hspace{0.1cm} e(X_i) = E[W_i | X_i] $
+$\tau(X_i) = \mathbb{E}[Y_i(W=1) - Y_i(W=0)|X_i]$とすると
+
+```math
+\begin{align*}
+\epsilon_i &= Y_i - \mathbb{E}[Y_i | X_i] - (W_i - \mathbb{E}[W_i | X_i])\tau(X_i) \\
+&= Y_i - m(X_i) - (W_i - e(X_i))\tau(X_i)
+\end{align*}
+```
+
+であり
+
+```math
+\mathbb{E}[\epsilon_i | X_i, W] = 0
+```
+
+である.
 
 ## DR-learner
 
 ### アルゴリズム
 
 ```math
+\begin{array}{llr}
+\rm{procedure} & \rm{T-LEARNER(X, Y, W)} \\
+& \\
+&\hat{\mu}_0 = M_0(Y^0 \sim X^0) & TG/CGのデータでモデルを学習\\
+&\hat{\mu}_1 = M_1(Y^1 \sim X^1) &\\
+& \hat{e} = M_e(W \sim X) & 傾向スコアを予測するモデルを学習\\
+&\\
+& \phi = \frac{W - \hat{e}(X)}{\hat{e}(X)(1 - \hat{e}(X))} (Y - \hat{m}_W(X)) \hat{m}_1(X) - \hat{m}_0(X)& CATEのDR推定量を計算 \\
+& \hat{\tau} = M_{\tau}(\phi \sim X) & DR推定量を予測するモデルを学習\\
+
+\end{array}
 ```
 
 ### 概要
+
+CATEのDR推定量を計算するモデル.
+![dr_learner_cross_fitting](image/dr_learner_cross_fitting.png)
 
 ## 参考
 
