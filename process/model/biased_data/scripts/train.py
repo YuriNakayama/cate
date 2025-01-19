@@ -206,9 +206,14 @@ def train(
     logger.info("split dataseet")
     rank_flg = rank <= cfg.data.rank
     train_ds = tg_cg_split(
-        train_ds, rank_flg, random_ratio=cfg.data.random_ratio, random_state=42
+        train_ds,
+        rank_flg,
+        random_ratio=cfg.data.random_ratio,
+        random_state=cfg.random_state,
     )
-    train_ds = cds.sample(train_ds, frac=cfg.data.sample_ratio, random_state=42)
+    train_ds = cds.sample(
+        train_ds, frac=cfg.data.sample_ratio, random_state=cfg.random_state
+    )
 
     train_X = train_ds.X
     train_y = train_ds.y
@@ -225,7 +230,7 @@ def train(
         method="sigmoid",
     )
     propensity_model, train_p = create_cv_models(
-        train_X, train_y, propensity_base_model
+        train_X, train_y, propensity_base_model, random_state=cfg.random_state
     )
 
     logger.info(f"strart train {cfg.model.name}")

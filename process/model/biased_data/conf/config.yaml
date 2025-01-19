@@ -10,7 +10,7 @@ data:
   name: "test"
   random_ratio: 0.5
   sample_ratio: 1.0
-  rank: 5
+  rank: 2
 
 model:
   name: "tlearner"
