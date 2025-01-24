@@ -87,7 +87,7 @@ def tg_cg_split(
         .filter(pl.col("index").is_in(_ds.to_frame()["index"]))
         .drop("index")
         .to_series()
-    )
+    ).cast(pl.Boolean)
     biased_ds = get_biased_ds(_ds, rank_flg)
     return cds.sample(
         cds.concat([biased_ds, random_ds]), frac=1, random_state=random_state
