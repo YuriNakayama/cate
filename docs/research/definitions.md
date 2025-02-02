@@ -36,3 +36,9 @@ $$\rm{Var}[\hat{V}(\mathcal{D})] = \mathbb{E}_{p(\mathcal{D})}[(\hat{V}(\mathcal
 | 映画推薦     | ユーザの映画視聴履歴 | 映画           | クリック・視聴時間 |
 | クーポン配布 | ユーザの購買履歴     | クーポンの種類 | 購買有無・売上     |
 | 解約抑止     | 顧客のデータ         | DM送付の有無   | 解約有無           |
+
+::: note info
+定義1.1 意思決定方策$\pi$の性能(policy value)は, 次のように定義される.
+$$V(\pi) = \mathbb{E}_{p(x)\pi(a|x)p(r | x, a)}[r|x, a] = \mathbb{E}_{p(x)\pi(a|x)} [q(x, a)]$$
+
+なお, $q(x, a) := \mathbb{E}_{p(r|x, a)}[r]$は特徴量$x$と方策$a$で条件づけたときの報酬$r$の期待値であり, 期待報酬関数と呼ぶ.
