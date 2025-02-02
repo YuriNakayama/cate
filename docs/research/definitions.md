@@ -20,3 +20,5 @@ $$\rm{Var}[\hat{V}(\mathcal{D})] = \mathbb{E}_{p(\mathcal{D})}[(\hat{V}(\mathcal
 ```math
 \rm{MSE}[\hat{V}(\mathcal{D})] = \rm{Bias}[\hat{V}(\mathcal{D})]^2 + \rm{Var}[\hat{V}(\mathcal{D})]
 ```
+
+推定量の性質を分析する際は, その推定量のバイアスとバリアンスを計算し, 比較検討することが定石.
