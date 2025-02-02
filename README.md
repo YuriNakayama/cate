@@ -12,6 +12,12 @@ source .venv/bin/activate
 ipython kernel install --user --name=cate
 ```
 
+リモートに存在しないブランチを削除
+
+```bash
+git fetch --prune && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -d
+```
+
 coverage reportの更新
 
 ```bash
