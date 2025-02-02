@@ -32,9 +32,6 @@ $$\rm{Var}[\hat{V}(\mathcal{D})] = \mathbb{E}_{p(\mathcal{D})}[(\hat{V}(\mathcal
 この問題を定式化する.まず特徴量(feature, context)ベクトルを$x\in \mathcal{X}$, 離散的な行動(action)を$a\in \mathcal{A}$, 行動の結果として観測される報酬(reward)を$r\in \mathbb{R}$とする.
 意思決定において, 方策(policy)とは, 特徴量$x$を観測したときに, どのような行動$a$を選択するかを決定する関数である.この意思決定方策$\pi: \mathcal{X} \to \Delta(\mathcal{A})$を行動空間$\mathcal{A}$上の条件付き確率分布として導入する.
 
-この関数を
-意思決定のフロー
-
 1. 特徴量を観測する　$x_i \sim p(x)$
 2. 方策が行動を選択する $a_i \sim \pi(a|x_i)$
 3. 報酬を観測する $r_i \sim p(r|x_i, a_i)$
