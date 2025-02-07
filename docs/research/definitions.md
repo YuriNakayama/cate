@@ -14,12 +14,11 @@ $$\rm{Bias}[\hat{V}(\mathcal{D})] = |V - \mathbb{E}_{p(\mathcal{D})}[\hat{V}(\ma
 推定量$\hat{V}$のバリアンスとは, 推定量のばらつきの大きさであり, 次のように定義される.
 $$\rm{Var}[\hat{V}(\mathcal{D})] = \mathbb{E}_{p(\mathcal{D})}[(\hat{V}(\mathcal{D}) - \mathbb{E}_{p(\mathcal{D})}[\hat{V}(\mathcal{D})])^2]$$
 
-:::note info
-平均二乗誤差(Mean Squared Error: MSE)はバイアスとバリアンスの和で表される.
-
-```math
-\rm{MSE}[\hat{V}(\mathcal{D})] = \rm{Bias}[\hat{V}(\mathcal{D})]^2 + \rm{Var}[\hat{V}(\mathcal{D})]
-```
+> 平均二乗誤差(Mean Squared Error: MSE)はバイアスとバリアンスの和で表される.
+>
+>```math
+>\rm{MSE}[\hat{V}(\mathcal{D})] = \rm{Bias}[\hat{V}(\mathcal{D})]^2 + \rm{Var}[\hat{V}(\mathcal{D})]
+>```
 
 推定量の性質を分析する際は, その推定量のバイアスとバリアンスを計算し, 比較検討することが定石.
 
@@ -29,7 +28,7 @@ $$\rm{Var}[\hat{V}(\mathcal{D})] = \mathbb{E}_{p(\mathcal{D})}[(\hat{V}(\mathcal
 
 機械学習は, データに基づいた性格の予測を可能にする技術としていたるところで用いられる.
 しかし, マーケティングなどの実務においては, 機械学習による予測値をそのまま用いるのではなく, 予測値に基づいて何らかの意思決定をおこなっていることが多い.
-この問題を定式化する.まず特徴量(feature, context)ベクトルを$x\in \mathcal{X}$, 離散的な行動(action)を$a\in \mathcal{A}$, 行動の結果として観測される報酬(reward)を$r\in \mathbb{R}$とする.
+この問題を定式化する.まず特徴量(feature, context)ベクトルを$x\in \mathcal{X}$, 離散的な行動(action)を$a\in \mathcal{A}$, 行動の結果として観測される報酬(reward)を$r\in \mathbb{R}$とする.また, データ$\mathcal{D}=\{(x_i, a_i, r_i)\}_{i=1}^n$はこれらの特徴量, 行動, 報酬のペアの集合とする.
 意思決定において, 方策(policy)とは, 特徴量$x$を観測したときに, どのような行動$a$を選択するかを決定する関数である.この意思決定方策$\pi: \mathcal{X} \to \Delta(\mathcal{A})$を行動空間$\mathcal{A}$上の条件付き確率分布として導入する.
 
 1. 特徴量を観測する　$x_i \sim p(x)$
@@ -42,12 +41,15 @@ $$\rm{Var}[\hat{V}(\mathcal{D})] = \mathbb{E}_{p(\mathcal{D})}[(\hat{V}(\mathcal
 | クーポン配布 | ユーザの購買履歴     | クーポンの種類 | 購買有無・売上     |
 | 解約抑止     | 顧客のデータ         | DM送付の有無   | 解約有無           |
 
-::: note info
-定義1.1 意思決定方策$\pi$の性能(policy value)は, 次のように定義される.
-$$V(\pi) = \mathbb{E}_{p(x)\pi(a|x)p(r | x, a)}[r|x, a] = \mathbb{E}_{p(x)\pi(a|x)} [q(x, a)]$$
-
-なお, $q(x, a) := \mathbb{E}_{p(r|x, a)}[r]$は特徴量$x$と方策$a$で条件づけたときの報酬$r$の期待値であり, 期待報酬関数と呼ぶ.
+> 定義1.1 意思決定方策$\pi$の性能(policy value)は, 次のように定義される.
+> $$V(\pi) = \mathbb{E}_{p(x)\pi(a|x)p(r | x, a)}[r|x, a] = \mathbb{E}_{p(x)\pi(a|x)} [q(x, a)]$$
+>
+> なお, $q(x, a) := \mathbb{E}_{p(r|x, a)}[r]$は特徴量$x$と方策$a$で条件づけたときの報酬$r$の期待値であり, 期待報酬関数と呼ぶ.
 
 ## 方策性能の推定量とその性質
 
 ### Direct Method
+
+```math
+\hat{V}_{\rm{DM}}(\mathcal{D}) = \frac{1}{n} \sum_{i=1}^n r_i
+```
