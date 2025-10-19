@@ -107,7 +107,7 @@ $\tau(X_i) = \mathbb{E}[Y_i(W=1) - Y_i(W=0)|X_i]$とすると
 
 ```math
 \begin{array}{llr}
-\rm{procedure} & \rm{T-LEARNER(X, Y, W)} \\
+\rm{procedure} & \rm{DR-LEARNER(X, Y, W)} \\
 & \\
 &\hat{\mu}_0 = M_0(Y^0 \sim X^0) & TG/CGのデータでモデルを学習\\
 &\hat{\mu}_1 = M_1(Y^1 \sim X^1) &\\
