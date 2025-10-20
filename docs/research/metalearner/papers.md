@@ -33,6 +33,13 @@ X-learnerは、T-learner、S-learnerと並ぶメタ学習器の一つで、特�
 - CATE関数が線形の場合にパラメトリック収束率を達成
 - 柔軟な機械学習手法をベースアルゴリズムとして利用可能
 
+### その他
+
+T, S, X, F, U-learnerの疑似コードが整理されている。
+
+![T, S-learnerの擬似コード](image/pseudo_code_of_t_s_learner.png)
+![X, F, U-learnerの疑似コード](image/pseudo_code_of_x_f_u_learner.png)
+
 ## [B-Learner: Quasi-Oracle Bounds on Heterogeneous Causal Effects Under Hidden Confounding](https://arxiv.org/abs/2304.10577)
 
 ### Abstract
@@ -63,6 +70,16 @@ B-Learnerは隠れた交絡の存在下でCATE関数に対する鋭い信頼区�
 - 交絡レベルの制約下でのCATE関数の上限・下限を同時推定
 - 政策決定における不確実性の定量化が可能
 
+### その他
+
+DR-learnerベースで信頼区間の上限と下限を追加したもの。
+
+疑似コード
+![B-learnerの疑似コード](image/pseudo_code_of_b_learner.png)
+
+詳細な疑似コード
+![B-learnerの疑似コードの詳細](image/detail_pseudo_code_of_b_learner.png)
+
 ## [Meta-learning for heterogeneous treatment effect estimation with closed-form solvers](https://arxiv.org/abs/2305.11353)
 
 ### Abstract
@@ -91,6 +108,8 @@ This article proposes a meta-learning method for estimating the conditional aver
 - 勾配ベースのメタ学習アルゴリズムとの互換性
 - 少数データでの高精度なCATE推定が可能
 
+## その他
+
 ## [A Meta-Learning Approach for Estimating Heterogeneous Treatment Effects Under Hölder Continuity](https://www.mdpi.com/2227-7390/13/11/1739)
 
 ### Abstract
@@ -118,6 +137,14 @@ X-learnerの重み付けメカニズムを改良したメタ学習器。ヘル�
 - ヘルダー連続性条件下での非漸近誤差境界を保証
 - 連続性分類基準に基づく推定精度の向上
 - 精密医療・精密マーケティングでの応用に適している
+
+### その他
+
+![RX-learnerのアルゴリズム1](image/theory_of_rx_learner_1.png)
+![RX-learnerのアルゴリズム2](image/theory_of_rx_learner_2.png)
+
+RX-learnerの疑似コード
+![RX-learnerの疑似コード](image/pseudo_code_of_rx_learner.png)
 
 ## [M-learner:A Flexible And Powerful Framework To Study Heterogeneous Treatment Effect In Mediation Model](https://arxiv.org/abs/2505.17917)
 
