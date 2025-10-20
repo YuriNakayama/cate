@@ -174,6 +174,10 @@ We propose a novel method, termed the M-learner, for estimating heterogeneous in
 - 個人レベルの間接・総処置効果の同時推定
 - 閾値ベース較正による最適クラスター構成の決定
 
+### その他
+
+![M-learnerのパイプライン](image/pipeline_of_m_learner.png)
+
 ## [Differentially Private Learners for Heterogeneous Treatment Effects](https://arxiv.org/abs/2503.03486)
 
 ### Abstract
