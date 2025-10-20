@@ -124,6 +124,16 @@ $\tau(X_i) = \mathbb{E}[Y_i(W=1) - Y_i(W=0)|X_i]$とすると
 CATEのDR推定量を計算するモデル.
 ![dr_learner_cross_fitting](image/dr_learner_cross_fitting.png)
 
+## B-learner
+
+## H-learner
+
+## M-learner
+
+## RX-learner
+
+##
+
 ## 参考
 
 - [Meta-learners for Estimating Heterogeneous Treatment Effects using Machine Learning](https://arxiv.org/pdf/1706.03461)
